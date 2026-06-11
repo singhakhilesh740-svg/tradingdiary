@@ -69,12 +69,12 @@
   }
   .nav-btn {
     flex: 1;
-    padding: 12px 4px 10px;
+    padding: 12px 2px 10px;
     background: none;
     border: none;
     color: var(--muted);
     font-family: var(--sans);
-    font-size: 10px;
+    font-size: 9px;
     cursor: pointer;
     display: flex;
     flex-direction: column;
@@ -344,6 +344,34 @@
 <!-- DASHBOARD PAGE -->
 <div id="pageDashboard" class="page active">
   <div class="card">
+    <div class="card-title">💼 PORTFOLIO VALUE</div>
+    <div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--accent);text-align:center;padding:8px 0;" id="portfolioValue">₹0</div>
+    <div style="font-size:11px;color:var(--muted);text-align:center;" id="portfolioMeta">Set up in Progress tab</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📅 PERIOD P&L</div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">This Week</div>
+        <div class="stat-val" id="weekPL">₹0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">This Month</div>
+        <div class="stat-val" id="monthPL">₹0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">This Year</div>
+        <div class="stat-val" id="yearPL">₹0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">All Time P&L</div>
+        <div class="stat-val" id="allTimePL">₹0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
     <div class="card-title">OVERVIEW</div>
     <div class="stats-grid">
       <div class="stat-card">
@@ -440,49 +468,6 @@
 
 <!-- REPORTS PAGE -->
 <div id="pageReports" class="page">
-
-  <!-- PORTFOLIO TRACKER CARD -->
-  <div class="card">
-    <div class="card-title">📈 PORTFOLIO PROGRESS TRACKER</div>
-
-    <!-- Settings row -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-      <div>
-        <label class="form-label">STARTING CAPITAL (₹)</label>
-        <input type="number" class="form-input" id="ptStartCapital" placeholder="100000" oninput="localStorage.setItem('pt_startcap',this.value);renderPortfolioTracker()">
-      </div>
-      <div>
-        <label class="form-label">TARGET RETURN / WEEK (%)</label>
-        <input type="number" class="form-input" id="ptWeeklyTarget" placeholder="1" step="0.1" oninput="localStorage.setItem('pt_weeklypct',this.value);renderPortfolioTracker()">
-      </div>
-    </div>
-
-    <!-- Lumpsum addition -->
-    <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;">
-      <div class="card-title" style="margin-bottom:8px;">ADD LUMPSUM</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;">
-        <div>
-          <label class="form-label">DATE</label>
-          <input type="date" class="form-input" id="ptLumpsumDate">
-        </div>
-        <div>
-          <label class="form-label">AMOUNT (₹)</label>
-          <input type="number" class="form-input" id="ptLumpsumAmt" placeholder="50000">
-        </div>
-        <button onclick="addLumpsum()" style="background:var(--accent);color:#000;border:none;border-radius:8px;padding:11px 14px;font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">+ ADD</button>
-      </div>
-      <div id="lumpsumList" style="margin-top:10px;"></div>
-    </div>
-
-    <!-- Chart -->
-    <div class="chart-wrap" style="height:260px;">
-      <canvas id="portfolioChart"></canvas>
-    </div>
-
-    <!-- Stats -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px;" id="ptStats"></div>
-  </div>
-
   <div class="card">
     <div class="card-title">MONTHLY P&L</div>
     <div class="chart-wrap">
@@ -510,6 +495,59 @@
   </div>
 </div>
 
+<!-- PROGRESS PAGE -->
+<div id="pageProgress" class="page">
+  <div class="card">
+    <div class="card-title">⚙️ TARGET SETUP</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">START DATE</label>
+        <input type="date" class="form-input" id="ptStartDate" onchange="saveProgressSettings();renderProgress()">
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">STARTING CAPITAL (₹)</label>
+        <input type="number" class="form-input" id="ptStartCapital" placeholder="100000" oninput="saveProgressSettings();renderProgress()">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">RETURN % / WEEK</label>
+        <input type="number" class="form-input" id="ptWeeklyPct" placeholder="1" step="0.1" oninput="document.getElementById('ptMonthlyPct').value='';saveProgressSettings();renderProgress()">
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">RETURN % / MONTH</label>
+        <input type="number" class="form-input" id="ptMonthlyPct" placeholder="4" step="0.1" oninput="document.getElementById('ptWeeklyPct').value='';saveProgressSettings();renderProgress()">
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:8px;">Fill either weekly OR monthly target (not both)</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💰 LUMPSUM ADDITIONS</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;margin-bottom:12px;">
+      <div>
+        <label class="form-label">DATE</label>
+        <input type="date" class="form-input" id="ptLumpsumDate">
+      </div>
+      <div>
+        <label class="form-label">AMOUNT (₹)</label>
+        <input type="number" class="form-input" id="ptLumpsumAmt" placeholder="50000">
+      </div>
+      <button onclick="addLumpsum()" style="background:var(--accent);color:#000;border:none;border-radius:8px;padding:11px 14px;font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">+ ADD</button>
+    </div>
+    <div id="lumpsumList"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📊 PROGRESS vs TARGET</div>
+    <div id="ptStats" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;"></div>
+    <div id="ptGapBadge" style="text-align:center;margin-bottom:14px;"></div>
+    <div class="chart-wrap" style="height:280px;">
+      <canvas id="progressChart"></canvas>
+    </div>
+  </div>
+</div>
+
 <!-- BOTTOM NAV -->
 <div class="bottom-nav">
   <button class="nav-btn active" onclick="goPage('Dashboard')">
@@ -527,6 +565,10 @@
   <button class="nav-btn" onclick="goPage('Reports')">
     <svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
     Reports
+  </button>
+  <button class="nav-btn" onclick="goPage('Progress')">
+    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+    Progress
   </button>
 </div>
 
@@ -665,6 +707,7 @@ function goPage(name) {
   if (name === 'Dashboard') renderDashboard();
   if (name === 'Journal') renderJournal();
   if (name === 'Reports') renderReports();
+  if (name === 'Progress') { loadProgressSettings(); renderProgress(); }
   if (name === 'Add') {
     // Reset form when opening Add page (if not editing)
     if (editingIndex === null) {
@@ -678,11 +721,60 @@ const fmt = v => (v >= 0 ? '+' : '') + '₹' + v.toLocaleString('en-IN');
 const fmtK = v => Math.abs(v) >= 1000 ? (v / 1000).toFixed(1) + 'K' : v.toFixed(0);
 
 // ── CHARTS ─────────────────────────────────────────────────────────────────
-const charts = { pl: null, month: null, day: null, pie: null, portfolio: null };
+const charts = { pl: null, month: null, day: null, pie: null, portfolio: null, progress: null };
 
 // ── DASHBOARD ──────────────────────────────────────────────────────────────
 function renderDashboard() {
   const validTrades = trades.filter(t => typeof t.pl === 'number' && !isNaN(t.pl) && t.capital > 0);
+
+  // ── Portfolio Value (from Progress settings) ─────────────────────────
+  const startCap = parseFloat(localStorage.getItem('pt_startcap')) || 0;
+  const startDate = localStorage.getItem('pt_startdate') || '';
+  const lumps = JSON.parse(localStorage.getItem('lumpsums_' + (currentUser?.uid || 'local')) || '[]');
+  const today = new Date();
+  const depositedNow = startCap + lumps.filter(l => new Date(l.date) <= today).reduce((s, l) => s + l.amt, 0);
+  const tradesForPortfolio = startDate
+    ? validTrades.filter(t => t.date >= startDate)
+    : validTrades;
+  const portfolioPL = tradesForPortfolio.reduce((s, t) => s + t.pl, 0);
+  const portfolioVal = depositedNow + portfolioPL;
+
+  if (startCap > 0) {
+    document.getElementById('portfolioValue').textContent = '₹' + portfolioVal.toLocaleString('en-IN');
+    const pctChange = depositedNow ? ((portfolioPL / depositedNow) * 100).toFixed(2) : 0;
+    document.getElementById('portfolioMeta').innerHTML =
+      `Deposited ₹${depositedNow.toLocaleString('en-IN')} · ` +
+      `<span style="color:${portfolioPL >= 0 ? 'var(--green)' : 'var(--red)'}">${portfolioPL >= 0 ? '+' : ''}${pctChange}%</span>`;
+    document.getElementById('portfolioValue').style.color = portfolioPL >= 0 ? 'var(--accent)' : 'var(--red)';
+  } else {
+    document.getElementById('portfolioValue').textContent = '₹0';
+    document.getElementById('portfolioMeta').textContent = 'Set up in Progress tab';
+  }
+
+  // ── Period P&L ────────────────────────────────────────────────────────
+  const now = new Date();
+  const dayOfWeek = now.getDay() === 0 ? 6 : now.getDay() - 1; // Mon=0
+  const weekStart = new Date(now); weekStart.setDate(now.getDate() - dayOfWeek); weekStart.setHours(0,0,0,0);
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const yearStart = new Date(now.getFullYear(), 0, 1);
+
+  const sumPL = (from) => validTrades.filter(t => new Date(t.date) >= from).reduce((s, t) => s + t.pl, 0);
+  const weekPL = sumPL(weekStart);
+  const monthPL = sumPL(monthStart);
+  const yearPL = sumPL(yearStart);
+  const allTimePL = validTrades.reduce((s, t) => s + t.pl, 0);
+
+  const setPL = (id, v) => {
+    const el = document.getElementById(id);
+    el.textContent = fmt(v);
+    el.className = 'stat-val ' + (v > 0 ? 'green' : v < 0 ? 'red' : '');
+  };
+  setPL('weekPL', weekPL);
+  setPL('monthPL', monthPL);
+  setPL('yearPL', yearPL);
+  setPL('allTimePL', allTimePL);
+
+  // ── Empty state for rest ──────────────────────────────────────────────
   if (!validTrades.length) {
     document.getElementById('totalPL').textContent = '₹0';
     document.getElementById('winRate').textContent = '0%';
@@ -928,139 +1020,187 @@ function showToast(message) {
   setTimeout(() => toast.classList.remove('show'), 2000);
 }
 
-// ── PORTFOLIO TRACKER ──────────────────────────────────────────────────────
-let lumpsums = JSON.parse(localStorage.getItem('lumpsums_' + (currentUser?.uid || 'local')) || '[]');
+// ── PROGRESS TRACKER ───────────────────────────────────────────────────────
+function getLumpsumsKey() { return 'lumpsums_' + (currentUser?.uid || 'local'); }
+function getLumpsums() { return JSON.parse(localStorage.getItem(getLumpsumsKey()) || '[]'); }
+function saveLumpsums(arr) { localStorage.setItem(getLumpsumsKey(), JSON.stringify(arr)); }
 
-function saveLumpsums() {
-  localStorage.setItem('lumpsums_' + (currentUser?.uid || 'local'), JSON.stringify(lumpsums));
+function saveProgressSettings() {
+  localStorage.setItem('pt_startdate', document.getElementById('ptStartDate').value);
+  localStorage.setItem('pt_startcap', document.getElementById('ptStartCapital').value);
+  localStorage.setItem('pt_weeklypct', document.getElementById('ptWeeklyPct').value);
+  localStorage.setItem('pt_monthlypct', document.getElementById('ptMonthlyPct').value);
+}
+
+function loadProgressSettings() {
+  document.getElementById('ptStartDate').value = localStorage.getItem('pt_startdate') || '';
+  document.getElementById('ptStartCapital').value = localStorage.getItem('pt_startcap') || '';
+  document.getElementById('ptWeeklyPct').value = localStorage.getItem('pt_weeklypct') || '';
+  document.getElementById('ptMonthlyPct').value = localStorage.getItem('pt_monthlypct') || '';
 }
 
 function addLumpsum() {
   const date = document.getElementById('ptLumpsumDate').value;
   const amt = parseFloat(document.getElementById('ptLumpsumAmt').value);
   if (!date || isNaN(amt) || amt <= 0) { alert('Enter valid date and amount'); return; }
-  lumpsums.push({ date, amt });
-  lumpsums.sort((a,b) => a.date.localeCompare(b.date));
-  saveLumpsums();
+  const lumps = getLumpsums();
+  lumps.push({ date, amt });
+  lumps.sort((a, b) => a.date.localeCompare(b.date));
+  saveLumpsums(lumps);
   document.getElementById('ptLumpsumAmt').value = '';
-  renderPortfolioTracker();
+  document.getElementById('ptLumpsumDate').value = '';
+  renderProgress();
   showToast('✓ Lumpsum added');
 }
 
 function deleteLumpsum(i) {
-  lumpsums.splice(i, 1);
-  saveLumpsums();
-  renderPortfolioTracker();
+  const lumps = getLumpsums();
+  lumps.splice(i, 1);
+  saveLumpsums(lumps);
+  renderProgress();
 }
 
 function renderLumpsumList() {
+  const lumps = getLumpsums();
   const el = document.getElementById('lumpsumList');
-  if (!lumpsums.length) { el.innerHTML = ''; return; }
-  el.innerHTML = lumpsums.map((l, i) =>
-    `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;">
-      <span style="color:var(--muted);font-family:var(--mono)">${l.date}</span>
-      <span style="color:var(--green);font-family:var(--mono)">+₹${l.amt.toLocaleString('en-IN')}</span>
-      <button onclick="deleteLumpsum(${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;">✕</button>
+  if (!lumps.length) { el.innerHTML = '<div class="empty" style="padding:10px;">No lumpsum additions yet</div>'; return; }
+  el.innerHTML = lumps.map((l, i) =>
+    `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+      <span style="color:var(--muted);font-family:var(--mono);font-size:12px;">${l.date}</span>
+      <span style="color:var(--green);font-family:var(--mono);font-weight:700;">+₹${l.amt.toLocaleString('en-IN')}</span>
+      <button onclick="deleteLumpsum(${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:0 6px;">✕</button>
     </div>`
   ).join('');
 }
 
-function renderPortfolioTracker() {
+function renderProgress() {
+  renderLumpsumList();
+  const startDate = document.getElementById('ptStartDate').value;
   const startCap = parseFloat(document.getElementById('ptStartCapital').value) || 0;
-  const weeklyPct = parseFloat(document.getElementById('ptWeeklyTarget').value) || 0;
-  if (!startCap) { renderLumpsumList(); return; }
+  const weeklyPct = parseFloat(document.getElementById('ptWeeklyPct').value) || 0;
+  const monthlyPct = parseFloat(document.getElementById('ptMonthlyPct').value) || 0;
 
-  const validTrades = trades.filter(t => typeof t.pl === 'number' && !isNaN(t.pl) && t.capital > 0);
-  if (!validTrades.length) { renderLumpsumList(); return; }
+  if (!startDate || !startCap) {
+    document.getElementById('ptStats').innerHTML = '<div class="empty" style="grid-column:1/-1;">Enter start date and capital above</div>';
+    document.getElementById('ptGapBadge').innerHTML = '';
+    if (charts.progress) { charts.progress.destroy(); charts.progress = null; }
+    return;
+  }
 
-  // Get date range — from first trade to today
-  const sorted = [...validTrades].sort((a,b) => a.date.localeCompare(b.date));
-  const firstDate = new Date(sorted[0].date);
+  const lumps = getLumpsums();
+  const validTrades = trades.filter(t => typeof t.pl === 'number' && !isNaN(t.pl) && t.date >= startDate);
+
+  const start = new Date(startDate);
   const today = new Date();
 
-  // Build weekly buckets
-  // Align to Monday of first trade week
-  const start = new Date(firstDate);
-  start.setDate(start.getDate() - start.getDay() + 1); // Monday
+  // Total deposited = startCap + lumpsums added on or before today
+  const depositedNow = startCap + lumps.filter(l => new Date(l.date) <= today).reduce((s, l) => s + l.amt, 0);
+  // Actual current value = depositedNow + total P&L since start date
+  const totalPL = validTrades.reduce((s, t) => s + t.pl, 0);
+  const actualNow = depositedNow + totalPL;
 
+  // Build weekly buckets from start date to today
   const weeks = [];
   let cur = new Date(start);
   while (cur <= today) {
     weeks.push(new Date(cur));
     cur.setDate(cur.getDate() + 7);
   }
-  if (!weeks.length) return;
+  if (weeks[weeks.length - 1] < today) weeks.push(new Date(today));
 
-  // Actual: cumulative P&L added to startCap + lumpsums
+  // Convert weekly/monthly target to weekly rate
+  let weeklyRate = 0;
+  if (weeklyPct > 0) weeklyRate = weeklyPct / 100;
+  else if (monthlyPct > 0) weeklyRate = Math.pow(1 + monthlyPct / 100, 1/4.345) - 1;
+
+  // Actual line: cumulative portfolio per week
   const actualData = [];
   let portfolio = startCap;
-  let lumpsumIdx = 0;
-
-  weeks.forEach((weekStart, wi) => {
+  weeks.forEach(weekStart => {
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekEnd.getDate() + 6);
-
-    // Add any lumpsums that fall in or before this week
-    lumpsums.forEach(l => {
+    lumps.forEach(l => {
       const ld = new Date(l.date);
       if (ld >= weekStart && ld <= weekEnd) portfolio += l.amt;
     });
-
-    // Add P&L for this week
     const weekPL = validTrades
       .filter(t => { const d = new Date(t.date); return d >= weekStart && d <= weekEnd; })
       .reduce((s, t) => s + t.pl, 0);
     portfolio += weekPL;
-
     actualData.push({ x: weekStart.toISOString().split('T')[0], y: Math.round(portfolio) });
   });
 
-  // Target: compound growth from startCap + lumpsums at weeklyPct%
+  // Target line: compound from startCap + lumpsums at weeklyRate
   const targetData = [];
-  let targetPortfolio = startCap;
-  let prevWeekStart = null;
-
-  weeks.forEach((weekStart, wi) => {
+  let target = startCap;
+  weeks.forEach(weekStart => {
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekEnd.getDate() + 6);
-
-    // Add lumpsums to target too
-    lumpsums.forEach(l => {
+    lumps.forEach(l => {
       const ld = new Date(l.date);
-      if (ld >= weekStart && ld <= weekEnd) targetPortfolio += l.amt;
+      if (ld >= weekStart && ld <= weekEnd) target += l.amt;
     });
-
-    if (weeklyPct > 0) targetPortfolio = targetPortfolio * (1 + weeklyPct / 100);
-    targetData.push({ x: weekStart.toISOString().split('T')[0], y: Math.round(targetPortfolio) });
+    if (weeklyRate > 0) target = target * (1 + weeklyRate);
+    targetData.push({ x: weekStart.toISOString().split('T')[0], y: Math.round(target) });
   });
 
-  // Render chart
-  if (charts.portfolio) charts.portfolio.destroy();
-  charts.portfolio = new Chart(document.getElementById('portfolioChart'), {
+  const targetNow = targetData[targetData.length - 1]?.y || startCap;
+  const gap = actualNow - targetNow;
+  const ahead = gap >= 0;
+
+  // Stats
+  const targetText = weeklyPct > 0 ? `${weeklyPct}%/wk` : (monthlyPct > 0 ? `${monthlyPct}%/mo` : 'No target');
+  document.getElementById('ptStats').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">CURRENT VALUE</div>
+      <div class="stat-val accent">₹${actualNow.toLocaleString('en-IN')}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">TARGET (${targetText})</div>
+      <div class="stat-val yellow">₹${targetNow.toLocaleString('en-IN')}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">TOTAL DEPOSITED</div>
+      <div class="stat-val">₹${depositedNow.toLocaleString('en-IN')}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">REALIZED P&L</div>
+      <div class="stat-val ${totalPL >= 0 ? 'green' : 'red'}">${totalPL >= 0 ? '+' : ''}₹${totalPL.toLocaleString('en-IN')}</div>
+    </div>
+  `;
+
+  document.getElementById('ptGapBadge').innerHTML =
+    `<div class="pl-badge ${ahead ? 'pos' : 'neg'}" style="font-size:14px;padding:6px 16px;">
+      ${ahead ? '🚀 AHEAD' : '⚠️ BEHIND'} by ₹${Math.abs(gap).toLocaleString('en-IN')}
+    </div>`;
+
+  // Chart
+  if (charts.progress) charts.progress.destroy();
+  charts.progress = new Chart(document.getElementById('progressChart'), {
     type: 'line',
     data: {
       datasets: [
         {
-          label: 'Actual Portfolio',
+          label: 'Actual',
           data: actualData,
           borderColor: '#00e5ff',
-          backgroundColor: 'rgba(0,229,255,0.08)',
+          backgroundColor: 'rgba(0,229,255,.1)',
           borderWidth: 2.5,
           fill: true,
           tension: 0.3,
-          pointRadius: 4,
+          pointRadius: 3,
           pointBackgroundColor: '#00e5ff'
         },
         {
-          label: `Target (${weeklyPct}%/wk)`,
+          label: `Target (${targetText})`,
           data: targetData,
           borderColor: '#ffd166',
-          backgroundColor: 'rgba(255,209,102,0.04)',
+          backgroundColor: 'transparent',
           borderWidth: 2,
           borderDash: [6, 4],
           fill: false,
-          tension: 0.3,
-          pointRadius: 3,
+          tension: 0.2,
+          pointRadius: 2,
           pointBackgroundColor: '#ffd166'
         }
       ]
@@ -1069,59 +1209,26 @@ function renderPortfolioTracker() {
       responsive: true, maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
       plugins: {
-        legend: { labels: { color: '#e2e8f0', font: { size: 11 }, boxWidth: 16 } },
+        legend: { labels: { color: '#e2e8f0', font: { size: 11 }, boxWidth: 14 } },
         tooltip: {
           backgroundColor: '#181c24', titleColor: '#00e5ff', bodyColor: '#e2e8f0',
           borderColor: '#1f2535', borderWidth: 1,
-          callbacks: {
-            label: ctx => `${ctx.dataset.label}: ₹${ctx.raw.y.toLocaleString('en-IN')}`
-          }
+          callbacks: { label: ctx => `${ctx.dataset.label}: ₹${ctx.raw.y.toLocaleString('en-IN')}` }
         }
       },
       scales: {
         x: { type: 'time', time: { unit: 'week', displayFormats: { week: 'MMM dd' } },
-             ticks: { color: '#64748b', font: { size: 9 }, maxTicksLimit: 8 }, grid: { color: '#1f2535' } },
+             ticks: { color: '#64748b', font: { size: 9 }, maxTicksLimit: 7 }, grid: { color: '#1f2535' } },
         y: { ticks: { color: '#64748b', font: { size: 9 },
              callback: v => v >= 100000 ? (v/100000).toFixed(1)+'L' : v >= 1000 ? (v/1000).toFixed(0)+'K' : v },
              grid: { color: '#1f2535' } }
       }
     }
   });
-
-  // Stats
-  const actualNow = actualData[actualData.length - 1]?.y || startCap;
-  const targetNow = targetData[targetData.length - 1]?.y || startCap;
-  const totalDeposited = startCap + lumpsums.reduce((s,l) => s+l.amt, 0);
-  const actualReturn = actualNow - totalDeposited;
-  const ahead = actualNow >= targetNow;
-
-  document.getElementById('ptStats').innerHTML = `
-    <div class="stat-card">
-      <div class="stat-label">CURRENT VALUE</div>
-      <div class="stat-val accent">₹${(actualNow/100000).toFixed(2)}L</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">TARGET VALUE</div>
-      <div class="stat-val yellow" style="color:var(--yellow)">₹${(targetNow/100000).toFixed(2)}L</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">${ahead ? 'AHEAD BY' : 'BEHIND BY'}</div>
-      <div class="stat-val ${ahead ? 'green' : 'red'}">₹${Math.abs(actualNow - targetNow).toLocaleString('en-IN')}</div>
-    </div>
-  `;
-
-  renderLumpsumList();
 }
 
 // ── REPORTS ────────────────────────────────────────────────────────────────
 function renderReports() {
-  // Restore saved tracker settings
-  const savedCap = localStorage.getItem('pt_startcap');
-  const savedPct = localStorage.getItem('pt_weeklypct');
-  if (savedCap) document.getElementById('ptStartCapital').value = savedCap;
-  if (savedPct) document.getElementById('ptWeeklyTarget').value = savedPct;
-  renderPortfolioTracker();
-
   const validTrades = trades.filter(t => typeof t.pl === 'number' && !isNaN(t.pl) && t.capital > 0);
 
   // Monthly chart
