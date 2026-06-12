@@ -346,6 +346,42 @@
 <!-- DASHBOARD PAGE -->
 <div id="pageDashboard" class="page active">
 
+  <!-- TRADE GUARD ON DASHBOARD -->
+  <div class="card" style="border:1px solid var(--accent);border-radius:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div class="card-title" style="margin:0;font-size:13px;">🛡️ TRADE GUARD</div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span style="font-size:12px;color:var(--muted);font-family:var(--mono);" id="dashTradeCount">0 trades</span>
+        <span style="font-size:12px;font-family:var(--mono);" id="dashTodayPL">₹0</span>
+      </div>
+    </div>
+
+    <!-- Warning banners on dashboard -->
+    <div id="dashWarnings" style="margin-bottom:10px;"></div>
+
+    <!-- Checklist -->
+    <div id="dashChecklist" style="display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:14px;"></div>
+
+    <!-- Limits row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
+      <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">MAX TRADES</div>
+        <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--text);" id="dashMaxTrades">-</div>
+      </div>
+      <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">MAX LOSS</div>
+        <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--text);" id="dashMaxLoss">-</div>
+      </div>
+      <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">STREAK</div>
+        <div style="font-family:var(--mono);font-size:18px;font-weight:700;" id="dashStreak">-</div>
+      </div>
+    </div>
+
+    <!-- Status badge -->
+    <div id="dashGuardStatus" style="text-align:center;"></div>
+  </div>
+
   <!-- LIVE MARKET CHART -->
   <div class="card" style="padding:10px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding:0 4px;">
@@ -833,6 +869,111 @@ const fmtK = v => Math.abs(v) >= 1000 ? (v / 1000).toFixed(1) + 'K' : v.toFixed(
 // ── CHARTS ─────────────────────────────────────────────────────────────────
 const charts = { pl: null, month: null, day: null, pie: null, portfolio: null, progress: null };
 
+// ── DASHBOARD TRADE GUARD ──────────────────────────────────────────────────
+function renderDashGuard() {
+  var todayStr = new Date().toISOString().split('T')[0];
+  var todayTrades = trades.filter(function(t) { return t.date === todayStr; });
+  var todayPL = todayTrades.reduce(function(s,t) { return s + (t.pl || 0); }, 0);
+  var tradeCount = todayTrades.length;
+
+  var maxTrades = parseInt(localStorage.getItem('tg_maxTrades')) || 999;
+  var maxLoss = parseInt(localStorage.getItem('tg_maxLoss')) || 999999;
+
+  // Streak
+  var sorted = trades.filter(function(t) { return typeof t.pl === 'number'; }).sort(function(a,b) { return b.date.localeCompare(a.date); });
+  var streak = 0;
+  var streakType = '';
+  if (sorted.length) {
+    streakType = sorted[0].pl >= 0 ? 'W' : 'L';
+    for (var i = 0; i < sorted.length; i++) {
+      if ((streakType === 'W' && sorted[i].pl >= 0) || (streakType === 'L' && sorted[i].pl < 0)) streak++;
+      else break;
+    }
+  }
+
+  // Top stats
+  document.getElementById('dashTradeCount').textContent = tradeCount + '/' + (maxTrades < 999 ? maxTrades : '-') + ' trades';
+  var plEl = document.getElementById('dashTodayPL');
+  plEl.textContent = fmt(todayPL);
+  plEl.style.color = todayPL > 0 ? 'var(--green)' : todayPL < 0 ? 'var(--red)' : 'var(--muted)';
+
+  // Limits display
+  document.getElementById('dashMaxTrades').textContent = tradeCount + '/' + (maxTrades < 999 ? maxTrades : '∞');
+  document.getElementById('dashMaxTrades').style.color = tradeCount >= maxTrades ? 'var(--red)' : 'var(--accent)';
+  document.getElementById('dashMaxLoss').textContent = maxLoss < 999999 ? '\u20b9' + maxLoss.toLocaleString('en-IN') : '∞';
+  document.getElementById('dashMaxLoss').style.color = (todayPL < 0 && Math.abs(todayPL) >= maxLoss) ? 'var(--red)' : 'var(--text)';
+  var streakEl = document.getElementById('dashStreak');
+  streakEl.textContent = streak ? streak + streakType : '-';
+  streakEl.style.color = streakType === 'W' ? 'var(--green)' : streakType === 'L' ? 'var(--red)' : 'var(--muted)';
+
+  // Warnings
+  var warnings = [];
+  var blocked = false;
+  if (tradeCount >= maxTrades) {
+    warnings.push('<div class="pl-badge neg" style="font-size:13px;padding:8px 14px;margin-bottom:6px;">\u{1F6D1} DAILY TRADE LIMIT REACHED</div>');
+    blocked = true;
+  }
+  if (todayPL < 0 && Math.abs(todayPL) >= maxLoss) {
+    warnings.push('<div class="pl-badge neg" style="font-size:13px;padding:8px 14px;margin-bottom:6px;">\u{1F6A8} MAX DAILY LOSS HIT</div>');
+    blocked = true;
+  }
+  if (streakType === 'L' && streak >= 2) {
+    warnings.push('<div style="background:rgba(255,209,102,.1);border:1px solid var(--yellow);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--yellow);margin-bottom:6px;">\u26A0\uFE0F ' + streak + ' consecutive losses — slow down, review your setups</div>');
+  }
+  document.getElementById('dashWarnings').innerHTML = warnings.join('');
+
+  // Checklist
+  var el = document.getElementById('dashChecklist');
+  el.innerHTML = guardChecklist.map(function(item) {
+    return '<label style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card2);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all .2s;" id="dash_label_' + item.id + '">' +
+      '<input type="checkbox" id="dash_' + item.id + '" onchange="onDashChecklistChange()" style="width:22px;height:22px;accent-color:var(--accent);flex-shrink:0;">' +
+      '<span style="font-size:14px;color:var(--text);line-height:1.4;">' + item.text + '</span>' +
+    '</label>';
+  }).join('');
+
+  // Status
+  updateDashGuardStatus(blocked);
+}
+
+function onDashChecklistChange() {
+  var allChecked = guardChecklist.every(function(item) {
+    return document.getElementById('dash_' + item.id) && document.getElementById('dash_' + item.id).checked;
+  });
+  guardChecklist.forEach(function(item) {
+    var label = document.getElementById('dash_label_' + item.id);
+    var cb = document.getElementById('dash_' + item.id);
+    if (cb && cb.checked) {
+      label.style.borderColor = 'var(--green)';
+      label.style.background = 'rgba(0,224,150,.08)';
+    } else {
+      label.style.borderColor = 'var(--border)';
+      label.style.background = 'var(--card2)';
+    }
+  });
+  // Sync to Add page checklist too
+  guardChecklist.forEach(function(item) {
+    var dashCb = document.getElementById('dash_' + item.id);
+    var addCb = document.getElementById(item.id);
+    if (dashCb && addCb) addCb.checked = dashCb.checked;
+  });
+  updateDashGuardStatus(false);
+}
+
+function updateDashGuardStatus(blocked) {
+  var allChecked = guardChecklist.every(function(item) {
+    return document.getElementById('dash_' + item.id) && document.getElementById('dash_' + item.id).checked;
+  });
+  var el = document.getElementById('dashGuardStatus');
+  if (blocked) {
+    el.innerHTML = '<div class="pl-badge neg" style="font-size:14px;padding:8px 20px;">\u{1F6AB} STOP TRADING TODAY</div>';
+  } else if (allChecked) {
+    el.innerHTML = '<div class="pl-badge pos" style="font-size:14px;padding:8px 20px;">\u2705 READY TO TRADE</div>';
+  } else {
+    var checked = guardChecklist.filter(function(item) { return document.getElementById('dash_' + item.id) && document.getElementById('dash_' + item.id).checked; }).length;
+    el.innerHTML = '<div style="font-size:12px;color:var(--muted);font-family:var(--mono);">' + checked + '/' + guardChecklist.length + ' checks done</div>';
+  }
+}
+
 // ── LIVE MARKET CHART ──────────────────────────────────────────────────────
 var currentChartSymbol = 'NIFTY';
 
@@ -860,6 +1001,7 @@ function switchChart(symbol) {
 
 // ── DASHBOARD ──────────────────────────────────────────────────────────────
 function renderDashboard() {
+  renderDashGuard();
   const validTrades = trades.filter(t => typeof t.pl === 'number' && !isNaN(t.pl) && t.capital > 0);
 
   // ── Portfolio Value (from Progress settings) ─────────────────────────
