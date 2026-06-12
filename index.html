@@ -332,7 +332,7 @@
 <div class="top-bar">
   <div>
     <h1>TRADELOG</h1>
-    <div class="sub"><span class="sync-dot" id="syncDot"></span><span id="syncLabel">Synced</span></div>
+    <div class="sub"><span class="sync-dot" id="syncDot"></span><span id="syncLabel">Synced</span> · <span id="marketStatus" style="font-family:var(--mono);font-size:10px;"></span></div>
   </div>
   <div class="user-bar">
     <img class="user-avatar" id="userAvatar" src="" alt="">
@@ -345,6 +345,16 @@
 
 <!-- DASHBOARD PAGE -->
 <div id="pageDashboard" class="page active">
+
+  <!-- QUICK LINKS -->
+  <div class="card" style="padding:12px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div class="card-title" style="margin:0;">🔗 QUICK LINKS</div>
+      <button onclick="toggleLinkEdit()" id="linkEditBtn" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:10px;padding:4px 10px;cursor:pointer;font-family:var(--mono);">✏️ EDIT</button>
+    </div>
+    <div id="quickLinksRow" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;"></div>
+    <div id="quickLinksEdit" style="display:none;margin-top:10px;"></div>
+  </div>
 
   <!-- TRADE GUARD ON DASHBOARD -->
   <div class="card" style="border:1px solid var(--accent);border-radius:14px;">
@@ -869,6 +879,96 @@ const fmtK = v => Math.abs(v) >= 1000 ? (v / 1000).toFixed(1) + 'K' : v.toFixed(
 // ── CHARTS ─────────────────────────────────────────────────────────────────
 const charts = { pl: null, month: null, day: null, pie: null, portfolio: null, progress: null };
 
+// ── MARKET STATUS ──────────────────────────────────────────────────────────
+function updateMarketStatus() {
+  var el = document.getElementById('marketStatus');
+  if (!el) return;
+  var now = new Date();
+  // IST time
+  var ist = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+  var day = ist.getDay();
+  var mins = ist.getHours() * 60 + ist.getMinutes();
+  var open = 9 * 60 + 15;   // 9:15
+  var close = 15 * 60 + 30; // 15:30
+
+  if (day === 0 || day === 6) {
+    el.innerHTML = '<span style="color:var(--muted);">⚫ MARKET CLOSED (Weekend)</span>';
+  } else if (mins < open) {
+    var till = open - mins;
+    el.innerHTML = '<span style="color:var(--yellow);">🟡 OPENS IN ' + Math.floor(till/60) + 'h ' + (till%60) + 'm</span>';
+  } else if (mins >= open && mins < close) {
+    var left = close - mins;
+    el.innerHTML = '<span style="color:var(--green);">🟢 MARKET LIVE · ' + Math.floor(left/60) + 'h ' + (left%60) + 'm left</span>';
+  } else {
+    el.innerHTML = '<span style="color:var(--muted);">⚫ MARKET CLOSED</span>';
+  }
+}
+setInterval(updateMarketStatus, 30000);
+
+// ── QUICK LINKS ────────────────────────────────────────────────────────────
+var defaultLinks = [
+  { name: 'Kite', url: 'https://kite.zerodha.com' },
+  { name: 'TradingView', url: 'https://in.tradingview.com/chart/' },
+  { name: 'NSE Option Chain', url: 'https://www.nseindia.com/option-chain' }
+];
+
+function getQuickLinks() {
+  var saved = localStorage.getItem('quick_links');
+  return saved ? JSON.parse(saved) : defaultLinks;
+}
+
+function saveQuickLinks(links) {
+  localStorage.setItem('quick_links', JSON.stringify(links));
+}
+
+function renderQuickLinks() {
+  var links = getQuickLinks();
+  var row = document.getElementById('quickLinksRow');
+  row.innerHTML = links.map(function(l, i) {
+    var displayName = l.name || 'Link ' + (i+1);
+    return '<a href="' + (l.url || '#') + '" target="_blank" rel="noopener" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px 6px;text-decoration:none;transition:all .2s;" ' +
+      'onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\'">' +
+      '<span style="font-size:18px;">🌐</span>' +
+      '<span style="font-size:11px;color:var(--text);font-weight:600;text-align:center;line-height:1.2;word-break:break-word;">' + displayName + '</span>' +
+    '</a>';
+  }).join('');
+}
+
+function toggleLinkEdit() {
+  var editDiv = document.getElementById('quickLinksEdit');
+  var btn = document.getElementById('linkEditBtn');
+  if (editDiv.style.display === 'none') {
+    var links = getQuickLinks();
+    editDiv.innerHTML = links.map(function(l, i) {
+      return '<div style="display:grid;grid-template-columns:1fr 2fr;gap:8px;margin-bottom:8px;">' +
+        '<input type="text" class="form-input" id="linkName' + i + '" placeholder="Name" value="' + (l.name || '') + '" style="padding:8px 10px;font-size:12px;">' +
+        '<input type="url" class="form-input" id="linkUrl' + i + '" placeholder="https://..." value="' + (l.url || '') + '" style="padding:8px 10px;font-size:12px;">' +
+      '</div>';
+    }).join('') +
+    '<button class="submit-btn" onclick="saveLinkEdits()" style="padding:10px;font-size:12px;">💾 SAVE LINKS</button>';
+    editDiv.style.display = 'block';
+    btn.textContent = '✕ CLOSE';
+  } else {
+    editDiv.style.display = 'none';
+    btn.innerHTML = '✏️ EDIT';
+  }
+}
+
+function saveLinkEdits() {
+  var links = [];
+  for (var i = 0; i < 3; i++) {
+    var name = document.getElementById('linkName' + i).value.trim();
+    var url = document.getElementById('linkUrl' + i).value.trim();
+    if (url && !url.startsWith('http')) url = 'https://' + url;
+    links.push({ name: name, url: url });
+  }
+  saveQuickLinks(links);
+  renderQuickLinks();
+  document.getElementById('quickLinksEdit').style.display = 'none';
+  document.getElementById('linkEditBtn').innerHTML = '✏️ EDIT';
+  showToast('✓ Links saved');
+}
+
 // ── DASHBOARD TRADE GUARD ──────────────────────────────────────────────────
 function renderDashGuard() {
   var todayStr = new Date().toISOString().split('T')[0];
@@ -1001,6 +1101,8 @@ function switchChart(symbol) {
 
 // ── DASHBOARD ──────────────────────────────────────────────────────────────
 function renderDashboard() {
+  updateMarketStatus();
+  renderQuickLinks();
   renderDashGuard();
   const validTrades = trades.filter(t => typeof t.pl === 'number' && !isNaN(t.pl) && t.capital > 0);
 
@@ -1311,13 +1413,14 @@ function showToast(message) {
 // ── TRADE GUARD ────────────────────────────────────────────────────────────
 var guardChecklist = [
   { id: 'tg1', text: 'Market trend identified (bullish / bearish / sideways)?' },
-  { id: 'tg2', text: 'Entry, SL & target levels decided before entering?' },
-  { id: 'tg3', text: 'Risk:Reward is at least 1:1.5?' },
-  { id: 'tg4', text: 'Position size within capital limits (max 1-2% risk)?' },
-  { id: 'tg5', text: 'Am I calm and NOT revenge trading after a loss?' },
-  { id: 'tg6', text: 'This setup matches my strategy (not FOMO)?' },
-  { id: 'tg7', text: 'No major news/event that could spike volatility?' },
-  { id: 'tg8', text: 'I will exit at SL — no hoping, no averaging down?' }
+  { id: 'tg2', text: 'Is it a trending day? (ADX > 20, not choppy/sideways)' },
+  { id: 'tg3', text: 'Entry, SL & target levels decided before entering?' },
+  { id: 'tg4', text: 'Risk:Reward is at least 1:1.5?' },
+  { id: 'tg5', text: 'Position size within capital limits (max 1-2% risk)?' },
+  { id: 'tg6', text: 'Am I calm and NOT revenge trading after a loss?' },
+  { id: 'tg7', text: 'This setup matches my strategy (not FOMO)?' },
+  { id: 'tg8', text: 'No major news/event that could spike volatility?' },
+  { id: 'tg9', text: 'I will exit at SL — no hoping, no averaging down?' }
 ];
 
 var cooldownInterval = null;
