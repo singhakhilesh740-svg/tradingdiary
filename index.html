@@ -834,59 +834,21 @@ const fmtK = v => Math.abs(v) >= 1000 ? (v / 1000).toFixed(1) + 'K' : v.toFixed(
 const charts = { pl: null, month: null, day: null, pie: null, portfolio: null, progress: null };
 
 // ── LIVE MARKET CHART ──────────────────────────────────────────────────────
-var tvChartSymbols = {
-  'NIFTY': 'NSE:NIFTY',
-  'SENSEX': 'BSE:SENSEX',
-  'BANKNIFTY': 'NSE:BANKNIFTY'
-};
 var currentChartSymbol = 'NIFTY';
 
 function loadTVChart(symbol) {
+  var symbols = {
+    'NIFTY': 'NSE%3ANIFTY',
+    'SENSEX': 'BSE%3ASENSEX',
+    'BANKNIFTY': 'NSE%3ABANKNIFTY'
+  };
+  var sym = symbols[symbol] || symbols['NIFTY'];
   var wrap = document.getElementById('tvChartWrap');
-  wrap.innerHTML = '';
-  var container = document.createElement('div');
-  container.className = 'tradingview-widget-container';
-  container.style.height = '100%';
-  container.style.width = '100%';
-  var widgetDiv = document.createElement('div');
-  widgetDiv.className = 'tradingview-widget-container__widget';
-  widgetDiv.style.height = '100%';
-  widgetDiv.style.width = '100%';
-  container.appendChild(widgetDiv);
-  wrap.appendChild(container);
-
-  var script = document.createElement('script');
-  script.type = 'text/javascript';
-  script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
-  script.async = true;
-  script.innerHTML = JSON.stringify({
-    "autosize": true,
-    "symbol": tvChartSymbols[symbol] || 'NSE:NIFTY',
-    "interval": "5",
-    "timezone": "Asia/Kolkata",
-    "theme": "dark",
-    "style": "1",
-    "locale": "en",
-    "backgroundColor": "rgba(10, 12, 16, 1)",
-    "gridColor": "rgba(31, 37, 53, 0.5)",
-    "hide_top_toolbar": false,
-    "hide_legend": false,
-    "allow_symbol_change": true,
-    "save_image": false,
-    "calendar": false,
-    "hide_volume": false,
-    "support_host": "https://www.tradingview.com"
-  });
-  container.appendChild(script);
+  wrap.innerHTML = '<iframe src="https://s.tradingview.com/widgetembed/?hideideas=1&overrides=%7B%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&locale=en&symbol=' + sym + '&interval=5&theme=dark&style=1&timezone=Asia%2FKolkata&studies=%5B%5D&hide_side_toolbar=0&allow_symbol_change=1&save_image=0&calendar=0&hide_volume=0&support_host=https%3A%2F%2Fwww.tradingview.com" style="width:100%;height:100%;border:none;border-radius:8px;" allowtransparency="true" frameborder="0"></iframe>';
 }
 
 function switchChart(symbol) {
   currentChartSymbol = symbol;
-  ['Nifty','Sensex','BankNifty'].forEach(function(s) {
-    document.getElementById('chart'+s).classList.remove('active');
-  });
-  document.getElementById('chart' + symbol.charAt(0).toUpperCase() + symbol.slice(1).toLowerCase().replace('nifty','Nifty').replace('sensex','Sensex')).classList.add('active');
-  // Fix button active state
   document.getElementById('chartNifty').classList.remove('active');
   document.getElementById('chartSensex').classList.remove('active');
   document.getElementById('chartBankNifty').classList.remove('active');
@@ -1031,7 +993,7 @@ function renderDashboard() {
   ).join('');
 
   // Load live chart if not already loaded
-  if (!document.getElementById('tvChartWrap').querySelector('.tradingview-widget-container')) {
+  if (!document.getElementById('tvChartWrap').querySelector('iframe')) {
     loadTVChart(currentChartSymbol);
   }
 }
