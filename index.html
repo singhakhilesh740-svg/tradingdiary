@@ -345,6 +345,21 @@
 
 <!-- DASHBOARD PAGE -->
 <div id="pageDashboard" class="page active">
+
+  <!-- LIVE MARKET CHART -->
+  <div class="card" style="padding:10px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding:0 4px;">
+      <div class="card-title" style="margin:0;">📊 LIVE MARKET</div>
+      <div style="display:flex;gap:6px;">
+        <button class="filter-btn active" id="chartNifty" onclick="switchChart('NIFTY')" style="font-size:10px;padding:4px 10px;">NIFTY</button>
+        <button class="filter-btn" id="chartSensex" onclick="switchChart('SENSEX')" style="font-size:10px;padding:4px 10px;">SENSEX</button>
+        <button class="filter-btn" id="chartBankNifty" onclick="switchChart('BANKNIFTY')" style="font-size:10px;padding:4px 10px;">BANK NIFTY</button>
+      </div>
+    </div>
+    <div id="tvChartWrap" style="height:340px;border-radius:8px;overflow:hidden;">
+    </div>
+  </div>
+
   <div class="card">
     <div class="card-title">💼 PORTFOLIO VALUE</div>
     <div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--accent);text-align:center;padding:8px 0;" id="portfolioValue">₹0</div>
@@ -428,7 +443,84 @@
 
 <!-- ADD ENTRY PAGE -->
 <div id="pageAdd" class="page">
+
+  <!-- TRADE GUARD -->
+  <div id="tradeGuard">
+    <div class="card">
+      <div class="card-title">🛡️ TRADE GUARD</div>
+
+      <!-- Today's Stats -->
+      <div class="stats-grid" style="margin-bottom:14px;">
+        <div class="stat-card">
+          <div class="stat-label">TRADES TODAY</div>
+          <div class="stat-val accent" id="tgTradeCount">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">TODAY'S P&L</div>
+          <div class="stat-val" id="tgTodayPL">₹0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">STREAK</div>
+          <div class="stat-val" id="tgStreak">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">LAST TRADE</div>
+          <div class="stat-val" id="tgLastTrade">-</div>
+        </div>
+      </div>
+
+      <!-- Warning Badges -->
+      <div id="tgWarnings" style="margin-bottom:14px;"></div>
+
+      <!-- Cooldown Timer -->
+      <div id="tgCooldown" style="display:none;text-align:center;margin-bottom:14px;">
+        <div style="background:rgba(255,95,87,.12);border:1px solid var(--red);border-radius:10px;padding:14px;">
+          <div style="font-size:11px;color:var(--red);margin-bottom:6px;font-family:var(--mono);">⏳ COOLDOWN ACTIVE</div>
+          <div style="font-size:28px;font-family:var(--mono);font-weight:700;color:var(--red);" id="tgCooldownTimer">00:00</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Breathe. Review. Then decide.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div class="card">
+      <div class="card-title">⚙️ DAILY LIMITS</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+        <div>
+          <label class="form-label">MAX TRADES</label>
+          <input type="number" class="form-input" id="tgMaxTrades" placeholder="3" onchange="saveGuardSettings()">
+        </div>
+        <div>
+          <label class="form-label">MAX LOSS (₹)</label>
+          <input type="number" class="form-input" id="tgMaxLoss" placeholder="5000" onchange="saveGuardSettings()">
+        </div>
+        <div>
+          <label class="form-label">COOLDOWN (min)</label>
+          <input type="number" class="form-input" id="tgCooldownMin" placeholder="5" onchange="saveGuardSettings()">
+        </div>
+      </div>
+    </div>
+
+    <!-- Pre-Trade Checklist -->
+    <div class="card">
+      <div class="card-title">✅ PRE-TRADE CHECKLIST</div>
+      <div id="tgChecklist" style="display:flex;flex-direction:column;gap:10px;">
+      </div>
+      <div style="margin-top:14px;">
+        <button class="submit-btn" id="tgProceedBtn" onclick="unlockTradeForm()" disabled style="opacity:0.4;">
+          🔒 COMPLETE CHECKLIST TO TRADE
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRADE FORM (hidden until guard is passed) -->
+  <div id="tradeFormWrap" style="display:none;">
   <div class="card">
+    <div style="text-align:center;margin-bottom:12px;">
+      <span style="background:rgba(0,224,150,.12);color:var(--green);font-size:12px;font-family:var(--mono);padding:4px 12px;border-radius:20px;">✅ GUARD PASSED</span>
+      <button onclick="lockTradeForm()" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;margin-left:8px;">← Back to checklist</button>
+    </div>
     <div class="edit-mode-banner" id="editModeBanner">
       ✏️ Editing trade entry
     </div>
@@ -466,6 +558,8 @@
       <button class="btn-cancel" onclick="cancelEdit()" style="width: 100%; margin-top: 10px;">CANCEL</button>
     </div>
   </div>
+  </div>
+
 </div>
 
 <!-- REPORTS PAGE -->
@@ -719,9 +813,15 @@ function goPage(name) {
   if (name === 'Reports') renderReports();
   if (name === 'Progress') { loadProgressSettings(); renderProgress(); }
   if (name === 'Add') {
-    // Reset form when opening Add page (if not editing)
     if (editingIndex === null) {
       cancelEdit();
+      document.getElementById('tradeGuard').style.display = 'block';
+      document.getElementById('tradeFormWrap').style.display = 'none';
+      renderTradeGuard();
+    } else {
+      // Editing from journal — skip guard, show form directly
+      document.getElementById('tradeGuard').style.display = 'none';
+      document.getElementById('tradeFormWrap').style.display = 'block';
     }
   }
 }
@@ -732,6 +832,69 @@ const fmtK = v => Math.abs(v) >= 1000 ? (v / 1000).toFixed(1) + 'K' : v.toFixed(
 
 // ── CHARTS ─────────────────────────────────────────────────────────────────
 const charts = { pl: null, month: null, day: null, pie: null, portfolio: null, progress: null };
+
+// ── LIVE MARKET CHART ──────────────────────────────────────────────────────
+var tvChartSymbols = {
+  'NIFTY': 'NSE:NIFTY',
+  'SENSEX': 'BSE:SENSEX',
+  'BANKNIFTY': 'NSE:BANKNIFTY'
+};
+var currentChartSymbol = 'NIFTY';
+
+function loadTVChart(symbol) {
+  var wrap = document.getElementById('tvChartWrap');
+  wrap.innerHTML = '';
+  var container = document.createElement('div');
+  container.className = 'tradingview-widget-container';
+  container.style.height = '100%';
+  container.style.width = '100%';
+  var widgetDiv = document.createElement('div');
+  widgetDiv.className = 'tradingview-widget-container__widget';
+  widgetDiv.style.height = '100%';
+  widgetDiv.style.width = '100%';
+  container.appendChild(widgetDiv);
+  wrap.appendChild(container);
+
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+  script.async = true;
+  script.innerHTML = JSON.stringify({
+    "autosize": true,
+    "symbol": tvChartSymbols[symbol] || 'NSE:NIFTY',
+    "interval": "5",
+    "timezone": "Asia/Kolkata",
+    "theme": "dark",
+    "style": "1",
+    "locale": "en",
+    "backgroundColor": "rgba(10, 12, 16, 1)",
+    "gridColor": "rgba(31, 37, 53, 0.5)",
+    "hide_top_toolbar": false,
+    "hide_legend": false,
+    "allow_symbol_change": true,
+    "save_image": false,
+    "calendar": false,
+    "hide_volume": false,
+    "support_host": "https://www.tradingview.com"
+  });
+  container.appendChild(script);
+}
+
+function switchChart(symbol) {
+  currentChartSymbol = symbol;
+  ['Nifty','Sensex','BankNifty'].forEach(function(s) {
+    document.getElementById('chart'+s).classList.remove('active');
+  });
+  document.getElementById('chart' + symbol.charAt(0).toUpperCase() + symbol.slice(1).toLowerCase().replace('nifty','Nifty').replace('sensex','Sensex')).classList.add('active');
+  // Fix button active state
+  document.getElementById('chartNifty').classList.remove('active');
+  document.getElementById('chartSensex').classList.remove('active');
+  document.getElementById('chartBankNifty').classList.remove('active');
+  if (symbol === 'NIFTY') document.getElementById('chartNifty').classList.add('active');
+  if (symbol === 'SENSEX') document.getElementById('chartSensex').classList.add('active');
+  if (symbol === 'BANKNIFTY') document.getElementById('chartBankNifty').classList.add('active');
+  loadTVChart(symbol);
+}
 
 // ── DASHBOARD ──────────────────────────────────────────────────────────────
 function renderDashboard() {
@@ -866,6 +1029,11 @@ function renderDashboard() {
       </div>
     </div>`
   ).join('');
+
+  // Load live chart if not already loaded
+  if (!document.getElementById('tvChartWrap').querySelector('.tradingview-widget-container')) {
+    loadTVChart(currentChartSymbol);
+  }
 }
 
 // ── JOURNAL ────────────────────────────────────────────────────────────────
@@ -1018,9 +1186,15 @@ function saveEntry() {
   document.getElementById('entryComment').value = '';
   document.getElementById('entryAnalysis').value = '';
 
+  // Record trade time for cooldown
+  localStorage.setItem('tg_lastTradeTime', Date.now().toString());
+  
   showToast('✓ Entry saved');
   renderDashboard();
   renderJournal();
+  
+  // Lock back to guard
+  lockTradeForm();
 }
 
 function showToast(message) {
@@ -1028,6 +1202,209 @@ function showToast(message) {
   toast.textContent = message;
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+// ── TRADE GUARD ────────────────────────────────────────────────────────────
+var guardChecklist = [
+  { id: 'tg1', text: 'Market trend identified (bullish / bearish / sideways)?' },
+  { id: 'tg2', text: 'Entry, SL & target levels decided before entering?' },
+  { id: 'tg3', text: 'Risk:Reward is at least 1:1.5?' },
+  { id: 'tg4', text: 'Position size within capital limits (max 1-2% risk)?' },
+  { id: 'tg5', text: 'Am I calm and NOT revenge trading after a loss?' },
+  { id: 'tg6', text: 'This setup matches my strategy (not FOMO)?' },
+  { id: 'tg7', text: 'No major news/event that could spike volatility?' },
+  { id: 'tg8', text: 'I will exit at SL — no hoping, no averaging down?' }
+];
+
+var cooldownInterval = null;
+
+function saveGuardSettings() {
+  localStorage.setItem('tg_maxTrades', document.getElementById('tgMaxTrades').value);
+  localStorage.setItem('tg_maxLoss', document.getElementById('tgMaxLoss').value);
+  localStorage.setItem('tg_cooldownMin', document.getElementById('tgCooldownMin').value);
+}
+
+function loadGuardSettings() {
+  document.getElementById('tgMaxTrades').value = localStorage.getItem('tg_maxTrades') || '';
+  document.getElementById('tgMaxLoss').value = localStorage.getItem('tg_maxLoss') || '';
+  document.getElementById('tgCooldownMin').value = localStorage.getItem('tg_cooldownMin') || '';
+}
+
+function renderTradeGuard() {
+  loadGuardSettings();
+  renderChecklist();
+
+  var todayStr = new Date().toISOString().split('T')[0];
+  var todayTrades = trades.filter(function(t) { return t.date === todayStr; });
+  var todayPL = todayTrades.reduce(function(s,t) { return s + (t.pl || 0); }, 0);
+  var tradeCount = todayTrades.length;
+
+  // Streak
+  var sorted = trades.filter(function(t) { return typeof t.pl === 'number'; }).sort(function(a,b) { return b.date.localeCompare(a.date); });
+  var streak = 0;
+  var streakType = '';
+  if (sorted.length) {
+    streakType = sorted[0].pl >= 0 ? 'W' : 'L';
+    for (var i = 0; i < sorted.length; i++) {
+      if ((streakType === 'W' && sorted[i].pl >= 0) || (streakType === 'L' && sorted[i].pl < 0)) streak++;
+      else break;
+    }
+  }
+
+  // Last trade result
+  var lastTrade = sorted.length ? sorted[0] : null;
+  var lastTradeText = '-';
+  var lastTradeClass = '';
+  if (lastTrade) {
+    lastTradeText = (lastTrade.pl >= 0 ? '+' : '') + '\u20b9' + lastTrade.pl.toLocaleString('en-IN');
+    lastTradeClass = lastTrade.pl >= 0 ? 'green' : 'red';
+  }
+
+  document.getElementById('tgTradeCount').textContent = tradeCount;
+  var plEl = document.getElementById('tgTodayPL');
+  plEl.textContent = fmt(todayPL);
+  plEl.className = 'stat-val ' + (todayPL > 0 ? 'green' : todayPL < 0 ? 'red' : '');
+  
+  var streakEl = document.getElementById('tgStreak');
+  streakEl.textContent = streak ? streak + streakType : '-';
+  streakEl.className = 'stat-val ' + (streakType === 'W' ? 'green' : streakType === 'L' ? 'red' : '');
+  
+  var lastEl = document.getElementById('tgLastTrade');
+  lastEl.textContent = lastTradeText;
+  lastEl.className = 'stat-val ' + lastTradeClass;
+
+  // Warnings
+  var maxTrades = parseInt(document.getElementById('tgMaxTrades').value) || 999;
+  var maxLoss = parseInt(document.getElementById('tgMaxLoss').value) || 999999;
+  var cooldownMin = parseInt(document.getElementById('tgCooldownMin').value) || 0;
+  var warnings = [];
+  var blocked = false;
+
+  if (tradeCount >= maxTrades) {
+    warnings.push('<div class="pl-badge neg" style="font-size:13px;padding:6px 14px;margin-bottom:6px;">\u{1F6D1} TRADE LIMIT REACHED (' + tradeCount + '/' + maxTrades + ')</div>');
+    blocked = true;
+  }
+  if (todayPL < 0 && Math.abs(todayPL) >= maxLoss) {
+    warnings.push('<div class="pl-badge neg" style="font-size:13px;padding:6px 14px;margin-bottom:6px;">\u{1F6A8} MAX DAILY LOSS HIT (\u20b9' + Math.abs(todayPL).toLocaleString('en-IN') + ')</div>');
+    blocked = true;
+  }
+  if (streakType === 'L' && streak >= 2) {
+    warnings.push('<div style="background:rgba(255,209,102,.1);border:1px solid var(--yellow);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--yellow);margin-bottom:6px;">\u26A0\uFE0F ' + streak + ' losses in a row. Step back. Are you chasing?</div>');
+  }
+  if (streak >= 3 && streakType === 'W') {
+    warnings.push('<div style="background:rgba(0,224,150,.1);border:1px solid var(--green);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--green);margin-bottom:6px;">\u{1F525} ' + streak + ' wins! Stay disciplined. Don\'t get overconfident.</div>');
+  }
+  document.getElementById('tgWarnings').innerHTML = warnings.join('');
+
+  // Cooldown after loss
+  if (cooldownMin > 0 && lastTrade && lastTrade.pl < 0 && lastTrade.date === todayStr) {
+    startCooldownCheck(cooldownMin, blocked);
+  } else {
+    document.getElementById('tgCooldown').style.display = 'none';
+    if (!blocked) updateProceedBtn();
+  }
+
+  if (blocked) {
+    var btn = document.getElementById('tgProceedBtn');
+    btn.disabled = true;
+    btn.style.opacity = '0.4';
+    btn.innerHTML = '\u{1F6AB} TRADING BLOCKED FOR TODAY';
+    btn.style.background = 'var(--red)';
+  }
+}
+
+function startCooldownCheck(mins, alreadyBlocked) {
+  if (cooldownInterval) clearInterval(cooldownInterval);
+  var lastTradeTime = localStorage.getItem('tg_lastTradeTime');
+  if (!lastTradeTime) {
+    document.getElementById('tgCooldown').style.display = 'none';
+    if (!alreadyBlocked) updateProceedBtn();
+    return;
+  }
+  var elapsed = (Date.now() - parseInt(lastTradeTime)) / 1000;
+  var cooldownSec = mins * 60;
+  if (elapsed >= cooldownSec) {
+    document.getElementById('tgCooldown').style.display = 'none';
+    if (!alreadyBlocked) updateProceedBtn();
+    return;
+  }
+
+  document.getElementById('tgCooldown').style.display = 'block';
+  var btn = document.getElementById('tgProceedBtn');
+  btn.disabled = true;
+  btn.style.opacity = '0.4';
+  btn.innerHTML = '\u23F3 COOLDOWN ACTIVE';
+  btn.style.background = '';
+
+  cooldownInterval = setInterval(function() {
+    var remaining = cooldownSec - (Date.now() - parseInt(lastTradeTime)) / 1000;
+    if (remaining <= 0) {
+      clearInterval(cooldownInterval);
+      document.getElementById('tgCooldown').style.display = 'none';
+      if (!alreadyBlocked) updateProceedBtn();
+      return;
+    }
+    var m = Math.floor(remaining / 60);
+    var s = Math.floor(remaining % 60);
+    document.getElementById('tgCooldownTimer').textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+  }, 1000);
+}
+
+function renderChecklist() {
+  var el = document.getElementById('tgChecklist');
+  el.innerHTML = guardChecklist.map(function(item) {
+    return '<label style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card2);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .2s;" id="label_' + item.id + '">' +
+      '<input type="checkbox" id="' + item.id + '" onchange="onChecklistChange()" style="width:20px;height:20px;accent-color:var(--accent);flex-shrink:0;">' +
+      '<span style="font-size:13px;color:var(--text);line-height:1.4;">' + item.text + '</span>' +
+    '</label>';
+  }).join('');
+}
+
+function onChecklistChange() {
+  var allChecked = guardChecklist.every(function(item) {
+    return document.getElementById(item.id).checked;
+  });
+  guardChecklist.forEach(function(item) {
+    var label = document.getElementById('label_' + item.id);
+    if (document.getElementById(item.id).checked) {
+      label.style.borderColor = 'var(--green)';
+      label.style.background = 'rgba(0,224,150,.06)';
+    } else {
+      label.style.borderColor = 'var(--border)';
+      label.style.background = 'var(--card2)';
+    }
+  });
+  updateProceedBtn();
+}
+
+function updateProceedBtn() {
+  var allChecked = guardChecklist.every(function(item) {
+    return document.getElementById(item.id) && document.getElementById(item.id).checked;
+  });
+  var btn = document.getElementById('tgProceedBtn');
+  if (allChecked) {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.innerHTML = '\u2705 PROCEED TO TRADE';
+    btn.style.background = '';
+  } else {
+    btn.disabled = true;
+    btn.style.opacity = '0.4';
+    btn.innerHTML = '\u{1F512} COMPLETE CHECKLIST TO TRADE';
+    btn.style.background = '';
+  }
+}
+
+function unlockTradeForm() {
+  document.getElementById('tradeGuard').style.display = 'none';
+  document.getElementById('tradeFormWrap').style.display = 'block';
+  document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
+}
+
+function lockTradeForm() {
+  document.getElementById('tradeGuard').style.display = 'block';
+  document.getElementById('tradeFormWrap').style.display = 'none';
+  renderTradeGuard();
 }
 
 // ── PROGRESS TRACKER ───────────────────────────────────────────────────────
