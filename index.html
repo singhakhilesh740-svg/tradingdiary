@@ -670,10 +670,14 @@
       <!-- Stop Loss Hit -->
       <div class="form-group">
         <label class="form-label">EXIT REASON</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-          <button class="filter-btn active" id="exitTarget" onclick="selectExit('Target')" style="padding:8px;font-size:11px;">✅ Target</button>
-          <button class="filter-btn" id="exitSL" onclick="selectExit('Stop Loss')" style="padding:8px;font-size:11px;">🛑 SL Hit</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:6px;">
+          <button class="filter-btn active" id="exitTarget" onclick="selectExit('Target')" style="padding:8px;font-size:11px;">✅ Target Hit</button>
+          <button class="filter-btn" id="exitStop Loss" onclick="selectExit('Stop Loss')" style="padding:8px;font-size:11px;">🛑 SL Hit</button>
           <button class="filter-btn" id="exitManual" onclick="selectExit('Manual')" style="padding:8px;font-size:11px;">🤚 Manual</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <button class="filter-btn" id="exitDay Close" onclick="selectExit('Day Close')" style="padding:8px;font-size:11px;">🌙 Day Close</button>
+          <button class="filter-btn" id="exitExpiry" onclick="selectExit('Expiry')" style="padding:8px;font-size:11px;">📅 Expiry</button>
         </div>
       </div>
 
@@ -717,7 +721,8 @@
         <div style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:2px;padding:4px 0;">— TRADE DISCIPLINE —</div>
 
         <div>
-          <label class="form-label">1. Did you follow the 2-trade daily limit?</label>
+          <label class="form-label">1. Did you follow the 2-trade daily limit?
+          <span style="font-size:11px;color:var(--muted);display:block;margin-top:3px;">(More than 2 trades = overtrading. Each extra trade increases risk without proportional reward. Less is more in credit spreads.)</span></label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
             <button class="filter-btn" id="rq1yes" onclick="selectReview('rq1','Yes')" style="padding:10px;">✅ Yes</button>
             <button class="filter-btn" id="rq1no" onclick="selectReview('rq1','No')" style="padding:10px;">❌ No — Overtraded</button>
@@ -725,7 +730,8 @@
         </div>
 
         <div>
-          <label class="form-label">2. Did you wait for 9:45 AM+ before entering?</label>
+          <label class="form-label">2. Did you wait for 9:45 AM+ before entering?
+          <span style="font-size:11px;color:var(--muted);display:block;margin-top:3px;">(First 15 min = chaos. Gaps fill, fake moves happen. Entering before 9:45 is gambling not trading. Best window is 9:45–11:30 AM.)</span></label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
             <button class="filter-btn" id="rq2yes" onclick="selectReview('rq2','Yes')" style="padding:10px;">✅ Yes</button>
             <button class="filter-btn" id="rq2no" onclick="selectReview('rq2','No')" style="padding:10px;">❌ No — Rushed in</button>
@@ -733,7 +739,8 @@
         </div>
 
         <div>
-          <label class="form-label">3. Did you take a revenge trade after a loss?</label>
+          <label class="form-label">3. Did you take a revenge trade after a loss?
+          <span style="font-size:11px;color:var(--muted);display:block;margin-top:3px;">(Revenge trading = emotional decision, not logical. You are trying to recover money fast which leads to poor strike selection and ignoring rules. If yes, sit out tomorrow.)</span></label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
             <button class="filter-btn" id="rq3yes" onclick="selectReview('rq3','Yes')" style="padding:10px;">🚨 Yes — Revenge trade</button>
             <button class="filter-btn" id="rq3no" onclick="selectReview('rq3','No')" style="padding:10px;">✅ No</button>
@@ -744,7 +751,8 @@
         <div style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:2px;padding:4px 0;">— PRE-TRADE ANALYSIS —</div>
 
         <div>
-          <label class="form-label">4. Did you wait for first 15-min candle to close?</label>
+          <label class="form-label">4. Did you wait for first 15-min candle to close? (9:15–9:30 AM)
+          <span style="font-size:11px;color:var(--muted);display:block;margin-top:3px;">(The first candle shows the day's opening bias. Green + above VWAP = bullish day → Bull Put Spread. Red + below VWAP = bearish day → Bear Call Spread. Never enter before this candle closes.)</span></label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
             <button class="filter-btn" id="rq4yes" onclick="selectReview('rq4','Yes')" style="padding:10px;">✅ Yes</button>
             <button class="filter-btn" id="rq4no" onclick="selectReview('rq4','No')" style="padding:10px;">❌ No</button>
@@ -752,7 +760,8 @@
         </div>
 
         <div>
-          <label class="form-label">5. Did you confirm VWAP direction before entry?</label>
+          <label class="form-label">5. Did you confirm VWAP direction before entry?
+          <span style="font-size:11px;color:var(--muted);display:block;margin-top:3px;">(VWAP = Volume Weighted Average Price. Price above VWAP = institutions buying = bullish bias. Price below = bearish. Your spread direction must match VWAP side. Contradicting VWAP = fighting the trend.)</span></label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
             <button class="filter-btn" id="rq5yes" onclick="selectReview('rq5','Yes')" style="padding:10px;">✅ Yes</button>
             <button class="filter-btn" id="rq5no" onclick="selectReview('rq5','No')" style="padding:10px;">❌ No</button>
@@ -760,7 +769,8 @@
         </div>
 
         <div>
-          <label class="form-label">6. Did you check OI data on Sensibull for walls?</label>
+          <label class="form-label">6. Did you check OI data on Sensibull for walls?
+          <span style="font-size:11px;color:var(--muted);display:block;margin-top:3px;">(Open Interest walls = big writers defending levels. Highest Call OI = resistance ceiling. Highest Put OI = support floor. These walls protect your position. Always check before picking strikes.)</span></label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
             <button class="filter-btn" id="rq6yes" onclick="selectReview('rq6','Yes')" style="padding:10px;">✅ Yes</button>
             <button class="filter-btn" id="rq6no" onclick="selectReview('rq6','No')" style="padding:10px;">❌ No</button>
@@ -768,7 +778,8 @@
         </div>
 
         <div>
-          <label class="form-label">7. Did you sell strikes BEYOND the OI wall?</label>
+          <label class="form-label">7. Did you sell strikes BEYOND the OI wall?
+          <span style="font-size:11px;color:var(--muted);display:block;margin-top:3px;">(Example: If highest Put OI is at 24400, sell your PE at 24400 or below — the wall protects you. Selling inside the wall = no protection. The wall must be between spot price and your sold strike.)</span></label>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
             <button class="filter-btn" id="rq7yes" onclick="selectReview('rq7','Yes')" style="padding:8px;font-size:11px;">✅ Yes</button>
             <button class="filter-btn" id="rq7no" onclick="selectReview('rq7','No')" style="padding:8px;font-size:11px;">❌ No</button>
@@ -777,7 +788,8 @@
         </div>
 
         <div>
-          <label class="form-label">8. Did you check India VIX before entry?</label>
+          <label class="form-label">8. Did you check India VIX before entry?
+          <span style="font-size:11px;color:var(--muted);display:block;margin-top:3px;">(VIX = fear index. High VIX (>15) = high premiums = good for selling. VIX spiking intraday = danger, spreads inflate against you. VIX falling = best condition, your short premium decays faster.)</span></label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
             <button class="filter-btn" id="rq8yes" onclick="selectReview('rq8','Yes')" style="padding:10px;">✅ Yes</button>
             <button class="filter-btn" id="rq8no" onclick="selectReview('rq8','No')" style="padding:10px;">❌ No</button>
@@ -788,7 +800,8 @@
         <div style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:2px;padding:4px 0;">— TRADE MANAGEMENT —</div>
 
         <div>
-          <label class="form-label">9. Did you set profit target (50% premium) before entering?</label>
+          <label class="form-label">9. Did you set profit target (50% premium) before entering?
+          <span style="font-size:11px;color:var(--muted);display:block;margin-top:3px;">(If you collected ₹30 net credit, your target = close when spread is worth ₹15 (50% captured). Don't wait for 100% — the last 30% gives same risk for tiny reward. Always calculate this BEFORE entering.)</span></label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
             <button class="filter-btn" id="rq9yes" onclick="selectReview('rq9','Yes')" style="padding:10px;">✅ Yes</button>
             <button class="filter-btn" id="rq9no" onclick="selectReview('rq9','No')" style="padding:10px;">❌ No</button>
@@ -796,7 +809,8 @@
         </div>
 
         <div>
-          <label class="form-label">10. Did you set SL (2x premium) before entering?</label>
+          <label class="form-label">10. Did you set SL (2x premium) before entering?
+          <span style="font-size:11px;color:var(--muted);display:block;margin-top:3px;">(If you sold spread for ₹30 net credit, your SL = exit when spread costs ₹60 (premium doubled). No exceptions. Also exit immediately if spot crosses your sold strike — don't wait for 2x rule.)</span></label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
             <button class="filter-btn" id="rq10yes" onclick="selectReview('rq10','Yes')" style="padding:10px;">✅ Yes</button>
             <button class="filter-btn" id="rq10no" onclick="selectReview('rq10','No')" style="padding:10px;">❌ No</button>
@@ -804,7 +818,8 @@
         </div>
 
         <div>
-          <label class="form-label">11. Did you exit at SL without hesitation?</label>
+          <label class="form-label">11. Did you exit at SL without hesitation?
+          <span style="font-size:11px;color:var(--muted);display:block;margin-top:3px;">(Holding past SL = hoping. Hope is not a strategy. One SL held too long can wipe 5 winning days. If you held past SL today, write down exactly why and make a rule to prevent it.)</span></label>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
             <button class="filter-btn" id="rq11yes" onclick="selectReview('rq11','Yes')" style="padding:8px;font-size:11px;">✅ Exited</button>
             <button class="filter-btn" id="rq11no" onclick="selectReview('rq11','Held')" style="padding:8px;font-size:11px;">🚨 Held</button>
@@ -813,7 +828,8 @@
         </div>
 
         <div>
-          <label class="form-label">12. What was your Risk:Reward ratio today?</label>
+          <label class="form-label">12. What was your Risk:Reward ratio today?
+          <span style="font-size:11px;color:var(--muted);display:block;margin-top:3px;">(For credit spreads, you risk more than you make — that's normal. But aim for max profit ≥ 50% of max loss (0.5:1). Below that, one loss wipes too many wins. Calculate: Net Credit ÷ (Spread Width - Net Credit).)</span></label>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
             <button class="filter-btn" id="rq12a" onclick="selectReview('rq12','Good 1:0.5+')" style="padding:8px;font-size:11px;">✅ Good</button>
             <button class="filter-btn" id="rq12b" onclick="selectReview('rq12','Average 1:1')" style="padding:8px;font-size:11px;">⚠️ Average</button>
@@ -822,7 +838,8 @@
         </div>
 
         <div>
-          <label class="form-label">13. If expiry day — did you exit before 2 PM?</label>
+          <label class="form-label">13. If expiry day — did you exit before 2 PM? (Tue=NIFTY, Thu=SENSEX)
+          <span style="font-size:11px;color:var(--muted);display:block;margin-top:3px;">(After 2 PM on expiry, gamma explodes. A 50-point move can swing your P&L by thousands in minutes. The last ₹5-10 premium is NOT worth the gamma risk. Exit by 2 PM without exception.)</span></label>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
             <button class="filter-btn" id="rq13yes" onclick="selectReview('rq13','Yes')" style="padding:8px;font-size:11px;">✅ Yes</button>
             <button class="filter-btn" id="rq13no" onclick="selectReview('rq13','No — held late')" style="padding:8px;font-size:11px;">🚨 Held late</button>
@@ -834,7 +851,8 @@
         <div style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:2px;padding:4px 0;">— OVERALL —</div>
 
         <div>
-          <label class="form-label">14. Market moved against me because...</label>
+          <label class="form-label">14. If you lost today, why did market move against you?
+          <span style="font-size:11px;color:var(--muted);display:block;margin-top:3px;">(Honest root cause analysis. Bad analysis = wrong bias reading. News/event = unavoidable but should have reduced size. Random move = acceptable, market is unpredictable. Identifying the real reason helps you improve.)</span></label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
             <button class="filter-btn" id="rq14a" onclick="selectReview('rq14','Bad analysis')" style="padding:8px;font-size:11px;">📊 Bad analysis</button>
             <button class="filter-btn" id="rq14b" onclick="selectReview('rq14','News/event')" style="padding:8px;font-size:11px;">📰 News/event</button>
@@ -844,7 +862,8 @@
         </div>
 
         <div>
-          <label class="form-label">15. Overall discipline score today</label>
+          <label class="form-label">15. Overall discipline score today
+          <span style="font-size:11px;color:var(--muted);display:block;margin-top:3px;">(1⭐ = Broke multiple rules, 2⭐ = Poor discipline, 3⭐ = Average, 4⭐ = Good, followed most rules, 5⭐ = Perfect — followed every rule regardless of outcome. P&L does not determine score, DISCIPLINE does.)</span></label>
           <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;">
             <button class="filter-btn" id="rq15a" onclick="selectReview('rq15','1/5')" style="padding:8px;">1⭐</button>
             <button class="filter-btn" id="rq15b" onclick="selectReview('rq15','2/5')" style="padding:8px;">2⭐</button>
@@ -855,7 +874,8 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">16. Key lesson / what will I do differently tomorrow?</label>
+          <label class="form-label">16. Key lesson / what will I do differently tomorrow?
+          <span style="font-size:11px;color:var(--muted);display:block;margin-top:3px;">(Be specific. Bad: "I will be more careful." Good: "I entered at 9:32 AM before candle close — tomorrow I will set a 9:45 AM alarm and not open Kite before that." One specific change is worth 10 vague promises.)</span></label>
           <textarea class="form-input" id="reviewLesson" rows="3" placeholder="Be specific. E.g. 'Waited for VWAP confirmation today — worked well. Next time also check OI change not just OI level.'"></textarea>
         </div>
 
@@ -1709,8 +1729,9 @@ function selectBias(bias) {
 
 function selectExit(reason) {
   selectedExit = reason;
-  ['Target','Stop Loss','Manual'].forEach(function(r) {
-    document.getElementById('exit' + r.replace(' ','')).classList.toggle('active', r === reason);
+  ['Target','Stop Loss','Manual','Day Close','Expiry'].forEach(function(r) {
+    var el = document.getElementById('exit' + r);
+    if (el) el.classList.toggle('active', r === reason);
   });
 }
 
