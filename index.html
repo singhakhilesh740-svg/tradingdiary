@@ -557,24 +557,63 @@
           <input type="number" class="form-input" id="entrySpreadWidth" placeholder="100" readonly style="opacity:.7;">
         </div>
         <div>
-          <label class="form-label">LOT SIZE</label>
-          <input type="number" class="form-input" id="entryLots" placeholder="1" oninput="calcSpreadPnL()">
-        </div>
-      </div>
-
-      <!-- Premiums -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
-        <div>
           <label class="form-label" id="sellPremLabel">SELL PREMIUM (₹)</label>
           <input type="number" class="form-input" id="entrySellPrem" placeholder="80" oninput="calcSpreadPnL()">
         </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
         <div>
           <label class="form-label" id="buyPremLabel">BUY PREMIUM (₹)</label>
           <input type="number" class="form-input" id="entryBuyPrem" placeholder="50" oninput="calcSpreadPnL()">
         </div>
+        <div></div>
       </div>
 
-      <!-- Calc Summary -->
+      <!-- SCALING IN SECTION -->
+      <div style="margin-top:14px;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:1.5px;">📊 LOT ENTRIES (SCALE IN)</div>
+          <button onclick="addScaleEntry()" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--mono);">+ ADD</button>
+        </div>
+
+        <!-- Header -->
+        <div style="display:grid;grid-template-columns:60px 1fr 1fr 1fr 36px;gap:6px;margin-bottom:6px;">
+          <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">TIME</div>
+          <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">LOTS</div>
+          <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">SELL PREM</div>
+          <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">BUY PREM</div>
+          <div></div>
+        </div>
+
+        <!-- Scale entries list -->
+        <div id="scaleEntriesList"></div>
+
+        <!-- Totals -->
+        <div id="scaleTotals" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;text-align:center;">
+            <div>
+              <div style="font-size:9px;color:var(--muted);">TOTAL LOTS</div>
+              <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--accent);" id="scaleTotalLots">0</div>
+            </div>
+            <div>
+              <div style="font-size:9px;color:var(--muted);">AVG CREDIT</div>
+              <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--green);" id="scaleAvgCredit">₹0</div>
+            </div>
+            <div>
+              <div style="font-size:9px;color:var(--muted);">MAX PROFIT</div>
+              <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--green);" id="scaleMaxProfit">₹0</div>
+            </div>
+            <div>
+              <div style="font-size:9px;color:var(--muted);">MAX LOSS</div>
+              <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--red);" id="scaleMaxLoss">₹0</div>
+            </div>
+          </div>
+          <!-- Warning -->
+          <div id="scaleWarning" style="margin-top:8px;"></div>
+        </div>
+      </div>
+
+      <!-- Calc Summary (overall) -->
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
         <div>
           <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">NET CREDIT</div>
@@ -625,6 +664,7 @@
       <div class="form-group" style="display:none;">
         <label class="form-label">NET P/L (auto)</label>
         <input type="number" class="form-input" id="entryNetPL" readonly>
+        <input type="number" id="entryLots" style="display:none;" value="1">
       </div>
 
       <!-- Stop Loss Hit -->
@@ -1684,6 +1724,124 @@ function calcNetProfit() {
   document.getElementById('entryNetPL').value = net;
 }
 
+// ── SCALING IN ─────────────────────────────────────────────────────────────
+var scaleEntries = []; // [{time, lots, sellPrem, buyPrem}]
+
+function addScaleEntry() {
+  var now = new Date();
+  var ist = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+  var hh = String(ist.getHours()).padStart(2,'0');
+  var mm = String(ist.getMinutes()).padStart(2,'0');
+  scaleEntries.push({ time: hh+':'+mm, lots: '', sellPrem: '', buyPrem: '' });
+  renderScaleEntries();
+}
+
+function removeScaleEntry(i) {
+  scaleEntries.splice(i, 1);
+  renderScaleEntries();
+}
+
+function updateScaleEntry(i, field, val) {
+  scaleEntries[i][field] = val;
+  calcScaleTotals();
+}
+
+function renderScaleEntries() {
+  var el = document.getElementById('scaleEntriesList');
+  if (!scaleEntries.length) {
+    el.innerHTML = '<div style="font-size:11px;color:var(--muted);text-align:center;padding:8px;">No scale entries yet. Click + ADD to log each lot batch.</div>';
+    document.getElementById('scaleTotals').style.display = 'none';
+    return;
+  }
+  el.innerHTML = scaleEntries.map(function(e, i) {
+    return '<div style="display:grid;grid-template-columns:60px 1fr 1fr 1fr 36px;gap:6px;margin-bottom:6px;align-items:center;">' +
+      '<input type="time" value="' + e.time + '" onchange="updateScaleEntry(' + i + ',\'time\',this.value)" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;padding:6px 4px;font-family:var(--mono);width:100%;">' +
+      '<input type="number" value="' + e.lots + '" placeholder="Lots" onchange="updateScaleEntry(' + i + ',\'lots\',this.value)" oninput="updateScaleEntry(' + i + ',\'lots\',this.value)" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;padding:7px 8px;font-family:var(--mono);width:100%;">' +
+      '<input type="number" value="' + e.sellPrem + '" placeholder="Sell" onchange="updateScaleEntry(' + i + ',\'sellPrem\',this.value)" oninput="updateScaleEntry(' + i + ',\'sellPrem\',this.value)" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;padding:7px 8px;font-family:var(--mono);width:100%;">' +
+      '<input type="number" value="' + e.buyPrem + '" placeholder="Buy" onchange="updateScaleEntry(' + i + ',\'buyPrem\',this.value)" oninput="updateScaleEntry(' + i + ',\'buyPrem\',this.value)" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;padding:7px 8px;font-family:var(--mono);width:100%;">' +
+      '<button onclick="removeScaleEntry(' + i + ')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:0;">✕</button>' +
+    '</div>';
+  }).join('');
+  calcScaleTotals();
+}
+
+function calcScaleTotals() {
+  var lotSize = selectedInstrument === 'NIFTY' ? NIFTY_LOT : SENSEX_LOT;
+  var spreadWidth = Math.abs((parseFloat(document.getElementById('entrySellStrike').value)||0) - (parseFloat(document.getElementById('entryBuyStrike').value)||0));
+
+  var totalLots = 0;
+  var weightedCredit = 0;
+  var valid = true;
+
+  scaleEntries.forEach(function(e) {
+    var lots = parseFloat(e.lots) || 0;
+    var sell = parseFloat(e.sellPrem) || 0;
+    var buy = parseFloat(e.buyPrem) || 0;
+    if (!lots) { valid = false; return; }
+    totalLots += lots;
+    weightedCredit += (sell - buy) * lots;
+  });
+
+  if (!totalLots) {
+    document.getElementById('scaleTotals').style.display = 'none';
+    return;
+  }
+
+  var avgCredit = weightedCredit / totalLots;
+  var maxProfit = weightedCredit * lotSize;
+  var maxLoss = spreadWidth > 0 ? (spreadWidth - avgCredit) * totalLots * lotSize : 0;
+  var rr = maxLoss > 0 ? (maxProfit / maxLoss).toFixed(2) : '-';
+
+  document.getElementById('scaleTotals').style.display = 'block';
+  document.getElementById('scaleTotalLots').textContent = totalLots;
+  document.getElementById('scaleAvgCredit').textContent = '₹' + avgCredit.toFixed(1);
+  document.getElementById('scaleMaxProfit').textContent = '₹' + maxProfit.toLocaleString('en-IN');
+  document.getElementById('scaleMaxLoss').textContent = maxLoss > 0 ? '₹' + maxLoss.toLocaleString('en-IN') : '-';
+
+  // Warnings
+  var warnings = [];
+  var lastTime = null;
+  scaleEntries.forEach(function(e, i) {
+    if (i === 0) { lastTime = e.time; return; }
+    // Warn if adding after 12:30
+    if (e.time > '12:30') warnings.push('⚠️ Entry ' + (i+1) + ' at ' + e.time + ' — after 12:30 PM, gamma risk rising');
+    // Warn if adding more lots than first batch
+    if (i > 0 && parseFloat(e.lots) > parseFloat(scaleEntries[0].lots)) {
+      warnings.push('🚨 Entry ' + (i+1) + ' has MORE lots than first entry — risky scaling');
+    }
+    // Warn if premium dropped significantly (less credit on later entries)
+    var firstCredit = (parseFloat(scaleEntries[0].sellPrem)||0) - (parseFloat(scaleEntries[0].buyPrem)||0);
+    var thisCredit = (parseFloat(e.sellPrem)||0) - (parseFloat(e.buyPrem)||0);
+    if (firstCredit > 0 && thisCredit < firstCredit * 0.5) {
+      warnings.push('⚠️ Entry ' + (i+1) + ': premium dropped >50% — less reward vs same risk');
+    }
+  });
+  if (maxLoss > 10000) warnings.push('🚨 Total max loss ₹' + maxLoss.toLocaleString('en-IN') + ' — verify this fits your daily limit');
+
+  var warnEl = document.getElementById('scaleWarning');
+  if (warnings.length) {
+    warnEl.innerHTML = warnings.map(function(w) {
+      return '<div style="font-size:11px;padding:5px 8px;margin-bottom:4px;border-radius:6px;background:rgba(255,209,102,.1);color:var(--yellow);">' + w + '</div>';
+    }).join('');
+  } else if (totalLots > 0) {
+    warnEl.innerHTML = '<div style="font-size:11px;color:var(--green);text-align:center;">✅ R:R = ' + rr + ':1 · ' + totalLots + ' lots · Avg credit ₹' + avgCredit.toFixed(1) + '</div>';
+  }
+
+  // Also update main summary
+  document.getElementById('netCreditDisplay').textContent = '₹' + avgCredit.toFixed(1);
+  document.getElementById('maxProfitDisplay').textContent = '₹' + maxProfit.toLocaleString('en-IN');
+  document.getElementById('maxLossDisplay').textContent = maxLoss > 0 ? '₹' + maxLoss.toLocaleString('en-IN') : '₹0';
+
+  // Store for saveEntry
+  document.getElementById('entryLots').value = totalLots;
+  document.getElementById('entrySellPrem').value = avgCredit.toFixed(1);
+}
+
+function resetScaleEntries() {
+  scaleEntries = [];
+  renderScaleEntries();
+}
+
 function calcSpreadPnL() {
   var sell = parseFloat(document.getElementById('entrySellStrike').value) || 0;
   var buy = parseFloat(document.getElementById('entryBuyStrike').value) || 0;
@@ -1719,6 +1877,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var el = document.getElementById(id);
     if (el) el.addEventListener('input', calcSpreadPnL);
   });
+  renderScaleEntries();
 });
 
 function saveEntry() {
@@ -1760,7 +1919,8 @@ function saveEntry() {
     sellStrike: sellStrike, buyStrike: buyStrike,
     sellPrem: sellPrem, buyPrem: buyPrem,
     lots: lots, netCredit: netCredit,
-    maxProfit: maxProfit, maxLoss: maxLoss
+    maxProfit: maxProfit, maxLoss: maxLoss,
+    scaleEntries: scaleEntries.length ? JSON.parse(JSON.stringify(scaleEntries)) : []
   };
 
   trades.push(tradeObj);
@@ -1780,6 +1940,7 @@ function saveEntry() {
   document.getElementById('rrDisplay').innerHTML = '';
   document.getElementById('netProfitDisplay').textContent = '₹0';
   document.getElementById('netProfitDisplay').style.color = '';
+  resetScaleEntries();
 
   showToast('✓ Trade saved');
   renderDashboard();
