@@ -642,41 +642,49 @@
   <!-- DAY REVIEW PANEL -->
   <div id="panelDayReview" style="display:none;">
     <div class="card">
-      <div class="card-title">📋 END OF DAY REVIEW</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Be honest. This is only for you.</div>
+      <div class="card-title">📋 POST-TRADE DAY REVIEW</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Be honest with yourself. Growth comes from reflection.</div>
 
-      <!-- Auto stats for today -->
+      <!-- Auto stats -->
       <div id="reviewTodayStats" style="background:var(--card2);border-radius:10px;padding:12px;margin-bottom:14px;"></div>
 
-      <!-- Questions -->
-      <div style="display:flex;flex-direction:column;gap:14px;" id="reviewQuestions">
+      <!-- Expiry alert -->
+      <div id="reviewExpiryAlert" style="margin-bottom:14px;"></div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;" id="reviewQuestions">
+
+        <!-- SECTION: TRADE DISCIPLINE -->
+        <div style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:2px;padding:4px 0;">— TRADE DISCIPLINE —</div>
 
         <div>
-          <label class="form-label">1. Did you follow the 2-trade limit today?</label>
+          <label class="form-label">1. Did you follow the 2-trade daily limit?</label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
             <button class="filter-btn" id="rq1yes" onclick="selectReview('rq1','Yes')" style="padding:10px;">✅ Yes</button>
-            <button class="filter-btn" id="rq1no" onclick="selectReview('rq1','No')" style="padding:10px;">❌ No</button>
+            <button class="filter-btn" id="rq1no" onclick="selectReview('rq1','No')" style="padding:10px;">❌ No — Overtraded</button>
           </div>
         </div>
 
         <div>
-          <label class="form-label">2. Did you wait for 15-min candle to close before entering?</label>
+          <label class="form-label">2. Did you wait for 9:45 AM+ before entering?</label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
             <button class="filter-btn" id="rq2yes" onclick="selectReview('rq2','Yes')" style="padding:10px;">✅ Yes</button>
-            <button class="filter-btn" id="rq2no" onclick="selectReview('rq2','No')" style="padding:10px;">❌ No</button>
+            <button class="filter-btn" id="rq2no" onclick="selectReview('rq2','No')" style="padding:10px;">❌ No — Rushed in</button>
           </div>
         </div>
 
         <div>
-          <label class="form-label">3. Did you check VWAP direction before entering?</label>
+          <label class="form-label">3. Did you take a revenge trade after a loss?</label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-            <button class="filter-btn" id="rq3yes" onclick="selectReview('rq3','Yes')" style="padding:10px;">✅ Yes</button>
-            <button class="filter-btn" id="rq3no" onclick="selectReview('rq3','No')" style="padding:10px;">❌ No</button>
+            <button class="filter-btn" id="rq3yes" onclick="selectReview('rq3','Yes')" style="padding:10px;">🚨 Yes — Revenge trade</button>
+            <button class="filter-btn" id="rq3no" onclick="selectReview('rq3','No')" style="padding:10px;">✅ No</button>
           </div>
         </div>
 
+        <!-- SECTION: PRE-TRADE ANALYSIS -->
+        <div style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:2px;padding:4px 0;">— PRE-TRADE ANALYSIS —</div>
+
         <div>
-          <label class="form-label">4. Did you check OI data before picking strikes?</label>
+          <label class="form-label">4. Did you wait for first 15-min candle to close?</label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
             <button class="filter-btn" id="rq4yes" onclick="selectReview('rq4','Yes')" style="padding:10px;">✅ Yes</button>
             <button class="filter-btn" id="rq4no" onclick="selectReview('rq4','No')" style="padding:10px;">❌ No</button>
@@ -684,45 +692,111 @@
         </div>
 
         <div>
-          <label class="form-label">5. What was your Risk:Reward today?</label>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-            <button class="filter-btn" id="rq5a" onclick="selectReview('rq5','1:1.5+')" style="padding:8px;font-size:11px;">✅ 1:1.5+</button>
-            <button class="filter-btn" id="rq5b" onclick="selectReview('rq5','1:1')" style="padding:8px;font-size:11px;">⚠️ 1:1</button>
-            <button class="filter-btn" id="rq5c" onclick="selectReview('rq5','<1:1')" style="padding:8px;font-size:11px;">🚨 &lt;1:1</button>
-          </div>
-        </div>
-
-        <div>
-          <label class="form-label">6. Did you exit at stop loss without hesitation?</label>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-            <button class="filter-btn" id="rq6yes" onclick="selectReview('rq6','Yes')" style="padding:8px;font-size:11px;">✅ Yes</button>
-            <button class="filter-btn" id="rq6no" onclick="selectReview('rq6','No — held')" style="padding:8px;font-size:11px;">🚨 Held</button>
-            <button class="filter-btn" id="rq6na" onclick="selectReview('rq6','No SL hit')" style="padding:8px;font-size:11px;">N/A</button>
-          </div>
-        </div>
-
-        <div>
-          <label class="form-label">7. Did you take a revenge trade after a loss?</label>
+          <label class="form-label">5. Did you confirm VWAP direction before entry?</label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-            <button class="filter-btn" id="rq7yes" onclick="selectReview('rq7','Yes')" style="padding:10px;">🚨 Yes</button>
-            <button class="filter-btn" id="rq7no" onclick="selectReview('rq7','No')" style="padding:10px;">✅ No</button>
+            <button class="filter-btn" id="rq5yes" onclick="selectReview('rq5','Yes')" style="padding:10px;">✅ Yes</button>
+            <button class="filter-btn" id="rq5no" onclick="selectReview('rq5','No')" style="padding:10px;">❌ No</button>
           </div>
         </div>
 
         <div>
-          <label class="form-label">8. Overall discipline score today</label>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:6px;">
-            <button class="filter-btn" id="rq8a" onclick="selectReview('rq8','2/5')" style="padding:8px;font-size:12px;">2⭐</button>
-            <button class="filter-btn" id="rq8b" onclick="selectReview('rq8','3/5')" style="padding:8px;font-size:12px;">3⭐</button>
-            <button class="filter-btn" id="rq8c" onclick="selectReview('rq8','4/5')" style="padding:8px;font-size:12px;">4⭐</button>
-            <button class="filter-btn" id="rq8d" onclick="selectReview('rq8','5/5')" style="padding:8px;font-size:12px;">5⭐</button>
-            <button class="filter-btn" id="rq8e" onclick="selectReview('rq8','1/5')" style="padding:8px;font-size:12px;">1⭐</button>
+          <label class="form-label">6. Did you check OI data on Sensibull for walls?</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button class="filter-btn" id="rq6yes" onclick="selectReview('rq6','Yes')" style="padding:10px;">✅ Yes</button>
+            <button class="filter-btn" id="rq6no" onclick="selectReview('rq6','No')" style="padding:10px;">❌ No</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label">7. Did you sell strikes BEYOND the OI wall?</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <button class="filter-btn" id="rq7yes" onclick="selectReview('rq7','Yes')" style="padding:8px;font-size:11px;">✅ Yes</button>
+            <button class="filter-btn" id="rq7no" onclick="selectReview('rq7','No')" style="padding:8px;font-size:11px;">❌ No</button>
+            <button class="filter-btn" id="rq7na" onclick="selectReview('rq7','N/A')" style="padding:8px;font-size:11px;">N/A</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label">8. Did you check India VIX before entry?</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button class="filter-btn" id="rq8yes" onclick="selectReview('rq8','Yes')" style="padding:10px;">✅ Yes</button>
+            <button class="filter-btn" id="rq8no" onclick="selectReview('rq8','No')" style="padding:10px;">❌ No</button>
+          </div>
+        </div>
+
+        <!-- SECTION: TRADE MANAGEMENT -->
+        <div style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:2px;padding:4px 0;">— TRADE MANAGEMENT —</div>
+
+        <div>
+          <label class="form-label">9. Did you set profit target (50% premium) before entering?</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button class="filter-btn" id="rq9yes" onclick="selectReview('rq9','Yes')" style="padding:10px;">✅ Yes</button>
+            <button class="filter-btn" id="rq9no" onclick="selectReview('rq9','No')" style="padding:10px;">❌ No</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label">10. Did you set SL (2x premium) before entering?</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button class="filter-btn" id="rq10yes" onclick="selectReview('rq10','Yes')" style="padding:10px;">✅ Yes</button>
+            <button class="filter-btn" id="rq10no" onclick="selectReview('rq10','No')" style="padding:10px;">❌ No</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label">11. Did you exit at SL without hesitation?</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <button class="filter-btn" id="rq11yes" onclick="selectReview('rq11','Yes')" style="padding:8px;font-size:11px;">✅ Exited</button>
+            <button class="filter-btn" id="rq11no" onclick="selectReview('rq11','Held')" style="padding:8px;font-size:11px;">🚨 Held</button>
+            <button class="filter-btn" id="rq11na" onclick="selectReview('rq11','No SL')" style="padding:8px;font-size:11px;">No SL hit</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label">12. What was your Risk:Reward ratio today?</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <button class="filter-btn" id="rq12a" onclick="selectReview('rq12','Good 1:0.5+')" style="padding:8px;font-size:11px;">✅ Good</button>
+            <button class="filter-btn" id="rq12b" onclick="selectReview('rq12','Average 1:1')" style="padding:8px;font-size:11px;">⚠️ Average</button>
+            <button class="filter-btn" id="rq12c" onclick="selectReview('rq12','Poor <1:1')" style="padding:8px;font-size:11px;">🚨 Poor</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label">13. If expiry day — did you exit before 2 PM?</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <button class="filter-btn" id="rq13yes" onclick="selectReview('rq13','Yes')" style="padding:8px;font-size:11px;">✅ Yes</button>
+            <button class="filter-btn" id="rq13no" onclick="selectReview('rq13','No — held late')" style="padding:8px;font-size:11px;">🚨 Held late</button>
+            <button class="filter-btn" id="rq13na" onclick="selectReview('rq13','Not expiry')" style="padding:8px;font-size:11px;">Not expiry</button>
+          </div>
+        </div>
+
+        <!-- SECTION: OVERALL -->
+        <div style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:2px;padding:4px 0;">— OVERALL —</div>
+
+        <div>
+          <label class="form-label">14. Market moved against me because...</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button class="filter-btn" id="rq14a" onclick="selectReview('rq14','Bad analysis')" style="padding:8px;font-size:11px;">📊 Bad analysis</button>
+            <button class="filter-btn" id="rq14b" onclick="selectReview('rq14','News/event')" style="padding:8px;font-size:11px;">📰 News/event</button>
+            <button class="filter-btn" id="rq14c" onclick="selectReview('rq14','Random move')" style="padding:8px;font-size:11px;">🎲 Random</button>
+            <button class="filter-btn" id="rq14d" onclick="selectReview('rq14','Did not lose')" style="padding:8px;font-size:11px;">✅ No loss</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label">15. Overall discipline score today</label>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;">
+            <button class="filter-btn" id="rq15a" onclick="selectReview('rq15','1/5')" style="padding:8px;">1⭐</button>
+            <button class="filter-btn" id="rq15b" onclick="selectReview('rq15','2/5')" style="padding:8px;">2⭐</button>
+            <button class="filter-btn" id="rq15c" onclick="selectReview('rq15','3/5')" style="padding:8px;">3⭐</button>
+            <button class="filter-btn" id="rq15d" onclick="selectReview('rq15','4/5')" style="padding:8px;">4⭐</button>
+            <button class="filter-btn" id="rq15e" onclick="selectReview('rq15','5/5')" style="padding:8px;">5⭐</button>
           </div>
         </div>
 
         <div class="form-group">
-          <label class="form-label">9. Key lesson / observation today</label>
-          <textarea class="form-input" id="reviewLesson" placeholder="What worked? What didn't? What will you do differently tomorrow?"></textarea>
+          <label class="form-label">16. Key lesson / what will I do differently tomorrow?</label>
+          <textarea class="form-input" id="reviewLesson" rows="3" placeholder="Be specific. E.g. 'Waited for VWAP confirmation today — worked well. Next time also check OI change not just OI level.'"></textarea>
         </div>
 
       </div>
@@ -869,13 +943,22 @@ let currentUser = null;
 
 // ── AUTH ────────────────────────────────────────────────────────────────────
 function googleSignIn() {
-  auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e => {
-    // Fallback to redirect on mobile
-    if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user') {
-      auth.signInWithRedirect(new firebase.auth.GoogleAuthProvider());
-    } else { alert('Sign-in failed: ' + e.message); }
-  });
+  // Use redirect — works reliably on GitHub Pages (popup blocked by browsers on non-localhost)
+  auth.signInWithRedirect(new firebase.auth.GoogleAuthProvider());
 }
+
+// Handle redirect result on page load
+auth.getRedirectResult().then(function(result) {
+  if (result && result.user) {
+    console.log('Signed in via redirect:', result.user.email);
+  }
+}).catch(function(e) {
+  if (e.code !== 'auth/no-auth-event') {
+    console.error('Redirect sign-in error:', e);
+    alert('Sign-in failed: ' + e.message);
+  }
+});
+
 function signOut() { auth.signOut(); }
 
 auth.onAuthStateChanged(user => {
@@ -1678,16 +1761,32 @@ function selectReview(q, val) {
 }
 
 function renderReviewStats() {
-  var todayStr = new Date().toISOString().split('T')[0];
+  var now = new Date();
+  var ist = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+  var day = ist.getDay();
+  var todayStr = now.toISOString().split('T')[0];
   var todayTrades = trades.filter(function(t) { return t.date === todayStr; });
   var todayPL = todayTrades.reduce(function(s,t) { return s + (t.pl||0); }, 0);
-  var el = document.getElementById('reviewTodayStats');
-  el.innerHTML =
-    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">' +
-    '<div><div style="font-size:9px;color:var(--muted);">TRADES</div><div style="font-family:var(--mono);font-size:20px;font-weight:700;color:' + (todayTrades.length > 2 ? 'var(--red)' : 'var(--accent)') + ';">' + todayTrades.length + '/2</div></div>' +
-    '<div><div style="font-size:9px;color:var(--muted);">TODAY P&L</div><div style="font-family:var(--mono);font-size:20px;font-weight:700;color:' + (todayPL >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + fmt(todayPL) + '</div></div>' +
-    '<div><div style="font-size:9px;color:var(--muted);">WIN/LOSS</div><div style="font-family:var(--mono);font-size:20px;font-weight:700;">' + todayTrades.filter(function(t){return t.pl>0;}).length + 'W/' + todayTrades.filter(function(t){return t.pl<0;}).length + 'L</div></div>' +
+  var maxProfit = todayTrades.reduce(function(s,t) { return s + (t.maxProfit||0); }, 0);
+
+  document.getElementById('reviewTodayStats').innerHTML =
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;text-align:center;">' +
+    '<div><div style="font-size:9px;color:var(--muted);">TRADES</div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:' + (todayTrades.length > 2 ? 'var(--red)' : 'var(--accent)') + ';">' + todayTrades.length + '/2</div></div>' +
+    '<div><div style="font-size:9px;color:var(--muted);">P&L</div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:' + (todayPL >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + fmt(todayPL) + '</div></div>' +
+    '<div><div style="font-size:9px;color:var(--muted);">W/L</div><div style="font-family:var(--mono);font-size:18px;font-weight:700;">' + todayTrades.filter(function(t){return t.pl>0;}).length + 'W/' + todayTrades.filter(function(t){return t.pl<0;}).length + 'L</div></div>' +
+    '<div><div style="font-size:9px;color:var(--muted);">MAX PROFIT</div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--green);">' + (maxProfit ? '\u20b9'+maxProfit.toLocaleString('en-IN') : '-') + '</div></div>' +
     '</div>';
+
+  var expiryAlert = document.getElementById('reviewExpiryAlert');
+  if (expiryAlert) {
+    if (day === 2) {
+      expiryAlert.innerHTML = '<div style="background:rgba(255,209,102,.12);border:1px solid var(--yellow);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--yellow);text-align:center;">\u26a0\ufe0f NIFTY EXPIRY DAY \u2014 Did you exit before 2 PM?</div>';
+    } else if (day === 4) {
+      expiryAlert.innerHTML = '<div style="background:rgba(255,209,102,.12);border:1px solid var(--yellow);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--yellow);text-align:center;">\u26a0\ufe0f SENSEX EXPIRY DAY \u2014 Did you exit before 2 PM?</div>';
+    } else {
+      expiryAlert.innerHTML = '';
+    }
+  }
 }
 
 function saveDayReview() {
@@ -1698,12 +1797,29 @@ function saveDayReview() {
   reviews = reviews.filter(function(r) { return r.date !== todayStr; });
   reviews.push(review);
   localStorage.setItem('day_reviews', JSON.stringify(reviews));
-  showToast('✓ Day review saved');
-  // Show score
-  var yesCount = Object.values(reviewAnswers).filter(function(v) { return v === 'Yes' || v === '1:1.5+' || v === 'No SL hit' || v === 'No'; }).length;
-  var badge = document.getElementById('reviewTodayStats');
-  badge.innerHTML += '<div style="text-align:center;margin-top:10px;"><div class="pl-badge ' + (yesCount >= 5 ? 'pos' : 'neg') + '" style="font-size:14px;padding:6px 20px;">' + (yesCount >= 5 ? '✅ Good discipline today!' : '⚠️ Review your habits') + '</div></div>';
+
+  var good = ['Yes','Good','Exited','Not expiry','No SL','No loss','No','N/A'];
+  var badWords = ['Held','Rushed','Overtraded','Revenge','Poor','Bad analysis'];
+  var goodCount = 0; var badCount = 0;
+  Object.values(reviewAnswers).forEach(function(v) {
+    if (good.some(function(g) { return v.indexOf(g) !== -1; })) goodCount++;
+    if (badWords.some(function(b) { return v.indexOf(b) !== -1; })) badCount++;
+  });
+  var total = Math.max(Object.keys(reviewAnswers).length, 1);
+  var score = Math.round((goodCount / total) * 100);
+  var msg = score >= 80 ? '\ud83c\udfc6 Excellent discipline! Keep it up.' :
+            score >= 60 ? '\u2705 Good day. Small improvements needed.' :
+            score >= 40 ? '\u26a0\ufe0f Mixed discipline. Review your rules.' :
+                          '\ud83d\udea8 Poor discipline. Re-read your rules tonight.';
+
+  document.getElementById('reviewTodayStats').innerHTML +=
+    '<div style="text-align:center;margin-top:12px;">' +
+    '<div style="font-family:var(--mono);font-size:28px;font-weight:700;color:' + (score >= 60 ? 'var(--green)' : 'var(--red)') + ';">' + score + '%</div>' +
+    '<div class="pl-badge ' + (score >= 60 ? 'pos' : 'neg') + '" style="font-size:13px;padding:6px 20px;margin-top:6px;">' + msg + '</div>' +
+    '</div>';
+  showToast('\u2713 Day review saved');
 }
+
 
   const toast = document.getElementById('toast');
   toast.textContent = message;
@@ -1713,15 +1829,22 @@ function saveDayReview() {
 
 // ── TRADE GUARD ────────────────────────────────────────────────────────────
 var guardChecklist = [
-  { id: 'tg1', text: 'Market trend identified (bullish / bearish / sideways)?' },
-  { id: 'tg2', text: 'Is it a trending day? (ADX > 20, not choppy/sideways)' },
-  { id: 'tg3', text: 'Entry, SL & target levels decided before entering?' },
-  { id: 'tg4', text: 'Risk:Reward is at least 1:1.5?' },
-  { id: 'tg5', text: 'Position size within capital limits (max 1-2% risk)?' },
-  { id: 'tg6', text: 'Am I calm and NOT revenge trading after a loss?' },
-  { id: 'tg7', text: 'This setup matches my strategy (not FOMO)?' },
-  { id: 'tg8', text: 'No major news/event that could spike volatility?' },
-  { id: 'tg9', text: 'I will exit at SL — no hoping, no averaging down?' }
+  // Market conditions
+  { id: 'tg1', text: '📊 Checked first 15-min candle direction & closed?' },
+  { id: 'tg2', text: '📈 VWAP position confirmed — price above (bullish) or below (bearish)?' },
+  { id: 'tg3', text: '🔍 Checked OI data on Sensibull — identified support/resistance walls?' },
+  { id: 'tg4', text: '📉 India VIX checked — not spiking / rising sharply?' },
+  { id: 'tg5', text: '🕐 Entry time is between 9:45 AM – 11:30 AM?' },
+  // Strategy checks
+  { id: 'tg6', text: '🎯 Selling strikes are BEYOND OI walls (max OI strike)?' },
+  { id: 'tg7', text: '📐 Spread width decided — 50pt or 100pt spread?' },
+  { id: 'tg8', text: '💰 Exit targets set — profit at 50% premium, SL at 2x premium?' },
+  // Expiry awareness
+  { id: 'tg9', text: '📅 Aware of expiry day — if expiry today, will exit by 2 PM?' },
+  // Discipline
+  { id: 'tg10', text: '😤 I am NOT in revenge mode after previous loss?' },
+  { id: 'tg11', text: '🚫 This is within my 2-trade daily limit?' },
+  { id: 'tg12', text: '✅ I will exit at SL — no averaging, no hoping?' }
 ];
 
 var cooldownInterval = null;
