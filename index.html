@@ -1333,19 +1333,21 @@ setInterval(updateMarketStatus, 30000);
 
 // ── QUICK LINKS ────────────────────────────────────────────────────────────
 var defaultLinks = [
-  { name: 'TradingView', url: 'https://www.tradingview.com/chart/?symbol=NSE%3ANIFTY' },
+  { name: 'TradingView', url: 'https://www.tradingview.com/chart/?symbol=NSE:NIFTY' },
   { name: 'Sensibull OI', url: 'https://web.sensibull.com/open-interest/oi-vs-strike?tradingsymbol=NIFTY' },
   { name: 'Kite Login', url: 'https://kite.zerodha.com' }
 ];
 
 function getQuickLinks() {
-  var saved = localStorage.getItem('quick_links');
-  if (!saved) return JSON.parse(JSON.stringify(defaultLinks));
-  try { return JSON.parse(saved); } catch(e) { return JSON.parse(JSON.stringify(defaultLinks)); }
+  try {
+    var saved = localStorage.getItem('quick_links_v2');
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return defaultLinks.slice();
 }
 
 function saveQuickLinks(links) {
-  localStorage.setItem('quick_links', JSON.stringify(links));
+  localStorage.setItem('quick_links_v2', JSON.stringify(links));
 }
 
 function getLinkIcon(name) {
@@ -1356,8 +1358,6 @@ function getLinkIcon(name) {
   if (n.includes('nse') || n.includes('bse')) return '🏛️';
   if (n.includes('money') || n.includes('groww') || n.includes('angel')) return '💰';
   if (n.includes('news') || n.includes('economic')) return '📰';
-  if (n.includes('youtube') || n.includes('video')) return '▶️';
-  if (n.includes('twitter') || n.includes('x.com')) return '🐦';
   return '🌐';
 }
 
@@ -1365,96 +1365,93 @@ function renderQuickLinks() {
   var links = getQuickLinks();
   var row = document.getElementById('quickLinksRow');
   if (!links.length) {
-    row.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px;">No links added. Tap EDIT to add.</div>';
+    row.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px;">No links. Tap EDIT to add.</div>';
     return;
   }
-  row.innerHTML = links.map(function(l) {
+  var html = '';
+  for (var i = 0; i < links.length; i++) {
+    var l = links[i];
     var icon = getLinkIcon(l.name);
-    return '<a href="' + (l.url || '#') + '" target="_blank" rel="noopener" ' +
+    html += '<a href="' + l.url + '" target="_blank" rel="noopener" ' +
       'style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;' +
       'background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 10px;' +
-      'text-decoration:none;transition:all .2s;min-width:72px;flex:0 0 auto;" ' +
-      '>' +
+      'text-decoration:none;min-width:72px;flex:0 0 auto;">' +
       '<span style="font-size:20px;">' + icon + '</span>' +
-      '<span style="font-size:10px;color:var(--text);font-weight:600;text-align:center;line-height:1.2;word-break:break-word;max-width:70px;">' + (l.name || 'Link') + '</span>' +
+      '<span style="font-size:10px;color:var(--text);font-weight:600;text-align:center;max-width:70px;">' + (l.name || 'Link') + '</span>' +
     '</a>';
-  }).join('');
+  }
+  row.innerHTML = html;
 }
 
+var linkEditOpen = false;
+
 function toggleLinkEdit() {
+  linkEditOpen = !linkEditOpen;
   var editDiv = document.getElementById('quickLinksEdit');
   var btn = document.getElementById('linkEditBtn');
-  if (editDiv.style.display === 'none') {
+  if (linkEditOpen) {
     renderLinkEditor();
     editDiv.style.display = 'block';
-    btn.textContent = '✕ CLOSE';
+    btn.textContent = '\u2713 DONE';
+    btn.style.color = 'var(--green)';
   } else {
     editDiv.style.display = 'none';
-    btn.innerHTML = '✏️ EDIT';
+    btn.innerHTML = '\u270f\ufe0f EDIT';
+    btn.style.color = '';
+    renderQuickLinks();
   }
 }
 
 function renderLinkEditor() {
   var links = getQuickLinks();
   var editDiv = document.getElementById('quickLinksEdit');
-  var html = links.map(function(l, i) {
-    return '<div style="display:grid;grid-template-columns:1fr 2fr 32px;gap:6px;margin-bottom:8px;align-items:center;">' +
-      '<input type="text" class="form-input" id="linkName' + i + '" placeholder="Name" value="' + (l.name || '') + '" style="padding:8px;font-size:12px;">' +
-      '<input type="url" class="form-input" id="linkUrl' + i + '" placeholder="https://..." value="' + (l.url || '') + '" style="padding:8px;font-size:12px;">' +
-      '<button onclick="removeLink(' + i + ')" style="background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:0;">✕</button>' +
-    '</div>';
-  }).join('');
-
-  html += '<div style="display:flex;gap:8px;margin-top:10px;">' +
-    '<button onclick="addNewLink()" style="flex:1;background:var(--card2);border:1px dashed var(--border);border-radius:8px;padding:10px;color:var(--accent);font-size:12px;font-family:var(--mono);cursor:pointer;font-weight:700;">+ ADD LINK</button>' +
-    '<button onclick="saveLinkEdits()" style="flex:1;background:var(--accent);border:none;border-radius:8px;padding:10px;color:#000;font-size:12px;font-family:var(--mono);cursor:pointer;font-weight:700;">💾 SAVE</button>' +
-  '</div>';
-
+  var html = '';
+  for (var i = 0; i < links.length; i++) {
+    html += '<div style="display:grid;grid-template-columns:80px 1fr 32px;gap:6px;margin-bottom:8px;align-items:center;" id="linkRow' + i + '">';
+    html += '<input type="text" class="form-input" placeholder="Name" value="' + escAttr(links[i].name) + '" style="padding:8px;font-size:12px;" onchange="updateLink(' + i + ',this.parentNode)">';
+    html += '<input type="url" class="form-input" placeholder="https://..." value="' + escAttr(links[i].url) + '" style="padding:8px;font-size:12px;" onchange="updateLink(' + i + ',this.parentNode)">';
+    html += '<button onclick="deleteLink(' + i + ')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;">\u2715</button>';
+    html += '</div>';
+  }
+  html += '<button onclick="addLink()" style="width:100%;background:var(--card2);border:1px dashed var(--accent);border-radius:8px;padding:10px;color:var(--accent);font-size:12px;font-family:var(--mono);cursor:pointer;font-weight:700;margin-top:4px;">+ ADD NEW LINK</button>';
   editDiv.innerHTML = html;
 }
 
-function collectLinksFromDOM() {
-  var links = [];
-  var i = 0;
-  while (true) {
-    var nameEl = document.getElementById('linkName' + i);
-    var urlEl = document.getElementById('linkUrl' + i);
-    if (!nameEl || !urlEl) break;
-    var name = nameEl.value.trim();
-    var url = urlEl.value.trim();
-    if (url && !url.startsWith('http')) url = 'https://' + url;
-    links.push({ name: name, url: url });
-    i++;
-  }
-  return links;
+function escAttr(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 }
 
-function addNewLink() {
-  var links = collectLinksFromDOM();
+function updateLink(i, row) {
+  var links = getQuickLinks();
+  var inputs = row.querySelectorAll('input');
+  var name = inputs[0].value.trim();
+  var url = inputs[1].value.trim();
+  if (url && !url.startsWith('http')) url = 'https://' + url;
+  links[i] = { name: name || 'Link', url: url };
+  saveQuickLinks(links);
+  renderQuickLinks();
+}
+
+function addLink() {
+  var links = getQuickLinks();
   links.push({ name: '', url: '' });
   saveQuickLinks(links);
   renderLinkEditor();
-  var newInput = document.getElementById('linkName' + (links.length - 1));
-  if (newInput) newInput.focus();
+  // Focus new name input
+  var rows = document.querySelectorAll('[id^="linkRow"]');
+  if (rows.length) {
+    var lastRow = rows[rows.length - 1];
+    var nameInput = lastRow.querySelector('input');
+    if (nameInput) nameInput.focus();
+  }
 }
 
-function removeLink(i) {
-  var links = collectLinksFromDOM();
+function deleteLink(i) {
+  var links = getQuickLinks();
   links.splice(i, 1);
   saveQuickLinks(links);
-  renderQuickLinks();
   renderLinkEditor();
-}
-
-function saveLinkEdits() {
-  var links = collectLinksFromDOM();
-  var filtered = links.filter(function(l) { return l.name || l.url; });
-  filtered.forEach(function(l) { if (!l.name) l.name = 'Link'; });
-  saveQuickLinks(filtered);
   renderQuickLinks();
-  document.getElementById('quickLinksEdit').style.display = 'none';
-  document.getElementById('linkEditBtn').innerHTML = '✏️ EDIT';
-  showToast('\u2713 Links saved');
 }
 
 // ── TRADE CALCULATOR ───────────────────────────────────────────────────────
