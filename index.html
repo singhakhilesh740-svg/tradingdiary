@@ -1833,7 +1833,7 @@ function saveDayReview() {
   showToast('\u2713 Day review saved');
 }
 
-
+function showToast(message) {
   const toast = document.getElementById('toast');
   toast.textContent = message;
   toast.classList.add('show');
