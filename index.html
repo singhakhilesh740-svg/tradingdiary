@@ -356,7 +356,7 @@
       <div class="card-title" style="margin:0;">🔗 QUICK LINKS</div>
       <button onclick="toggleLinkEdit()" id="linkEditBtn" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:10px;padding:4px 10px;cursor:pointer;font-family:var(--mono);">✏️ EDIT</button>
     </div>
-    <div id="quickLinksRow" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;"></div>
+    <div id="quickLinksRow" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
     <div id="quickLinksEdit" style="display:none;margin-top:10px;"></div>
   </div>
 
@@ -1333,14 +1333,13 @@ setInterval(updateMarketStatus, 30000);
 
 // ── QUICK LINKS ────────────────────────────────────────────────────────────
 var defaultLinks = [
-  { name: 'TradingView', url: 'https://www.tradingview.com/chart/?symbol=NSE%3ANIFTY&utm_source=www.tradingview.com&utm_medium=widget&utm_campaign=chart&utm_term=NSE%3ANIFTY' },
+  { name: 'TradingView', url: 'https://www.tradingview.com/chart/?symbol=NSE%3ANIFTY' },
   { name: 'Sensibull OI', url: 'https://web.sensibull.com/open-interest/oi-vs-strike?tradingsymbol=NIFTY' },
   { name: 'Kite Login', url: 'https://kite.zerodha.com' }
 ];
 
 function getQuickLinks() {
   var saved = localStorage.getItem('quick_links');
-  // Reset if saved links are old defaults (Kite/NSE option chain)
   if (saved && (saved.includes('option-chain') || saved.includes('in.tradingview.com'))) {
     localStorage.removeItem('quick_links');
     saved = null;
@@ -1352,21 +1351,35 @@ function saveQuickLinks(links) {
   localStorage.setItem('quick_links', JSON.stringify(links));
 }
 
+function getLinkIcon(name) {
+  var n = (name || '').toLowerCase();
+  if (n.includes('kite') || n.includes('zerodha')) return '📈';
+  if (n.includes('tradingview') || n.includes('chart')) return '📊';
+  if (n.includes('sensibull') || n.includes('oi') || n.includes('option')) return '🔍';
+  if (n.includes('nse') || n.includes('bse')) return '🏛️';
+  if (n.includes('money') || n.includes('groww') || n.includes('angel')) return '💰';
+  if (n.includes('news') || n.includes('economic')) return '📰';
+  if (n.includes('youtube') || n.includes('video')) return '▶️';
+  if (n.includes('twitter') || n.includes('x.com')) return '🐦';
+  return '🌐';
+}
+
 function renderQuickLinks() {
   var links = getQuickLinks();
   var row = document.getElementById('quickLinksRow');
-  row.innerHTML = links.map(function(l, i) {
-    var displayName = l.name || 'Link ' + (i+1);
-    var icon = '🌐';
-    var name = (l.name || '').toLowerCase();
-    if (name.includes('kite') || name.includes('zerodha')) icon = '📈';
-    else if (name.includes('tradingview') || name.includes('chart')) icon = '📊';
-    else if (name.includes('sensibull') || name.includes('oi') || name.includes('option')) icon = '🔍';
-    else if (name.includes('nse') || name.includes('bse')) icon = '🏛️';
-    return '<a href="' + (l.url || '#') + '" target="_blank" rel="noopener" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px 6px;text-decoration:none;transition:all .2s;" ' +
-      'onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\'">' +
+  if (!links.length) {
+    row.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px;">No links added. Tap EDIT to add.</div>';
+    return;
+  }
+  row.innerHTML = links.map(function(l) {
+    var icon = getLinkIcon(l.name);
+    return '<a href="' + (l.url || '#') + '" target="_blank" rel="noopener" ' +
+      'style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;' +
+      'background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 10px;' +
+      'text-decoration:none;transition:all .2s;min-width:72px;flex:0 0 auto;" ' +
+      '>' +
       '<span style="font-size:20px;">' + icon + '</span>' +
-      '<span style="font-size:11px;color:var(--text);font-weight:600;text-align:center;line-height:1.2;word-break:break-word;">' + displayName + '</span>' +
+      '<span style="font-size:10px;color:var(--text);font-weight:600;text-align:center;line-height:1.2;word-break:break-word;max-width:70px;">' + (l.name || 'Link') + '</span>' +
     '</a>';
   }).join('');
 }
@@ -1375,14 +1388,7 @@ function toggleLinkEdit() {
   var editDiv = document.getElementById('quickLinksEdit');
   var btn = document.getElementById('linkEditBtn');
   if (editDiv.style.display === 'none') {
-    var links = getQuickLinks();
-    editDiv.innerHTML = links.map(function(l, i) {
-      return '<div style="display:grid;grid-template-columns:1fr 2fr;gap:8px;margin-bottom:8px;">' +
-        '<input type="text" class="form-input" id="linkName' + i + '" placeholder="Name" value="' + (l.name || '') + '" style="padding:8px 10px;font-size:12px;">' +
-        '<input type="url" class="form-input" id="linkUrl' + i + '" placeholder="https://..." value="' + (l.url || '') + '" style="padding:8px 10px;font-size:12px;">' +
-      '</div>';
-    }).join('') +
-    '<button class="submit-btn" onclick="saveLinkEdits()" style="padding:10px;font-size:12px;">💾 SAVE LINKS</button>';
+    renderLinkEditor();
     editDiv.style.display = 'block';
     btn.textContent = '✕ CLOSE';
   } else {
@@ -1391,19 +1397,61 @@ function toggleLinkEdit() {
   }
 }
 
-function saveLinkEdits() {
-  var links = [];
-  for (var i = 0; i < 3; i++) {
-    var name = document.getElementById('linkName' + i).value.trim();
-    var url = document.getElementById('linkUrl' + i).value.trim();
-    if (url && !url.startsWith('http')) url = 'https://' + url;
-    links.push({ name: name, url: url });
-  }
+function renderLinkEditor() {
+  var links = getQuickLinks();
+  var editDiv = document.getElementById('quickLinksEdit');
+  var html = links.map(function(l, i) {
+    return '<div style="display:grid;grid-template-columns:1fr 2fr 32px;gap:6px;margin-bottom:8px;align-items:center;">' +
+      '<input type="text" class="form-input" id="linkName' + i + '" placeholder="Name" value="' + (l.name || '') + '" style="padding:8px;font-size:12px;">' +
+      '<input type="url" class="form-input" id="linkUrl' + i + '" placeholder="https://..." value="' + (l.url || '') + '" style="padding:8px;font-size:12px;">' +
+      '<button onclick="removeLink(' + i + ')" style="background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:0;">✕</button>' +
+    '</div>';
+  }).join('');
+
+  html += '<div style="display:flex;gap:8px;margin-top:10px;">' +
+    '<button onclick="addNewLink()" style="flex:1;background:var(--card2);border:1px dashed var(--border);border-radius:8px;padding:10px;color:var(--accent);font-size:12px;font-family:var(--mono);cursor:pointer;font-weight:700;">+ ADD LINK</button>' +
+    '<button onclick="saveLinkEdits()" style="flex:1;background:var(--accent);border:none;border-radius:8px;padding:10px;color:#000;font-size:12px;font-family:var(--mono);cursor:pointer;font-weight:700;">💾 SAVE</button>' +
+  '</div>';
+
+  editDiv.innerHTML = html;
+}
+
+function addNewLink() {
+  var links = getQuickLinks();
+  links.push({ name: '', url: '' });
   saveQuickLinks(links);
+  renderLinkEditor();
+  // Focus the new name input
+  var newInput = document.getElementById('linkName' + (links.length - 1));
+  if (newInput) newInput.focus();
+}
+
+function removeLink(i) {
+  var links = getQuickLinks();
+  links.splice(i, 1);
+  saveQuickLinks(links);
+  renderQuickLinks();
+  renderLinkEditor();
+}
+
+function saveLinkEdits() {
+  var links = getQuickLinks();
+  var newLinks = [];
+  for (var i = 0; i < links.length; i++) {
+    var nameEl = document.getElementById('linkName' + i);
+    var urlEl = document.getElementById('linkUrl' + i);
+    if (!nameEl || !urlEl) continue;
+    var name = nameEl.value.trim();
+    var url = urlEl.value.trim();
+    if (!name && !url) continue; // skip empty rows
+    if (url && !url.startsWith('http')) url = 'https://' + url;
+    newLinks.push({ name: name || 'Link', url: url });
+  }
+  saveQuickLinks(newLinks);
   renderQuickLinks();
   document.getElementById('quickLinksEdit').style.display = 'none';
   document.getElementById('linkEditBtn').innerHTML = '✏️ EDIT';
-  showToast('✓ Links saved');
+  showToast('\u2713 Links saved');
 }
 
 // ── TRADE CALCULATOR ───────────────────────────────────────────────────────
