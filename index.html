@@ -607,8 +607,24 @@
 
       <!-- P/L at exit -->
       <div class="form-group" style="margin-top:10px;">
-        <label class="form-label">ACTUAL P/L (₹) — fill at exit</label>
-        <input type="number" class="form-input" id="entryPL" placeholder="e.g. 3000">
+        <label class="form-label">GROSS P/L (₹) — fill at exit</label>
+        <input type="number" class="form-input" id="entryPL" placeholder="e.g. 3000" oninput="calcNetProfit()">
+      </div>
+
+      <div class="form-group" style="margin-top:10px;">
+        <label class="form-label">CHARGES (₹) — brokerage + STT + taxes</label>
+        <input type="number" class="form-input" id="entryCharges" placeholder="e.g. 120" oninput="calcNetProfit()">
+      </div>
+
+      <!-- Net Profit display -->
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:4px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:12px;color:var(--muted);font-family:var(--mono);">NET PROFIT (after charges)</span>
+        <span style="font-size:20px;font-weight:700;font-family:var(--mono);" id="netProfitDisplay">₹0</span>
+      </div>
+
+      <div class="form-group" style="display:none;">
+        <label class="form-label">NET P/L (auto)</label>
+        <input type="number" class="form-input" id="entryNetPL" readonly>
       </div>
 
       <!-- Stop Loss Hit -->
@@ -1577,7 +1593,7 @@ function deleteEntry() {
 function cancelEdit() {
   editingIndex = null;
   document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
-  ['entryCapital','entryPL','entryComment','entryAnalysis',
+  ['entryCapital','entryPL','entryCharges','entryComment','entryAnalysis',
    'entrySellStrike','entryBuyStrike','entrySellPrem','entryBuyPrem','entryLots'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.value = '';
@@ -1658,6 +1674,16 @@ function selectExit(reason) {
   });
 }
 
+function calcNetProfit() {
+  var gross = parseFloat(document.getElementById('entryPL').value) || 0;
+  var charges = parseFloat(document.getElementById('entryCharges').value) || 0;
+  var net = gross - charges;
+  var el = document.getElementById('netProfitDisplay');
+  el.textContent = (net >= 0 ? '+' : '') + '₹' + net.toLocaleString('en-IN');
+  el.style.color = net >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('entryNetPL').value = net;
+}
+
 function calcSpreadPnL() {
   var sell = parseFloat(document.getElementById('entrySellStrike').value) || 0;
   var buy = parseFloat(document.getElementById('entryBuyStrike').value) || 0;
@@ -1698,7 +1724,9 @@ document.addEventListener('DOMContentLoaded', function() {
 function saveEntry() {
   var date = document.getElementById('entryDate').value;
   var capital = parseFloat(document.getElementById('entryCapital').value);
-  var pl = parseFloat(document.getElementById('entryPL').value);
+  var grossPL = parseFloat(document.getElementById('entryPL').value);
+  var charges = parseFloat(document.getElementById('entryCharges').value) || 0;
+  var pl = isNaN(grossPL) ? NaN : grossPL - charges; // net P/L used everywhere
   var comment = document.getElementById('entryComment').value.trim();
   var analysis = document.getElementById('entryAnalysis').value.trim();
   var sellStrike = document.getElementById('entrySellStrike').value;
@@ -1722,7 +1750,8 @@ function saveEntry() {
   var pct = capital ? parseFloat(((pl/capital)*100).toFixed(2)) : 0;
 
   var tradeObj = {
-    date: date, day: dayNames[d.getDay()], capital: capital, pl: pl, pct: pct,
+    date: date, day: dayNames[d.getDay()], capital: capital,
+    grossPL: grossPL, charges: charges, pl: pl, pct: pct,
     comment: comment, analysis: analysis,
     instrument: selectedInstrument,
     strategy: selectedStrategy,
@@ -1740,7 +1769,7 @@ function saveEntry() {
   localStorage.setItem('tg_lastTradeTime', Date.now().toString());
 
   // Reset form
-  ['entrySellStrike','entryBuyStrike','entrySellPrem','entryBuyPrem','entryLots','entryCapital','entryPL','entryComment','entryAnalysis'].forEach(function(id) {
+  ['entrySellStrike','entryBuyStrike','entrySellPrem','entryBuyPrem','entryLots','entryCapital','entryPL','entryCharges','entryComment','entryAnalysis'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -1749,6 +1778,8 @@ function saveEntry() {
   document.getElementById('maxProfitDisplay').textContent = '₹0';
   document.getElementById('maxLossDisplay').textContent = '₹0';
   document.getElementById('rrDisplay').innerHTML = '';
+  document.getElementById('netProfitDisplay').textContent = '₹0';
+  document.getElementById('netProfitDisplay').style.color = '';
 
   showToast('✓ Trade saved');
   renderDashboard();
