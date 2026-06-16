@@ -360,27 +360,28 @@
     <div id="quickLinksEdit" style="display:none;margin-top:10px;"></div>
   </div>
 
-  <!-- TRADE GUARD ON DASHBOARD -->
+  <!-- PRE-TRADE CHECKLIST ON DASHBOARD -->
   <div class="card" style="border:1px solid var(--accent);border-radius:14px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-      <div class="card-title" style="margin:0;font-size:13px;">🛡️ TRADE GUARD</div>
-      <div style="display:flex;gap:10px;align-items:center;">
-        <span style="font-size:12px;color:var(--muted);font-family:var(--mono);" id="dashTradeCount">0 trades</span>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+      <div class="card-title" style="margin:0;">✅ PRE-TRADE CHECKLIST</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span style="font-size:11px;color:var(--muted);font-family:var(--mono);" id="dashTradeCount">0 trades</span>
         <span style="font-size:12px;font-family:var(--mono);" id="dashTodayPL">₹0</span>
       </div>
     </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">Tick all before entering any trade. Be honest.</div>
 
-    <!-- Warning banners on dashboard -->
+    <!-- Warning banners -->
     <div id="dashWarnings" style="margin-bottom:10px;"></div>
 
-    <!-- Checklist -->
-    <div id="dashChecklist" style="display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:14px;"></div>
+    <!-- Checklist with sections -->
+    <div id="dashChecklist" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>
 
-    <!-- Limits row -->
+    <!-- Stats row -->
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
       <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
-        <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">MAX TRADES</div>
-        <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--text);" id="dashMaxTrades">-</div>
+        <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">TRADES</div>
+        <div style="font-family:var(--mono);font-size:18px;font-weight:700;" id="dashMaxTrades">-</div>
       </div>
       <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
         <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">MAX LOSS</div>
@@ -392,7 +393,7 @@
       </div>
     </div>
 
-    <!-- Status badge -->
+    <!-- Status -->
     <div id="dashGuardStatus" style="text-align:center;"></div>
   </div>
 
@@ -1276,14 +1277,12 @@ function renderDashGuard() {
   var todayTrades = trades.filter(function(t) { return t.date === todayStr; });
   var todayPL = todayTrades.reduce(function(s,t) { return s + (t.pl || 0); }, 0);
   var tradeCount = todayTrades.length;
-
-  var maxTrades = parseInt(localStorage.getItem('tg_maxTrades')) || 999;
+  var maxTrades = parseInt(localStorage.getItem('tg_maxTrades')) || 2;
   var maxLoss = parseInt(localStorage.getItem('tg_maxLoss')) || 999999;
 
   // Streak
   var sorted = trades.filter(function(t) { return typeof t.pl === 'number'; }).sort(function(a,b) { return b.date.localeCompare(a.date); });
-  var streak = 0;
-  var streakType = '';
+  var streak = 0; var streakType = '';
   if (sorted.length) {
     streakType = sorted[0].pl >= 0 ? 'W' : 'L';
     for (var i = 0; i < sorted.length; i++) {
@@ -1292,88 +1291,105 @@ function renderDashGuard() {
     }
   }
 
-  // Top stats
-  document.getElementById('dashTradeCount').textContent = tradeCount + '/' + (maxTrades < 999 ? maxTrades : '-') + ' trades';
+  // Stats
+  document.getElementById('dashTradeCount').textContent = tradeCount + '/' + maxTrades + ' trades';
   var plEl = document.getElementById('dashTodayPL');
   plEl.textContent = fmt(todayPL);
   plEl.style.color = todayPL > 0 ? 'var(--green)' : todayPL < 0 ? 'var(--red)' : 'var(--muted)';
-
-  // Limits display
-  document.getElementById('dashMaxTrades').textContent = tradeCount + '/' + (maxTrades < 999 ? maxTrades : '∞');
+  document.getElementById('dashMaxTrades').textContent = tradeCount + '/' + maxTrades;
   document.getElementById('dashMaxTrades').style.color = tradeCount >= maxTrades ? 'var(--red)' : 'var(--accent)';
-  document.getElementById('dashMaxLoss').textContent = maxLoss < 999999 ? '\u20b9' + maxLoss.toLocaleString('en-IN') : '∞';
+  document.getElementById('dashMaxLoss').textContent = maxLoss < 999999 ? '\u20b9' + maxLoss.toLocaleString('en-IN') : '\u221e';
   document.getElementById('dashMaxLoss').style.color = (todayPL < 0 && Math.abs(todayPL) >= maxLoss) ? 'var(--red)' : 'var(--text)';
   var streakEl = document.getElementById('dashStreak');
   streakEl.textContent = streak ? streak + streakType : '-';
   streakEl.style.color = streakType === 'W' ? 'var(--green)' : streakType === 'L' ? 'var(--red)' : 'var(--muted)';
 
   // Warnings
-  var warnings = [];
-  var blocked = false;
+  var warnings = []; var blocked = false;
   if (tradeCount >= maxTrades) {
-    warnings.push('<div class="pl-badge neg" style="font-size:13px;padding:8px 14px;margin-bottom:6px;">\u{1F6D1} DAILY TRADE LIMIT REACHED</div>');
+    warnings.push('<div class="pl-badge neg" style="font-size:13px;padding:8px 14px;margin-bottom:6px;">\ud83d\uded1 DAILY TRADE LIMIT REACHED (' + tradeCount + '/' + maxTrades + ')</div>');
     blocked = true;
   }
   if (todayPL < 0 && Math.abs(todayPL) >= maxLoss) {
-    warnings.push('<div class="pl-badge neg" style="font-size:13px;padding:8px 14px;margin-bottom:6px;">\u{1F6A8} MAX DAILY LOSS HIT</div>');
+    warnings.push('<div class="pl-badge neg" style="font-size:13px;padding:8px 14px;margin-bottom:6px;">\ud83d\udea8 MAX DAILY LOSS HIT</div>');
     blocked = true;
   }
   if (streakType === 'L' && streak >= 2) {
-    warnings.push('<div style="background:rgba(255,209,102,.1);border:1px solid var(--yellow);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--yellow);margin-bottom:6px;">\u26A0\uFE0F ' + streak + ' consecutive losses — slow down, review your setups</div>');
+    warnings.push('<div style="background:rgba(255,209,102,.1);border:1px solid var(--yellow);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--yellow);margin-bottom:6px;">\u26a0\ufe0f ' + streak + ' losses in a row — are you revenge trading? Step back.</div>');
   }
   document.getElementById('dashWarnings').innerHTML = warnings.join('');
 
-  // Checklist
+  // Build checklist with section headers and serial numbers
   var el = document.getElementById('dashChecklist');
-  el.innerHTML = guardChecklist.map(function(item) {
-    return '<label style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card2);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all .2s;" id="dash_label_' + item.id + '">' +
-      '<input type="checkbox" id="dash_' + item.id + '" onchange="onDashChecklistChange()" style="width:22px;height:22px;accent-color:var(--accent);flex-shrink:0;">' +
-      '<span style="font-size:14px;color:var(--text);line-height:1.4;">' + item.text + '</span>' +
-    '</label>';
-  }).join('');
+  var sr = 1;
+  var currentSection = '';
+  var html = '';
 
-  // Status
+  guardChecklist.forEach(function(item) {
+    // Section header
+    if (item.section !== currentSection) {
+      currentSection = item.section;
+      html += '<div style="font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:2px;padding:6px 0 2px 0;margin-top:4px;">\u2014 ' + item.section + ' \u2014</div>';
+    }
+
+    html += '<div id="dash_label_' + item.id + '" style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;transition:all .2s;">' +
+      '<label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;">' +
+        '<input type="checkbox" id="dash_' + item.id + '" onchange="onDashChecklistChange()" style="width:20px;height:20px;accent-color:var(--accent);flex-shrink:0;margin-top:2px;">' +
+        '<div style="flex:1;">' +
+          '<div style="font-size:13px;color:var(--text);font-weight:600;line-height:1.4;">' +
+            '<span style="color:var(--accent);font-family:var(--mono);margin-right:6px;">' + sr + '.</span>' +
+            item.text +
+          '</div>' +
+          '<div style="font-size:11px;color:var(--muted);margin-top:5px;line-height:1.5;padding-left:18px;">' + item.detail + '</div>' +
+        '</div>' +
+      '</label>' +
+    '</div>';
+    sr++;
+  });
+
+  el.innerHTML = html;
   updateDashGuardStatus(blocked);
 }
 
 function onDashChecklistChange() {
-  var allChecked = guardChecklist.every(function(item) {
-    return document.getElementById('dash_' + item.id) && document.getElementById('dash_' + item.id).checked;
-  });
   guardChecklist.forEach(function(item) {
     var label = document.getElementById('dash_label_' + item.id);
     var cb = document.getElementById('dash_' + item.id);
-    if (cb && cb.checked) {
+    if (!label || !cb) return;
+    if (cb.checked) {
       label.style.borderColor = 'var(--green)';
-      label.style.background = 'rgba(0,224,150,.08)';
+      label.style.background = 'rgba(0,224,150,.07)';
     } else {
       label.style.borderColor = 'var(--border)';
       label.style.background = 'var(--card2)';
     }
   });
-  // Sync to Add page checklist too
-  guardChecklist.forEach(function(item) {
-    var dashCb = document.getElementById('dash_' + item.id);
-    var addCb = document.getElementById(item.id);
-    if (dashCb && addCb) addCb.checked = dashCb.checked;
-  });
   updateDashGuardStatus(false);
 }
 
 function updateDashGuardStatus(blocked) {
-  var allChecked = guardChecklist.every(function(item) {
-    return document.getElementById('dash_' + item.id) && document.getElementById('dash_' + item.id).checked;
-  });
+  var checked = guardChecklist.filter(function(item) {
+    var cb = document.getElementById('dash_' + item.id);
+    return cb && cb.checked;
+  }).length;
+  var allChecked = checked === guardChecklist.length;
   var el = document.getElementById('dashGuardStatus');
   if (blocked) {
-    el.innerHTML = '<div class="pl-badge neg" style="font-size:14px;padding:8px 20px;">\u{1F6AB} STOP TRADING TODAY</div>';
+    el.innerHTML = '<div class="pl-badge neg" style="font-size:14px;padding:8px 20px;">\ud83d\udeab STOP TRADING TODAY</div>';
   } else if (allChecked) {
-    el.innerHTML = '<div class="pl-badge pos" style="font-size:14px;padding:8px 20px;">\u2705 READY TO TRADE</div>';
+    el.innerHTML = '<div class="pl-badge pos" style="font-size:14px;padding:8px 20px;">\u2705 ALL CLEAR — READY TO TRADE</div>';
   } else {
-    var checked = guardChecklist.filter(function(item) { return document.getElementById('dash_' + item.id) && document.getElementById('dash_' + item.id).checked; }).length;
-    el.innerHTML = '<div style="font-size:12px;color:var(--muted);font-family:var(--mono);">' + checked + '/' + guardChecklist.length + ' checks done</div>';
+    var pct = Math.round((checked / guardChecklist.length) * 100);
+    el.innerHTML =
+      '<div style="margin-bottom:8px;">' +
+        '<div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;">' +
+          '<div style="height:100%;width:' + pct + '%;background:var(--accent);border-radius:3px;transition:width .3s;"></div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="font-size:12px;color:var(--muted);font-family:var(--mono);text-align:center;">' + checked + '/' + guardChecklist.length + ' checks done (' + pct + '%)</div>';
   }
 }
+
 
 // ── LIVE MARKET CHART ──────────────────────────────────────────────────────
 var currentChartSymbol = 'NIFTY';
@@ -2055,22 +2071,96 @@ function showToast(message) {
 
 // ── TRADE GUARD ────────────────────────────────────────────────────────────
 var guardChecklist = [
-  // Market conditions
-  { id: 'tg1', text: '📊 Checked first 15-min candle direction & closed?' },
-  { id: 'tg2', text: '📈 VWAP position confirmed — price above (bullish) or below (bearish)?' },
-  { id: 'tg3', text: '🔍 Checked OI data on Sensibull — identified support/resistance walls?' },
-  { id: 'tg4', text: '📉 India VIX checked — not spiking / rising sharply?' },
-  { id: 'tg5', text: '🕐 Entry time is between 9:45 AM – 11:30 AM?' },
-  // Strategy checks
-  { id: 'tg6', text: '🎯 Selling strikes are BEYOND OI walls (max OI strike)?' },
-  { id: 'tg7', text: '📐 Spread width decided — 50pt or 100pt spread?' },
-  { id: 'tg8', text: '💰 Exit targets set — profit at 50% premium, SL at 2x premium?' },
-  // Expiry awareness
-  { id: 'tg9', text: '📅 Aware of expiry day — if expiry today, will exit by 2 PM?' },
-  // Discipline
-  { id: 'tg10', text: '😤 I am NOT in revenge mode after previous loss?' },
-  { id: 'tg11', text: '🚫 This is within my 2-trade daily limit?' },
-  { id: 'tg12', text: '✅ I will exit at SL — no averaging, no hoping?' }
+  // MARKET CONDITIONS
+  {
+    id: 'tg1', section: 'MARKET CONDITIONS',
+    text: 'First 15-min candle has closed and direction confirmed',
+    detail: 'Wait until 9:30 AM for the first candle to close. Green candle + above VWAP = bullish day → Bull Put Spread. Red candle + below VWAP = bearish day → Bear Call Spread. Never enter during 9:15–9:30 AM chaos.'
+  },
+  {
+    id: 'tg2', section: 'MARKET CONDITIONS',
+    text: 'VWAP position confirmed — price clearly above or below',
+    detail: 'VWAP = Volume Weighted Average Price. Price above VWAP = institutions are net buyers = bullish bias. Price below = bearish. Your spread must align with VWAP direction. Contradicting VWAP = fighting institutions.'
+  },
+  {
+    id: 'tg3', section: 'MARKET CONDITIONS',
+    text: 'OI data checked on Sensibull — walls identified',
+    detail: 'Check highest Call OI strike (resistance ceiling) and highest Put OI strike (support floor). These are the walls where big writers are defending. Your sold strikes must be beyond these walls for maximum protection.'
+  },
+  {
+    id: 'tg4', section: 'MARKET CONDITIONS',
+    text: 'India VIX checked — stable or falling (not spiking)',
+    detail: 'VIX > 15 and falling = great time to sell (high premium decaying fast). VIX suddenly spiking intraday = danger, your short premium will inflate against you. If VIX spikes > 5% intraday, consider exiting.'
+  },
+  {
+    id: 'tg5', section: 'MARKET CONDITIONS',
+    text: 'Entry time is between 9:45 AM – 11:30 AM',
+    detail: 'Before 9:45 = too early, direction not confirmed. After 11:30 = premium is thin, reward doesn\'t justify risk. Sweet spot is 9:45–11:30 AM. You sell earlier = more theta captured over the day.'
+  },
+  // STRATEGY
+  {
+    id: 'tg6', section: 'STRATEGY',
+    text: 'Strategy selected — Bull Put Spread or Bear Call Spread',
+    detail: 'Bullish bias (price above VWAP, green candle, Put OI building) → Bull Put Spread (sell PE spread). Bearish bias (price below VWAP, red candle, Call OI building) → Bear Call Spread (sell CE spread). Never pick a spread randomly.'
+  },
+  {
+    id: 'tg7', section: 'STRATEGY',
+    text: 'Sold strike is BEYOND the OI wall, not inside it',
+    detail: 'Example: Highest Put OI at 24400 → sell at 24400 PE or lower. The OI wall must be between spot price and your sold strike — it acts as your shield. Selling inside the wall = no protection at all.'
+  },
+  {
+    id: 'tg8', section: 'STRATEGY',
+    text: 'Spread width decided — 50pt or 100pt based on capital',
+    detail: '50pt spread = less max loss, less premium. 100pt spread = more premium, more risk. For NIFTY: 100pt spread × 25 lots = ₹2500 max loss per lot. Choose width based on your daily max loss limit. Wider is not always better.'
+  },
+  {
+    id: 'tg9', section: 'STRATEGY',
+    text: 'OI Change supports my direction — active writing on my side',
+    detail: 'OI increasing on Put side = Put writers are active = bullish support forming → confirms Bull Put Spread. OI increasing on Call side = Call writers active = bearish resistance forming → confirms Bear Call Spread. Check OI Change tab on Sensibull.'
+  },
+  // RISK MANAGEMENT
+  {
+    id: 'tg10', section: 'RISK MANAGEMENT',
+    text: 'Profit target set — will exit when 50% of premium is captured',
+    detail: 'If net credit collected = ₹30, your profit target = close when spread costs ₹15 (50% of ₹30 captured). This locks in majority of profit without holding till expiry. Calculate this number BEFORE entering and write it down.'
+  },
+  {
+    id: 'tg11', section: 'RISK MANAGEMENT',
+    text: 'Stop loss set — will exit if premium doubles (2x rule)',
+    detail: 'If you collected ₹30 net credit, SL = exit when spread costs ₹60. ALSO exit immediately if spot price crosses your sold strike — don\'t wait for 2x in that case. Hard rule. No exceptions. No averaging.'
+  },
+  {
+    id: 'tg12', section: 'RISK MANAGEMENT',
+    text: 'Total lots planned — max lots for today decided before market opens',
+    detail: 'Decide your max lots BEFORE the day starts. Scale in only if trend confirms after 1st entry. Never add lots after 12:30 PM. Never add more lots than your first entry. Total max loss across all lots must fit your daily limit.'
+  },
+  // EXPIRY AWARENESS
+  {
+    id: 'tg13', section: 'EXPIRY AWARENESS',
+    text: 'Aware of today\'s expiry — NIFTY = Tuesday, SENSEX = Thursday',
+    detail: 'Mon/Tue → trade NIFTY (Wed was old expiry, now TUESDAY expiry). Wed/Thu → trade SENSEX (Thursday expiry). On expiry day: enter before 11 AM only, gamma risk is extreme in last 2 hours. Exit by 2 PM no matter what.'
+  },
+  {
+    id: 'tg14', section: 'EXPIRY AWARENESS',
+    text: 'If expiry today — will exit position before 2:00 PM',
+    detail: 'After 2 PM on expiry day, gamma becomes unpredictable. A 50-point NIFTY move can turn ₹3000 profit into ₹10000 loss with gamma. The last ₹5-10 premium is NOT worth this risk. Set a 1:55 PM alarm on your phone.'
+  },
+  // DISCIPLINE
+  {
+    id: 'tg15', section: 'DISCIPLINE',
+    text: 'I am NOT in revenge mode — last trade result is not affecting this decision',
+    detail: 'After a loss, your brain wants to recover fast. This causes rushed entries, wrong strikes, ignoring VWAP, oversizing. Ask yourself: "Would I take this trade if I hadn\'t just lost?" If no → don\'t take it. Take a 5-minute break first.'
+  },
+  {
+    id: 'tg16', section: 'DISCIPLINE',
+    text: 'This is within my 2-trade daily limit for today',
+    detail: 'You have a 2-trade daily limit. Count your trades today. If you have already done 2 — STOP. No exceptions, no "just one more". More trades = more exposure = more chances of a big loss. Quality over quantity.'
+  },
+  {
+    id: 'tg17', section: 'DISCIPLINE',
+    text: 'I will exit at SL without hesitation — no hoping, no averaging down',
+    detail: 'Commit to this before entering. Averaging a losing credit spread = doubling down on a position going against you. One big holding-loss can erase 10 winning days. Your SL is your protection — honor it every single time.'
+  }
 ];
 
 var cooldownInterval = null;

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tradelog-v17';
+const CACHE_NAME = 'tradelog-v18';
 const ASSETS = [
   '/',
   '/index.html',
