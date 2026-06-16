@@ -488,122 +488,246 @@
 </div>
 
 <!-- ADD ENTRY PAGE -->
+<!-- ADD ENTRY PAGE -->
 <div id="pageAdd" class="page">
 
-  <!-- TRADE GUARD -->
-  <div id="tradeGuard">
+  <!-- TAB SWITCHER -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;background:var(--card2);border-radius:12px;padding:4px;margin-bottom:14px;">
+    <button id="tabAddTrade" onclick="switchAddTab('trade')" style="padding:10px;border:none;border-radius:9px;background:var(--accent);color:#000;font-family:var(--mono);font-size:12px;font-weight:700;cursor:pointer;">➕ ADD TRADE</button>
+    <button id="tabDayReview" onclick="switchAddTab('review')" style="padding:10px;border:none;border-radius:9px;background:none;color:var(--muted);font-family:var(--mono);font-size:12px;font-weight:700;cursor:pointer;">📋 DAY REVIEW</button>
+  </div>
+
+  <!-- ADD TRADE PANEL -->
+  <div id="panelAddTrade">
     <div class="card">
-      <div class="card-title">🛡️ TRADE GUARD</div>
+      <div class="card-title">➕ ADD TRADE ENTRY</div>
+      <div class="edit-mode-banner" id="editModeBanner">✏️ Editing trade entry</div>
 
-      <!-- Today's Stats -->
-      <div class="stats-grid" style="margin-bottom:14px;">
-        <div class="stat-card">
-          <div class="stat-label">TRADES TODAY</div>
-          <div class="stat-val accent" id="tgTradeCount">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">TODAY'S P&L</div>
-          <div class="stat-val" id="tgTodayPL">₹0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">STREAK</div>
-          <div class="stat-val" id="tgStreak">-</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">LAST TRADE</div>
-          <div class="stat-val" id="tgLastTrade">-</div>
+      <!-- Instrument -->
+      <div class="form-group">
+        <label class="form-label">INSTRUMENT</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <button class="filter-btn active" id="instrNIFTY" onclick="selectInstrument('NIFTY')" style="padding:10px;font-size:13px;">NIFTY</button>
+          <button class="filter-btn" id="instrSENSEX" onclick="selectInstrument('SENSEX')" style="padding:10px;font-size:13px;">SENSEX</button>
         </div>
       </div>
 
-      <!-- Warning Badges -->
-      <div id="tgWarnings" style="margin-bottom:14px;"></div>
-
-      <!-- Cooldown Timer -->
-      <div id="tgCooldown" style="display:none;text-align:center;margin-bottom:14px;">
-        <div style="background:rgba(255,95,87,.12);border:1px solid var(--red);border-radius:10px;padding:14px;">
-          <div style="font-size:11px;color:var(--red);margin-bottom:6px;font-family:var(--mono);">⏳ COOLDOWN ACTIVE</div>
-          <div style="font-size:28px;font-family:var(--mono);font-weight:700;color:var(--red);" id="tgCooldownTimer">00:00</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Breathe. Review. Then decide.</div>
+      <!-- Strategy -->
+      <div class="form-group">
+        <label class="form-label">STRATEGY</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <button class="filter-btn active" id="stratBullPut" onclick="selectStrategy('Bull Put Spread')" style="padding:10px;font-size:12px;background:rgba(0,224,150,.15);border-color:var(--green);color:var(--green);">🐂 BULL PUT SPREAD</button>
+          <button class="filter-btn" id="stratBearCall" onclick="selectStrategy('Bear Call Spread')" style="padding:10px;font-size:12px;">🐻 BEAR CALL SPREAD</button>
         </div>
       </div>
-    </div>
 
-    <!-- Settings -->
-    <div class="card">
-      <div class="card-title">⚙️ DAILY LIMITS</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+      <!-- Market Bias -->
+      <div class="form-group">
+        <label class="form-label">MARKET BIAS AT ENTRY</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+          <button class="filter-btn" id="biasBullish" onclick="selectBias('Bullish')" style="padding:8px;font-size:11px;">📈 Bullish</button>
+          <button class="filter-btn" id="biasSideways" onclick="selectBias('Sideways')" style="padding:8px;font-size:11px;">↔️ Sideways</button>
+          <button class="filter-btn" id="biasBearish" onclick="selectBias('Bearish')" style="padding:8px;font-size:11px;">📉 Bearish</button>
+        </div>
+      </div>
+
+      <!-- Strikes -->
+      <div id="strikeInputs">
+        <label class="form-label" id="strikeLabel">SELL STRIKE (PE) + BUY STRIKE (PE)</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div>
+            <label class="form-label" style="font-size:9px;" id="sellStrikeLabel">SELL (Higher PE)</label>
+            <input type="number" class="form-input" id="entrySellStrike" placeholder="24200">
+          </div>
+          <div>
+            <label class="form-label" style="font-size:9px;" id="buyStrikeLabel">BUY (Lower PE)</label>
+            <input type="number" class="form-input" id="entryBuyStrike" placeholder="24100">
+          </div>
+        </div>
+      </div>
+
+      <!-- Spread Width -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
         <div>
-          <label class="form-label">MAX TRADES</label>
-          <input type="number" class="form-input" id="tgMaxTrades" placeholder="3" onchange="saveGuardSettings()">
+          <label class="form-label">SPREAD WIDTH</label>
+          <input type="number" class="form-input" id="entrySpreadWidth" placeholder="100" readonly style="opacity:.7;">
         </div>
         <div>
-          <label class="form-label">MAX LOSS (₹)</label>
-          <input type="number" class="form-input" id="tgMaxLoss" placeholder="5000" onchange="saveGuardSettings()">
-        </div>
-        <div>
-          <label class="form-label">COOLDOWN (min)</label>
-          <input type="number" class="form-input" id="tgCooldownMin" placeholder="5" onchange="saveGuardSettings()">
+          <label class="form-label">LOT SIZE</label>
+          <input type="number" class="form-input" id="entryLots" placeholder="1" oninput="calcSpreadPnL()">
         </div>
       </div>
-    </div>
 
-    <!-- Pre-Trade Checklist -->
-    <div class="card">
-      <div class="card-title">✅ PRE-TRADE CHECKLIST</div>
-      <div id="tgChecklist" style="display:flex;flex-direction:column;gap:10px;">
+      <!-- Premiums -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+        <div>
+          <label class="form-label" id="sellPremLabel">SELL PREMIUM (₹)</label>
+          <input type="number" class="form-input" id="entrySellPrem" placeholder="80" oninput="calcSpreadPnL()">
+        </div>
+        <div>
+          <label class="form-label" id="buyPremLabel">BUY PREMIUM (₹)</label>
+          <input type="number" class="form-input" id="entryBuyPrem" placeholder="50" oninput="calcSpreadPnL()">
+        </div>
       </div>
-      <div style="margin-top:14px;">
-        <button class="submit-btn" id="tgProceedBtn" onclick="unlockTradeForm()" disabled style="opacity:0.4;">
-          🔒 COMPLETE CHECKLIST TO TRADE
-        </button>
+
+      <!-- Calc Summary -->
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
+        <div>
+          <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">NET CREDIT</div>
+          <div style="font-size:16px;font-weight:700;font-family:var(--mono);color:var(--green);" id="netCreditDisplay">₹0</div>
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">MAX PROFIT</div>
+          <div style="font-size:16px;font-weight:700;font-family:var(--mono);color:var(--green);" id="maxProfitDisplay">₹0</div>
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">MAX LOSS</div>
+          <div style="font-size:16px;font-weight:700;font-family:var(--mono);color:var(--red);" id="maxLossDisplay">₹0</div>
+        </div>
+      </div>
+
+      <!-- RR display -->
+      <div id="rrDisplay" style="text-align:center;margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--muted);"></div>
+
+      <!-- Date & Capital -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">DATE</label>
+          <input type="date" class="form-input" id="entryDate">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">CAPITAL (₹)</label>
+          <input type="number" class="form-input" id="entryCapital" placeholder="200000">
+        </div>
+      </div>
+
+      <!-- P/L at exit -->
+      <div class="form-group" style="margin-top:10px;">
+        <label class="form-label">ACTUAL P/L (₹) — fill at exit</label>
+        <input type="number" class="form-input" id="entryPL" placeholder="e.g. 3000">
+      </div>
+
+      <!-- Stop Loss Hit -->
+      <div class="form-group">
+        <label class="form-label">EXIT REASON</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+          <button class="filter-btn active" id="exitTarget" onclick="selectExit('Target')" style="padding:8px;font-size:11px;">✅ Target</button>
+          <button class="filter-btn" id="exitSL" onclick="selectExit('Stop Loss')" style="padding:8px;font-size:11px;">🛑 SL Hit</button>
+          <button class="filter-btn" id="exitManual" onclick="selectExit('Manual')" style="padding:8px;font-size:11px;">🤚 Manual</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">NOTES</label>
+        <textarea class="form-input" id="entryComment" placeholder="Strike selection reason, VWAP position, OI levels, VIX..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">SELF ANALYSIS</label>
+        <textarea class="form-input" id="entryAnalysis" placeholder="✅ Followed plan  ⚠️ Hesitated  🚨 Broke rules  📖 Lesson learned"></textarea>
+      </div>
+
+      <div id="addModeButtons">
+        <button class="submit-btn" onclick="saveEntry()">💾 SAVE TRADE</button>
+      </div>
+      <div id="editModeButtons" style="display:none;">
+        <div class="btn-row">
+          <button class="btn-update" onclick="updateEntry()">UPDATE</button>
+          <button class="btn-delete" onclick="deleteEntry()">DELETE</button>
+        </div>
+        <button class="btn-cancel" onclick="cancelEdit()" style="width:100%;margin-top:10px;">CANCEL</button>
       </div>
     </div>
   </div>
 
-  <!-- TRADE FORM (hidden until guard is passed) -->
-  <div id="tradeFormWrap" style="display:none;">
-  <div class="card">
-    <div style="text-align:center;margin-bottom:12px;">
-      <span style="background:rgba(0,224,150,.12);color:var(--green);font-size:12px;font-family:var(--mono);padding:4px 12px;border-radius:20px;">✅ GUARD PASSED</span>
-      <button onclick="lockTradeForm()" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;margin-left:8px;">← Back to checklist</button>
-    </div>
-    <div class="edit-mode-banner" id="editModeBanner">
-      ✏️ Editing trade entry
-    </div>
-    
-    <div class="form-group">
-      <label class="form-label">DATE</label>
-      <input type="date" class="form-input" id="entryDate" value="">
-    </div>
-    <div class="form-group">
-      <label class="form-label">CAPITAL (₹)</label>
-      <input type="number" class="form-input" id="entryCapital" placeholder="100000">
-    </div>
-    <div class="form-group">
-      <label class="form-label">P/L (₹)</label>
-      <input type="number" class="form-input" id="entryPL" placeholder="2500">
-    </div>
-    <div class="form-group">
-      <label class="form-label">COMMENT (Optional)</label>
-      <textarea class="form-input" id="entryComment" placeholder="Trade notes, strategy used, market conditions..."></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">ANALYSIS (Optional)</label>
-      <textarea class="form-input" id="entryAnalysis" placeholder="Self-analysis with emojis: ✅ Good execution, ⚠️ Warning signs, 🚨 Rule broken..."></textarea>
-    </div>
-    
-    <div id="addModeButtons">
-      <button class="submit-btn" onclick="saveEntry()">ADD ENTRY</button>
-    </div>
-    
-    <div id="editModeButtons" style="display: none;">
-      <div class="btn-row">
-        <button class="btn-update" onclick="updateEntry()">UPDATE</button>
-        <button class="btn-delete" onclick="deleteEntry()">DELETE</button>
+  <!-- DAY REVIEW PANEL -->
+  <div id="panelDayReview" style="display:none;">
+    <div class="card">
+      <div class="card-title">📋 END OF DAY REVIEW</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Be honest. This is only for you.</div>
+
+      <!-- Auto stats for today -->
+      <div id="reviewTodayStats" style="background:var(--card2);border-radius:10px;padding:12px;margin-bottom:14px;"></div>
+
+      <!-- Questions -->
+      <div style="display:flex;flex-direction:column;gap:14px;" id="reviewQuestions">
+
+        <div>
+          <label class="form-label">1. Did you follow the 2-trade limit today?</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button class="filter-btn" id="rq1yes" onclick="selectReview('rq1','Yes')" style="padding:10px;">✅ Yes</button>
+            <button class="filter-btn" id="rq1no" onclick="selectReview('rq1','No')" style="padding:10px;">❌ No</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label">2. Did you wait for 15-min candle to close before entering?</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button class="filter-btn" id="rq2yes" onclick="selectReview('rq2','Yes')" style="padding:10px;">✅ Yes</button>
+            <button class="filter-btn" id="rq2no" onclick="selectReview('rq2','No')" style="padding:10px;">❌ No</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label">3. Did you check VWAP direction before entering?</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button class="filter-btn" id="rq3yes" onclick="selectReview('rq3','Yes')" style="padding:10px;">✅ Yes</button>
+            <button class="filter-btn" id="rq3no" onclick="selectReview('rq3','No')" style="padding:10px;">❌ No</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label">4. Did you check OI data before picking strikes?</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button class="filter-btn" id="rq4yes" onclick="selectReview('rq4','Yes')" style="padding:10px;">✅ Yes</button>
+            <button class="filter-btn" id="rq4no" onclick="selectReview('rq4','No')" style="padding:10px;">❌ No</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label">5. What was your Risk:Reward today?</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <button class="filter-btn" id="rq5a" onclick="selectReview('rq5','1:1.5+')" style="padding:8px;font-size:11px;">✅ 1:1.5+</button>
+            <button class="filter-btn" id="rq5b" onclick="selectReview('rq5','1:1')" style="padding:8px;font-size:11px;">⚠️ 1:1</button>
+            <button class="filter-btn" id="rq5c" onclick="selectReview('rq5','<1:1')" style="padding:8px;font-size:11px;">🚨 &lt;1:1</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label">6. Did you exit at stop loss without hesitation?</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <button class="filter-btn" id="rq6yes" onclick="selectReview('rq6','Yes')" style="padding:8px;font-size:11px;">✅ Yes</button>
+            <button class="filter-btn" id="rq6no" onclick="selectReview('rq6','No — held')" style="padding:8px;font-size:11px;">🚨 Held</button>
+            <button class="filter-btn" id="rq6na" onclick="selectReview('rq6','No SL hit')" style="padding:8px;font-size:11px;">N/A</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label">7. Did you take a revenge trade after a loss?</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button class="filter-btn" id="rq7yes" onclick="selectReview('rq7','Yes')" style="padding:10px;">🚨 Yes</button>
+            <button class="filter-btn" id="rq7no" onclick="selectReview('rq7','No')" style="padding:10px;">✅ No</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label">8. Overall discipline score today</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:6px;">
+            <button class="filter-btn" id="rq8a" onclick="selectReview('rq8','2/5')" style="padding:8px;font-size:12px;">2⭐</button>
+            <button class="filter-btn" id="rq8b" onclick="selectReview('rq8','3/5')" style="padding:8px;font-size:12px;">3⭐</button>
+            <button class="filter-btn" id="rq8c" onclick="selectReview('rq8','4/5')" style="padding:8px;font-size:12px;">4⭐</button>
+            <button class="filter-btn" id="rq8d" onclick="selectReview('rq8','5/5')" style="padding:8px;font-size:12px;">5⭐</button>
+            <button class="filter-btn" id="rq8e" onclick="selectReview('rq8','1/5')" style="padding:8px;font-size:12px;">1⭐</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">9. Key lesson / observation today</label>
+          <textarea class="form-input" id="reviewLesson" placeholder="What worked? What didn't? What will you do differently tomorrow?"></textarea>
+        </div>
+
       </div>
-      <button class="btn-cancel" onclick="cancelEdit()" style="width: 100%; margin-top: 10px;">CANCEL</button>
+      <button class="submit-btn" onclick="saveDayReview()" style="margin-top:14px;">💾 SAVE DAY REVIEW</button>
     </div>
-  </div>
   </div>
 
 </div>
@@ -861,13 +985,7 @@ function goPage(name) {
   if (name === 'Add') {
     if (editingIndex === null) {
       cancelEdit();
-      document.getElementById('tradeGuard').style.display = 'block';
-      document.getElementById('tradeFormWrap').style.display = 'none';
-      renderTradeGuard();
-    } else {
-      // Editing from journal — skip guard, show form directly
-      document.getElementById('tradeGuard').style.display = 'none';
-      document.getElementById('tradeFormWrap').style.display = 'block';
+      document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
     }
   }
 }
@@ -907,13 +1025,18 @@ setInterval(updateMarketStatus, 30000);
 
 // ── QUICK LINKS ────────────────────────────────────────────────────────────
 var defaultLinks = [
-  { name: 'Kite', url: 'https://kite.zerodha.com' },
-  { name: 'TradingView', url: 'https://in.tradingview.com/chart/' },
-  { name: 'NSE Option Chain', url: 'https://www.nseindia.com/option-chain' }
+  { name: 'TradingView', url: 'https://www.tradingview.com/chart/?symbol=NSE%3ANIFTY&utm_source=www.tradingview.com&utm_medium=widget&utm_campaign=chart&utm_term=NSE%3ANIFTY' },
+  { name: 'Sensibull OI', url: 'https://web.sensibull.com/open-interest/oi-vs-strike?tradingsymbol=NIFTY' },
+  { name: 'Kite Login', url: 'https://kite.zerodha.com' }
 ];
 
 function getQuickLinks() {
   var saved = localStorage.getItem('quick_links');
+  // Reset if saved links are old defaults (Kite/NSE option chain)
+  if (saved && (saved.includes('option-chain') || saved.includes('in.tradingview.com'))) {
+    localStorage.removeItem('quick_links');
+    saved = null;
+  }
   return saved ? JSON.parse(saved) : defaultLinks;
 }
 
@@ -926,9 +1049,15 @@ function renderQuickLinks() {
   var row = document.getElementById('quickLinksRow');
   row.innerHTML = links.map(function(l, i) {
     var displayName = l.name || 'Link ' + (i+1);
+    var icon = '🌐';
+    var name = (l.name || '').toLowerCase();
+    if (name.includes('kite') || name.includes('zerodha')) icon = '📈';
+    else if (name.includes('tradingview') || name.includes('chart')) icon = '📊';
+    else if (name.includes('sensibull') || name.includes('oi') || name.includes('option')) icon = '🔍';
+    else if (name.includes('nse') || name.includes('bse')) icon = '🏛️';
     return '<a href="' + (l.url || '#') + '" target="_blank" rel="noopener" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px 6px;text-decoration:none;transition:all .2s;" ' +
       'onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\'">' +
-      '<span style="font-size:18px;">🌐</span>' +
+      '<span style="font-size:20px;">' + icon + '</span>' +
       '<span style="font-size:11px;color:var(--text);font-weight:600;text-align:center;line-height:1.2;word-break:break-word;">' + displayName + '</span>' +
     '</a>';
   }).join('');
@@ -1351,59 +1480,231 @@ function deleteEntry() {
 
 function cancelEdit() {
   editingIndex = null;
-  
-  // Clear form
   document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
-  document.getElementById('entryCapital').value = '';
-  document.getElementById('entryPL').value = '';
-  document.getElementById('entryComment').value = '';
-  document.getElementById('entryAnalysis').value = '';
-  
-  // Switch to add mode
+  ['entryCapital','entryPL','entryComment','entryAnalysis',
+   'entrySellStrike','entryBuyStrike','entrySellPrem','entryBuyPrem','entryLots'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  if (document.getElementById('netCreditDisplay')) document.getElementById('netCreditDisplay').textContent = '₹0';
+  if (document.getElementById('maxProfitDisplay')) document.getElementById('maxProfitDisplay').textContent = '₹0';
+  if (document.getElementById('maxLossDisplay')) document.getElementById('maxLossDisplay').textContent = '₹0';
+  if (document.getElementById('rrDisplay')) document.getElementById('rrDisplay').innerHTML = '';
   document.getElementById('editModeBanner').classList.remove('active');
   document.getElementById('addModeButtons').style.display = 'block';
   document.getElementById('editModeButtons').style.display = 'none';
 }
 
 // ── ADD ENTRY ──────────────────────────────────────────────────────────────
+var selectedInstrument = 'NIFTY';
+var selectedStrategy = 'Bull Put Spread';
+var selectedBias = 'Bullish';
+var selectedExit = 'Target';
+var reviewAnswers = {};
+var NIFTY_LOT = 25;
+var SENSEX_LOT = 10;
+
+function switchAddTab(tab) {
+  var isTrade = tab === 'trade';
+  document.getElementById('panelAddTrade').style.display = isTrade ? 'block' : 'none';
+  document.getElementById('panelDayReview').style.display = isTrade ? 'none' : 'block';
+  document.getElementById('tabAddTrade').style.background = isTrade ? 'var(--accent)' : 'none';
+  document.getElementById('tabAddTrade').style.color = isTrade ? '#000' : 'var(--muted)';
+  document.getElementById('tabDayReview').style.background = isTrade ? 'none' : 'var(--accent)';
+  document.getElementById('tabDayReview').style.color = isTrade ? 'var(--muted)' : '#000';
+  if (!isTrade) renderReviewStats();
+}
+
+function selectInstrument(inst) {
+  selectedInstrument = inst;
+  document.getElementById('instrNIFTY').classList.toggle('active', inst === 'NIFTY');
+  document.getElementById('instrSENSEX').classList.toggle('active', inst === 'SENSEX');
+  calcSpreadPnL();
+}
+
+function selectStrategy(strat) {
+  selectedStrategy = strat;
+  var isBull = strat === 'Bull Put Spread';
+  document.getElementById('stratBullPut').classList.toggle('active', isBull);
+  document.getElementById('stratBearCall').classList.toggle('active', !isBull);
+  document.getElementById('stratBullPut').style.background = isBull ? 'rgba(0,224,150,.15)' : '';
+  document.getElementById('stratBullPut').style.borderColor = isBull ? 'var(--green)' : '';
+  document.getElementById('stratBullPut').style.color = isBull ? 'var(--green)' : '';
+  document.getElementById('stratBearCall').style.background = !isBull ? 'rgba(255,95,87,.15)' : '';
+  document.getElementById('stratBearCall').style.borderColor = !isBull ? 'var(--red)' : '';
+  document.getElementById('stratBearCall').style.color = !isBull ? 'var(--red)' : '';
+  // Update labels
+  if (isBull) {
+    document.getElementById('sellStrikeLabel').textContent = 'SELL (Higher PE Strike)';
+    document.getElementById('buyStrikeLabel').textContent = 'BUY (Lower PE Strike)';
+    document.getElementById('sellPremLabel').textContent = 'SELL PE PREMIUM (₹)';
+    document.getElementById('buyPremLabel').textContent = 'BUY PE PREMIUM (₹)';
+  } else {
+    document.getElementById('sellStrikeLabel').textContent = 'SELL (Lower CE Strike)';
+    document.getElementById('buyStrikeLabel').textContent = 'BUY (Higher CE Strike)';
+    document.getElementById('sellPremLabel').textContent = 'SELL CE PREMIUM (₹)';
+    document.getElementById('buyPremLabel').textContent = 'BUY CE PREMIUM (₹)';
+  }
+  calcSpreadPnL();
+}
+
+function selectBias(bias) {
+  selectedBias = bias;
+  ['Bullish','Sideways','Bearish'].forEach(function(b) {
+    document.getElementById('bias'+b).classList.toggle('active', b === bias);
+  });
+}
+
+function selectExit(reason) {
+  selectedExit = reason;
+  ['Target','Stop Loss','Manual'].forEach(function(r) {
+    document.getElementById('exit' + r.replace(' ','')).classList.toggle('active', r === reason);
+  });
+}
+
+function calcSpreadPnL() {
+  var sell = parseFloat(document.getElementById('entrySellStrike').value) || 0;
+  var buy = parseFloat(document.getElementById('entryBuyStrike').value) || 0;
+  var sellPrem = parseFloat(document.getElementById('entrySellPrem').value) || 0;
+  var buyPrem = parseFloat(document.getElementById('entryBuyPrem').value) || 0;
+  var lots = parseFloat(document.getElementById('entryLots').value) || 1;
+  var lotSize = selectedInstrument === 'NIFTY' ? NIFTY_LOT : SENSEX_LOT;
+
+  var width = Math.abs(sell - buy);
+  document.getElementById('entrySpreadWidth').value = width || '';
+
+  var netCredit = (sellPrem - buyPrem);
+  var maxProfit = netCredit * lots * lotSize;
+  var maxLoss = (width - netCredit) * lots * lotSize;
+  var rr = maxLoss > 0 ? (maxProfit / maxLoss).toFixed(2) : '-';
+
+  document.getElementById('netCreditDisplay').textContent = netCredit > 0 ? '₹' + netCredit.toFixed(1) : '₹0';
+  document.getElementById('maxProfitDisplay').textContent = maxProfit > 0 ? '₹' + maxProfit.toLocaleString('en-IN') : '₹0';
+  document.getElementById('maxLossDisplay').textContent = maxLoss > 0 ? '₹' + maxLoss.toLocaleString('en-IN') : '₹0';
+
+  var rrEl = document.getElementById('rrDisplay');
+  if (netCredit > 0 && maxLoss > 0) {
+    var rrColor = parseFloat(rr) >= 0.5 ? 'var(--green)' : 'var(--red)';
+    rrEl.innerHTML = 'Risk:Reward = <span style="color:' + rrColor + ';font-weight:700;">₹' + maxProfit.toLocaleString('en-IN') + ' : ₹' + maxLoss.toLocaleString('en-IN') + ' (' + rr + ':1)</span>';
+  } else {
+    rrEl.innerHTML = '';
+  }
+}
+
+// Add strike input listeners
+document.addEventListener('DOMContentLoaded', function() {
+  ['entrySellStrike','entryBuyStrike','entrySellPrem','entryBuyPrem','entryLots'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('input', calcSpreadPnL);
+  });
+});
+
 function saveEntry() {
-  const date = document.getElementById('entryDate').value;
-  const capital = parseFloat(document.getElementById('entryCapital').value);
-  const pl = parseFloat(document.getElementById('entryPL').value);
-  const comment = document.getElementById('entryComment').value.trim();
-  const analysis = document.getElementById('entryAnalysis').value.trim();
+  var date = document.getElementById('entryDate').value;
+  var capital = parseFloat(document.getElementById('entryCapital').value);
+  var pl = parseFloat(document.getElementById('entryPL').value);
+  var comment = document.getElementById('entryComment').value.trim();
+  var analysis = document.getElementById('entryAnalysis').value.trim();
+  var sellStrike = document.getElementById('entrySellStrike').value;
+  var buyStrike = document.getElementById('entryBuyStrike').value;
+  var sellPrem = parseFloat(document.getElementById('entrySellPrem').value) || 0;
+  var buyPrem = parseFloat(document.getElementById('entryBuyPrem').value) || 0;
+  var lots = parseFloat(document.getElementById('entryLots').value) || 1;
+  var lotSize = selectedInstrument === 'NIFTY' ? NIFTY_LOT : SENSEX_LOT;
+  var netCredit = sellPrem - buyPrem;
+  var spreadWidth = Math.abs((parseFloat(sellStrike)||0) - (parseFloat(buyStrike)||0));
+  var maxProfit = netCredit * lots * lotSize;
+  var maxLoss = (spreadWidth - netCredit) * lots * lotSize;
 
   if (!date || isNaN(capital) || isNaN(pl)) {
-    alert('Please fill in Date, Capital, and P/L fields.');
+    alert('Please fill Date, Capital and P/L fields.');
     return;
   }
 
-  const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const d = new Date(date);
-  const pct = capital ? parseFloat(((pl/capital)*100).toFixed(2)) : 0;
+  var dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var d = new Date(date);
+  var pct = capital ? parseFloat(((pl/capital)*100).toFixed(2)) : 0;
 
-  const tradeObj = { date, day: dayNames[d.getDay()], capital, pl, pct, comment, analysis };
+  var tradeObj = {
+    date: date, day: dayNames[d.getDay()], capital: capital, pl: pl, pct: pct,
+    comment: comment, analysis: analysis,
+    instrument: selectedInstrument,
+    strategy: selectedStrategy,
+    bias: selectedBias,
+    exitReason: selectedExit,
+    sellStrike: sellStrike, buyStrike: buyStrike,
+    sellPrem: sellPrem, buyPrem: buyPrem,
+    lots: lots, netCredit: netCredit,
+    maxProfit: maxProfit, maxLoss: maxLoss
+  };
+
   trades.push(tradeObj);
   saveTradesToLocal(trades);
   saveTradeToCloud(tradeObj);
-
-  document.getElementById('entryCapital').value = '';
-  document.getElementById('entryPL').value = '';
-  document.getElementById('entryComment').value = '';
-  document.getElementById('entryAnalysis').value = '';
-
-  // Record trade time for cooldown
   localStorage.setItem('tg_lastTradeTime', Date.now().toString());
-  
-  showToast('✓ Entry saved');
+
+  // Reset form
+  ['entrySellStrike','entryBuyStrike','entrySellPrem','entryBuyPrem','entryLots','entryCapital','entryPL','entryComment','entryAnalysis'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('entrySpreadWidth').value = '';
+  document.getElementById('netCreditDisplay').textContent = '₹0';
+  document.getElementById('maxProfitDisplay').textContent = '₹0';
+  document.getElementById('maxLossDisplay').textContent = '₹0';
+  document.getElementById('rrDisplay').innerHTML = '';
+
+  showToast('✓ Trade saved');
   renderDashboard();
   renderJournal();
-  
-  // Lock back to guard
-  lockTradeForm();
 }
 
-function showToast(message) {
+// ── DAY REVIEW ─────────────────────────────────────────────────────────────
+function selectReview(q, val) {
+  reviewAnswers[q] = val;
+  // Clear all buttons for this question, highlight selected
+  var prefix = q;
+  ['yes','no','na','a','b','c','d','e'].forEach(function(s) {
+    var el = document.getElementById(prefix + s);
+    if (el) el.classList.remove('active');
+  });
+  // Find and activate the clicked button
+  var allBtns = document.querySelectorAll('[id^="' + q + '"]');
+  allBtns.forEach(function(btn) {
+    if (btn.textContent.replace(/[✅❌🚨⚠️🛑🤚📖]/g,'').trim().replace('&lt;','<') === val.replace(/[✅❌🚨⚠️🛑🤚📖]/g,'').trim() || btn.onclick.toString().includes("'" + val + "'")) {
+      btn.classList.add('active');
+    }
+  });
+}
+
+function renderReviewStats() {
+  var todayStr = new Date().toISOString().split('T')[0];
+  var todayTrades = trades.filter(function(t) { return t.date === todayStr; });
+  var todayPL = todayTrades.reduce(function(s,t) { return s + (t.pl||0); }, 0);
+  var el = document.getElementById('reviewTodayStats');
+  el.innerHTML =
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">' +
+    '<div><div style="font-size:9px;color:var(--muted);">TRADES</div><div style="font-family:var(--mono);font-size:20px;font-weight:700;color:' + (todayTrades.length > 2 ? 'var(--red)' : 'var(--accent)') + ';">' + todayTrades.length + '/2</div></div>' +
+    '<div><div style="font-size:9px;color:var(--muted);">TODAY P&L</div><div style="font-family:var(--mono);font-size:20px;font-weight:700;color:' + (todayPL >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + fmt(todayPL) + '</div></div>' +
+    '<div><div style="font-size:9px;color:var(--muted);">WIN/LOSS</div><div style="font-family:var(--mono);font-size:20px;font-weight:700;">' + todayTrades.filter(function(t){return t.pl>0;}).length + 'W/' + todayTrades.filter(function(t){return t.pl<0;}).length + 'L</div></div>' +
+    '</div>';
+}
+
+function saveDayReview() {
+  var todayStr = new Date().toISOString().split('T')[0];
+  var lesson = document.getElementById('reviewLesson').value.trim();
+  var review = { date: todayStr, answers: Object.assign({}, reviewAnswers), lesson: lesson };
+  var reviews = JSON.parse(localStorage.getItem('day_reviews') || '[]');
+  reviews = reviews.filter(function(r) { return r.date !== todayStr; });
+  reviews.push(review);
+  localStorage.setItem('day_reviews', JSON.stringify(reviews));
+  showToast('✓ Day review saved');
+  // Show score
+  var yesCount = Object.values(reviewAnswers).filter(function(v) { return v === 'Yes' || v === '1:1.5+' || v === 'No SL hit' || v === 'No'; }).length;
+  var badge = document.getElementById('reviewTodayStats');
+  badge.innerHTML += '<div style="text-align:center;margin-top:10px;"><div class="pl-badge ' + (yesCount >= 5 ? 'pos' : 'neg') + '" style="font-size:14px;padding:6px 20px;">' + (yesCount >= 5 ? '✅ Good discipline today!' : '⚠️ Review your habits') + '</div></div>';
+}
+
   const toast = document.getElementById('toast');
   toast.textContent = message;
   toast.classList.add('show');
