@@ -1152,40 +1152,36 @@ firebase.initializeApp({
 });
 const auth = firebase.auth();
 const db = firebase.firestore();
-// Use new cache settings instead of deprecated enablePersistence()
-try {
-  db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
-} catch(e) {}
-db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+db.enablePersistence().catch(function() {});
 
 let currentUser = null;
 
 // ── AUTH ────────────────────────────────────────────────────────────────────
 function googleSignIn() {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  provider.addScope('email');
+  var provider = new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
-  // Force redirect — popup is blocked on GitHub Pages
-  auth.signInWithRedirect(provider);
-}
 
-// Handle redirect result on every page load
-auth.getRedirectResult()
-  .then(result => {
-    if (result && result.user) {
-      console.log('Signed in:', result.user.email);
-    }
-  })
-  .catch(e => {
-    console.error('Auth error:', e.code, e.message);
-    const errEl = document.getElementById('authError');
-    if (!errEl) return;
-    if (e.code === 'auth/unauthorized-domain') {
-      errEl.innerHTML = '<div style="color:var(--red);font-size:12px;margin-top:12px;padding:10px;background:rgba(255,95,87,.1);border-radius:8px;text-align:left;">🚨 <b>Domain not authorized</b><br>Firebase Console → Authentication → Settings → Authorized Domains → Add:<br><b>singhakhilesh740-svg.github.io</b></div>';
-    } else if (e.code && e.code !== 'auth/no-auth-event') {
-      errEl.innerHTML = '<div style="color:var(--red);font-size:12px;margin-top:12px;padding:10px;background:rgba(255,95,87,.1);border-radius:8px;">❌ ' + e.code + '<br>' + e.message + '</div>';
+  // Try popup first (works on desktop), fallback to redirect (mobile)
+  auth.signInWithPopup(provider).catch(function(e) {
+    console.warn('Popup failed:', e.code);
+    var errEl = document.getElementById('authError');
+    if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user') {
+      if (errEl) errEl.innerHTML = '<div style="color:var(--yellow);font-size:12px;margin-top:10px;">Popup blocked \u2014 redirecting...</div>';
+      auth.signInWithRedirect(provider);
+    } else if (e.code === 'auth/unauthorized-domain') {
+      if (errEl) errEl.innerHTML = '<div style="color:var(--red);font-size:12px;margin-top:12px;padding:10px;background:rgba(255,95,87,.1);border-radius:8px;text-align:left;">\ud83d\udea8 <b>Domain not authorized</b><br>Add <b>singhakhilesh740-svg.github.io</b> in Firebase Console \u2192 Authentication \u2192 Settings \u2192 Authorized Domains</div>';
+    } else {
+      if (errEl) errEl.innerHTML = '<div style="color:var(--red);font-size:12px;margin-top:10px;padding:10px;background:rgba(255,95,87,.1);border-radius:8px;">\u274c ' + e.code + '<br>' + e.message + '</div>';
     }
   });
+}
+
+// Handle redirect result (for mobile fallback)
+auth.getRedirectResult().catch(function(e) {
+  if (e.code && e.code !== 'auth/no-auth-event') {
+    console.error('Redirect error:', e.code);
+  }
+});
 
 function signOut() { auth.signOut(); }
 
