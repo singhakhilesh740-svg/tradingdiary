@@ -949,38 +949,26 @@ let currentUser = null;
 function googleSignIn() {
   const provider = new firebase.auth.GoogleAuthProvider();
   provider.addScope('email');
-  provider.addScope('profile');
-
-  // Try popup first
-  auth.signInWithPopup(provider)
-    .then(result => {
-      console.log('Popup sign-in success:', result.user.email);
-    })
-    .catch(e => {
-      console.warn('Popup failed:', e.code, '— trying redirect');
-      // Any popup failure → fallback to redirect
-      auth.signInWithRedirect(provider);
-    });
+  provider.setCustomParameters({ prompt: 'select_account' });
+  // Force redirect — popup is blocked on GitHub Pages
+  auth.signInWithRedirect(provider);
 }
 
 // Handle redirect result on every page load
 auth.getRedirectResult()
   .then(result => {
     if (result && result.user) {
-      console.log('Redirect sign-in success:', result.user.email);
+      console.log('Signed in:', result.user.email);
     }
   })
   .catch(e => {
-    console.error('Redirect error:', e.code, e.message);
+    console.error('Auth error:', e.code, e.message);
+    const errEl = document.getElementById('authError');
+    if (!errEl) return;
     if (e.code === 'auth/unauthorized-domain') {
-      document.getElementById('authError').innerHTML =
-        '<div style="color:var(--red);font-size:12px;margin-top:12px;padding:10px;background:rgba(255,95,87,.1);border-radius:8px;">' +
-        '🚨 Domain not authorized in Firebase.<br>' +
-        'Go to Firebase Console → Authentication → Settings → Authorized Domains<br>' +
-        '→ Add: <b>singhakhilesh740-svg.github.io</b></div>';
+      errEl.innerHTML = '<div style="color:var(--red);font-size:12px;margin-top:12px;padding:10px;background:rgba(255,95,87,.1);border-radius:8px;text-align:left;">🚨 <b>Domain not authorized</b><br>Firebase Console → Authentication → Settings → Authorized Domains → Add:<br><b>singhakhilesh740-svg.github.io</b></div>';
     } else if (e.code && e.code !== 'auth/no-auth-event') {
-      document.getElementById('authError').innerHTML =
-        '<div style="color:var(--red);font-size:12px;margin-top:12px;padding:10px;background:rgba(255,95,87,.1);border-radius:8px;">Error: ' + e.message + '</div>';
+      errEl.innerHTML = '<div style="color:var(--red);font-size:12px;margin-top:12px;padding:10px;background:rgba(255,95,87,.1);border-radius:8px;">❌ ' + e.code + '<br>' + e.message + '</div>';
     }
   });
 
