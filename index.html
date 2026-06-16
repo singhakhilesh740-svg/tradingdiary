@@ -1544,26 +1544,49 @@ function runCalc() {
   }
   document.getElementById('calcExitTimes').innerHTML = exitHtml;
 
-  // Verdict
+  // ── TRADE VERDICT ─────────────────────────────────────────────────────────
+  // R:R based on ACTUAL target (50% premium) vs ACTUAL SL (2x premium)
+  var actualRR = slPnL > 0 ? (targetPnL / slPnL) : 0;
+  var winsNeeded = actualRR > 0 ? Math.ceil(1 / actualRR) : 999;
+
   var verdictColor, verdictBg, verdictText, verdictIcon;
-  if (rr >= 0.6 && netCredit >= spreadWidth * 0.3) {
+  if (actualRR >= 0.5) {
     verdictColor = 'var(--green)'; verdictBg = 'rgba(0,224,150,.1)';
     verdictIcon = '\u2705'; verdictText = 'GOOD TRADE SETUP';
-  } else if (rr >= 0.4) {
+  } else if (actualRR >= 0.33) {
     verdictColor = 'var(--yellow)'; verdictBg = 'rgba(255,209,102,.1)';
-    verdictIcon = '\u26a0\ufe0f'; verdictText = 'ACCEPTABLE — Proceed with caution';
+    verdictIcon = '\u26a0\ufe0f'; verdictText = 'ACCEPTABLE \u2014 Monitor closely';
   } else {
     verdictColor = 'var(--red)'; verdictBg = 'rgba(255,95,87,.1)';
-    verdictIcon = '\ud83d\udea8'; verdictText = 'POOR SETUP — Low reward vs risk';
+    verdictIcon = '\ud83d\udea8'; verdictText = 'POOR SETUP \u2014 Low reward vs risk';
   }
+
   document.getElementById('calcVerdict').style.background = verdictBg;
   document.getElementById('calcVerdict').style.border = '1px solid ' + verdictColor;
   document.getElementById('calcVerdict').innerHTML =
-    '<div style="font-size:20px;margin-bottom:4px;">' + verdictIcon + '</div>' +
-    '<div style="font-family:var(--mono);font-size:13px;font-weight:700;color:' + verdictColor + ';">' + verdictText + '</div>' +
-    '<div style="font-size:11px;color:var(--muted);margin-top:6px;">R:R = ' + maxProfit.toLocaleString('en-IN') + ' : ' + maxLoss.toLocaleString('en-IN') + ' (' + rr.toFixed(2) + ':1) · Credit = ' + ((netCredit/spreadWidth)*100).toFixed(0) + '% of width</div>';
+    '<div style="font-size:22px;margin-bottom:6px;">' + verdictIcon + '</div>' +
+    '<div style="font-family:var(--mono);font-size:14px;font-weight:700;color:' + verdictColor + ';margin-bottom:10px;">' + verdictText + '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;">' +
+      '<div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;">' +
+        '<div style="font-size:9px;color:var(--muted);margin-bottom:4px;">TARGET (50%)</div>' +
+        '<div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--green);">+\u20b9' + targetPnL.toLocaleString('en-IN') + '</div>' +
+      '</div>' +
+      '<div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;">' +
+        '<div style="font-size:9px;color:var(--muted);margin-bottom:4px;">SL (2x rule)</div>' +
+        '<div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--red);">-\u20b9' + slPnL.toLocaleString('en-IN') + '</div>' +
+      '</div>' +
+      '<div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;">' +
+        '<div style="font-size:9px;color:var(--muted);margin-bottom:4px;">ACTUAL R:R</div>' +
+        '<div style="font-family:var(--mono);font-size:16px;font-weight:700;color:' + verdictColor + ';">' + actualRR.toFixed(2) + ':1</div>' +
+      '</div>' +
+    '</div>' +
+    '<div style="font-size:11px;color:var(--muted);line-height:1.6;">' +
+      'Risk \u20b9' + slPnL.toLocaleString('en-IN') + ' to earn \u20b9' + targetPnL.toLocaleString('en-IN') + ' &nbsp;|&nbsp; ' +
+      'Need <b style="color:' + verdictColor + ';">' + winsNeeded + ' win' + (winsNeeded > 1 ? 's' : '') + '</b> to recover 1 SL hit &nbsp;|&nbsp; ' +
+      'Credit = ' + ((netCredit/spreadWidth)*100).toFixed(0) + '% of width' +
+    '</div>';
 
-  // Live warnings
+    // Live warnings
   var warns = [];
   if (netCredit < 20) warns.push('\u26a0\ufe0f Very low net credit (\u20b9' + netCredit + ') — charges may eat into profit');
   if (netCredit < spreadWidth * 0.2) warns.push('\ud83d\udea8 Collecting less than 20% of spread width — not worth the risk');
