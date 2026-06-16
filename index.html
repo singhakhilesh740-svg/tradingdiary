@@ -1416,18 +1416,33 @@ function renderLinkEditor() {
   editDiv.innerHTML = html;
 }
 
+function collectLinksFromDOM() {
+  var links = [];
+  var i = 0;
+  while (true) {
+    var nameEl = document.getElementById('linkName' + i);
+    var urlEl = document.getElementById('linkUrl' + i);
+    if (!nameEl || !urlEl) break;
+    var name = nameEl.value.trim();
+    var url = urlEl.value.trim();
+    if (url && !url.startsWith('http')) url = 'https://' + url;
+    links.push({ name: name, url: url });
+    i++;
+  }
+  return links;
+}
+
 function addNewLink() {
-  var links = getQuickLinks();
+  var links = collectLinksFromDOM();
   links.push({ name: '', url: '' });
   saveQuickLinks(links);
   renderLinkEditor();
-  // Focus the new name input
   var newInput = document.getElementById('linkName' + (links.length - 1));
   if (newInput) newInput.focus();
 }
 
 function removeLink(i) {
-  var links = getQuickLinks();
+  var links = collectLinksFromDOM();
   links.splice(i, 1);
   saveQuickLinks(links);
   renderQuickLinks();
@@ -1435,19 +1450,10 @@ function removeLink(i) {
 }
 
 function saveLinkEdits() {
-  var links = getQuickLinks();
-  var newLinks = [];
-  for (var i = 0; i < links.length; i++) {
-    var nameEl = document.getElementById('linkName' + i);
-    var urlEl = document.getElementById('linkUrl' + i);
-    if (!nameEl || !urlEl) continue;
-    var name = nameEl.value.trim();
-    var url = urlEl.value.trim();
-    if (!name && !url) continue; // skip empty rows
-    if (url && !url.startsWith('http')) url = 'https://' + url;
-    newLinks.push({ name: name || 'Link', url: url });
-  }
-  saveQuickLinks(newLinks);
+  var links = collectLinksFromDOM();
+  var filtered = links.filter(function(l) { return l.name || l.url; });
+  filtered.forEach(function(l) { if (!l.name) l.name = 'Link'; });
+  saveQuickLinks(filtered);
   renderQuickLinks();
   document.getElementById('quickLinksEdit').style.display = 'none';
   document.getElementById('linkEditBtn').innerHTML = '✏️ EDIT';
