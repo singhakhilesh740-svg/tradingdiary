@@ -1340,11 +1340,8 @@ var defaultLinks = [
 
 function getQuickLinks() {
   var saved = localStorage.getItem('quick_links');
-  if (saved && (saved.includes('option-chain') || saved.includes('in.tradingview.com'))) {
-    localStorage.removeItem('quick_links');
-    saved = null;
-  }
-  return saved ? JSON.parse(saved) : defaultLinks;
+  if (!saved) return JSON.parse(JSON.stringify(defaultLinks));
+  try { return JSON.parse(saved); } catch(e) { return JSON.parse(JSON.stringify(defaultLinks)); }
 }
 
 function saveQuickLinks(links) {
