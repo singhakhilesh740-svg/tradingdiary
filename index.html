@@ -397,6 +397,136 @@
     <div id="dashGuardStatus" style="text-align:center;"></div>
   </div>
 
+  <!-- TRADE CALCULATOR -->
+  <div class="card">
+    <div class="card-title">🧮 LIVE TRADE CALCULATOR</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:14px;">Enter your spread details — get all key levels instantly</div>
+
+    <!-- Instrument + Strategy -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+      <div>
+        <label class="form-label">INSTRUMENT</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <button class="filter-btn active" id="calcNifty" onclick="selectCalcInst('NIFTY')" style="padding:8px;font-size:11px;">NIFTY</button>
+          <button class="filter-btn" id="calcSensex" onclick="selectCalcInst('SENSEX')" style="padding:8px;font-size:11px;">SENSEX</button>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">STRATEGY</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <button class="filter-btn active" id="calcBullPut" onclick="selectCalcStrat('BullPut')" style="padding:8px;font-size:10px;color:var(--green);">🐂 Bull Put</button>
+          <button class="filter-btn" id="calcBearCall" onclick="selectCalcStrat('BearCall')" style="padding:8px;font-size:10px;">🐻 Bear Call</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Strike inputs -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div>
+        <label class="form-label" id="calcSellLabel">SELL STRIKE (PE)</label>
+        <input type="number" class="form-input" id="calcSellStrike" placeholder="24200" oninput="runCalc()">
+      </div>
+      <div>
+        <label class="form-label" id="calcBuyLabel">BUY STRIKE (PE)</label>
+        <input type="number" class="form-input" id="calcBuyStrike" placeholder="24100" oninput="runCalc()">
+      </div>
+    </div>
+
+    <!-- Premium inputs -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div>
+        <label class="form-label">SELL PREM (₹)</label>
+        <input type="number" class="form-input" id="calcSellPrem" placeholder="80" oninput="runCalc()">
+      </div>
+      <div>
+        <label class="form-label">BUY PREM (₹)</label>
+        <input type="number" class="form-input" id="calcBuyPrem" placeholder="50" oninput="runCalc()">
+      </div>
+      <div>
+        <label class="form-label">LOTS</label>
+        <input type="number" class="form-input" id="calcLots" placeholder="10" oninput="runCalc()">
+      </div>
+    </div>
+
+    <!-- Entry time -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+      <div>
+        <label class="form-label">ENTRY TIME (IST)</label>
+        <input type="time" class="form-input" id="calcEntryTime" oninput="runCalc()">
+      </div>
+      <div>
+        <label class="form-label">SPOT PRICE (₹)</label>
+        <input type="number" class="form-input" id="calcSpot" placeholder="24500" oninput="runCalc()">
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="calcResults" style="display:none;">
+
+      <!-- Key levels -->
+      <div style="font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:2px;margin-bottom:8px;">— KEY LEVELS —</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+        <div style="background:rgba(0,224,150,.08);border:1px solid var(--green);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:9px;color:var(--green);letter-spacing:1px;">✅ PROFIT TARGET</div>
+          <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--green);" id="calcTarget">₹0</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="calcTargetNote"></div>
+        </div>
+        <div style="background:rgba(255,95,87,.08);border:1px solid var(--red);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:9px;color:var(--red);letter-spacing:1px;">🛑 STOP LOSS</div>
+          <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--red);" id="calcSL">₹0</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="calcSLNote"></div>
+        </div>
+      </div>
+
+      <!-- P&L levels -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
+        <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:9px;color:var(--muted);">NET CREDIT</div>
+          <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--green);" id="calcNetCredit">₹0</div>
+        </div>
+        <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:9px;color:var(--muted);">MAX PROFIT</div>
+          <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--green);" id="calcMaxProfit">₹0</div>
+        </div>
+        <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:9px;color:var(--muted);">MAX LOSS</div>
+          <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--red);" id="calcMaxLoss">₹0</div>
+        </div>
+      </div>
+
+      <!-- Break-even and distance -->
+      <div style="font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:2px;margin-bottom:8px;">— BREAK-EVEN & SAFETY —</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+        <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:9px;color:var(--muted);">BREAK-EVEN</div>
+          <div style="font-family:var(--mono);font-size:16px;font-weight:700;" id="calcBreakEven">-</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="calcBreakEvenNote"></div>
+        </div>
+        <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:9px;color:var(--muted);">DISTANCE TO BE</div>
+          <div style="font-family:var(--mono);font-size:16px;font-weight:700;" id="calcDistance">-</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="calcDistancePct"></div>
+        </div>
+      </div>
+
+      <!-- Exit times -->
+      <div style="font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:2px;margin-bottom:8px;">— EXIT SCHEDULE —</div>
+      <div id="calcExitTimes" style="background:var(--card2);border-radius:10px;padding:12px;margin-bottom:12px;"></div>
+
+      <!-- RR and verdict -->
+      <div style="font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:2px;margin-bottom:8px;">— TRADE VERDICT —</div>
+      <div id="calcVerdict" style="border-radius:10px;padding:14px;text-align:center;margin-bottom:12px;"></div>
+
+      <!-- Live warnings -->
+      <div id="calcWarnings"></div>
+
+    </div>
+
+    <div id="calcEmpty" style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">
+      Fill in the fields above to see your trade analysis
+    </div>
+  </div>
+
   <!-- LIVE MARKET CHART -->
   <div class="card" style="padding:10px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding:0 4px;">
@@ -1269,6 +1399,174 @@ function saveLinkEdits() {
   document.getElementById('quickLinksEdit').style.display = 'none';
   document.getElementById('linkEditBtn').innerHTML = '✏️ EDIT';
   showToast('✓ Links saved');
+}
+
+// ── TRADE CALCULATOR ───────────────────────────────────────────────────────
+var calcInst = 'NIFTY';
+var calcStrat = 'BullPut';
+
+function selectCalcInst(inst) {
+  calcInst = inst;
+  document.getElementById('calcNifty').classList.toggle('active', inst === 'NIFTY');
+  document.getElementById('calcSensex').classList.toggle('active', inst === 'SENSEX');
+  runCalc();
+}
+
+function selectCalcStrat(strat) {
+  calcStrat = strat;
+  var isBull = strat === 'BullPut';
+  document.getElementById('calcBullPut').classList.toggle('active', isBull);
+  document.getElementById('calcBearCall').classList.toggle('active', !isBull);
+  document.getElementById('calcBullPut').style.color = isBull ? 'var(--green)' : '';
+  document.getElementById('calcBearCall').style.color = !isBull ? 'var(--red)' : '';
+  document.getElementById('calcSellLabel').textContent = isBull ? 'SELL STRIKE (PE)' : 'SELL STRIKE (CE)';
+  document.getElementById('calcBuyLabel').textContent = isBull ? 'BUY STRIKE (PE)' : 'BUY STRIKE (CE)';
+  runCalc();
+}
+
+function runCalc() {
+  var sellStrike = parseFloat(document.getElementById('calcSellStrike').value) || 0;
+  var buyStrike = parseFloat(document.getElementById('calcBuyStrike').value) || 0;
+  var sellPrem = parseFloat(document.getElementById('calcSellPrem').value) || 0;
+  var buyPrem = parseFloat(document.getElementById('calcBuyPrem').value) || 0;
+  var lots = parseFloat(document.getElementById('calcLots').value) || 1;
+  var entryTime = document.getElementById('calcEntryTime').value;
+  var spot = parseFloat(document.getElementById('calcSpot').value) || 0;
+  var lotSize = calcInst === 'NIFTY' ? 25 : 10;
+  var isBull = calcStrat === 'BullPut';
+
+  if (!sellStrike || !buyStrike || !sellPrem || !buyPrem) {
+    document.getElementById('calcResults').style.display = 'none';
+    document.getElementById('calcEmpty').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('calcResults').style.display = 'block';
+  document.getElementById('calcEmpty').style.display = 'none';
+
+  var spreadWidth = Math.abs(sellStrike - buyStrike);
+  var netCredit = sellPrem - buyPrem;
+  var maxProfit = netCredit * lots * lotSize;
+  var maxLoss = (spreadWidth - netCredit) * lots * lotSize;
+  var rr = maxLoss > 0 ? (maxProfit / maxLoss) : 0;
+
+  // Break-even
+  var breakEven = isBull ? (sellStrike - netCredit) : (sellStrike + netCredit);
+
+  // TARGET = close when spread costs 50% of net credit (i.e. you keep 50%)
+  var targetPremium = netCredit * 0.5;
+  var targetPnL = targetPremium * lots * lotSize;
+
+  // SL = spread costs 2x net credit
+  var slPremium = netCredit * 2;
+  var slPnL = (slPremium - netCredit) * lots * lotSize;
+
+  // Also SL if spot crosses sold strike
+  document.getElementById('calcNetCredit').textContent = '\u20b9' + netCredit.toFixed(1) + ' × ' + (lots * lotSize) + ' = \u20b9' + (netCredit * lots * lotSize).toLocaleString('en-IN');
+  document.getElementById('calcMaxProfit').textContent = '\u20b9' + maxProfit.toLocaleString('en-IN');
+  document.getElementById('calcMaxLoss').textContent = '\u20b9' + maxLoss.toLocaleString('en-IN');
+
+  document.getElementById('calcTarget').textContent = '+\u20b9' + targetPnL.toLocaleString('en-IN');
+  document.getElementById('calcTargetNote').textContent = 'When spread = \u20b9' + targetPremium.toFixed(1) + ' (50% captured)';
+
+  document.getElementById('calcSL').textContent = '-\u20b9' + slPnL.toLocaleString('en-IN');
+  document.getElementById('calcSLNote').textContent = 'When spread = \u20b9' + slPremium.toFixed(1) + ' (2x premium)';
+
+  document.getElementById('calcBreakEven').textContent = breakEven.toFixed(0);
+  document.getElementById('calcBreakEvenNote').textContent = isBull ? 'NIFTY must stay above ' + breakEven.toFixed(0) : 'NIFTY must stay below ' + breakEven.toFixed(0);
+
+  if (spot) {
+    var dist = isBull ? (spot - breakEven) : (breakEven - spot);
+    var distPct = ((dist / spot) * 100).toFixed(1);
+    var distEl = document.getElementById('calcDistance');
+    distEl.textContent = dist.toFixed(0) + ' pts';
+    distEl.style.color = dist > 0 ? 'var(--green)' : 'var(--red)';
+    var pctEl = document.getElementById('calcDistancePct');
+    pctEl.textContent = distPct + '% buffer';
+    pctEl.style.color = dist > 0 ? 'var(--green)' : 'var(--red)';
+    if (dist < 0) {
+      document.getElementById('calcBreakEvenNote').textContent = '\u26a0\ufe0f SPOT IS PAST BREAK-EVEN!';
+    }
+  } else {
+    document.getElementById('calcDistance').textContent = 'Enter spot';
+    document.getElementById('calcDistancePct').textContent = '';
+  }
+
+  // Exit schedule based on entry time
+  var exitHtml = '';
+  if (entryTime) {
+    var parts = entryTime.split(':');
+    var entryMins = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+
+    // Check if expiry day
+    var now = new Date();
+    var ist = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+    var day = ist.getDay(); // 2=Tue, 4=Thu
+    var isExpiry = (calcInst === 'NIFTY' && day === 2) || (calcInst === 'SENSEX' && day === 4);
+    var maxExitTime = isExpiry ? '14:00' : '15:15';
+    var maxExitMins = isExpiry ? 14*60 : 15*60+15;
+
+    var timeSlots = [
+      { label: '\ud83d\udfe2 Best exit window', time: addMins(entryMins, 90), note: '1.5 hrs after entry — peak theta decay captured' },
+      { label: '\u26a0\ufe0f Review if no target', time: '12:30', note: 'If not at 50% profit, assess and decide' },
+      { label: '\ud83d\uded1 Hard exit latest', time: maxExitTime, note: isExpiry ? 'EXPIRY DAY — gamma extreme after 2 PM' : 'Before market close — avoid last-hour volatility' },
+    ];
+    if (isExpiry) {
+      exitHtml += '<div style="background:rgba(255,209,102,.12);border:1px solid var(--yellow);border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:12px;color:var(--yellow);">\u26a0\ufe0f TODAY IS ' + calcInst + ' EXPIRY — Exit by 2:00 PM</div>';
+    }
+    exitHtml += timeSlots.map(function(s) {
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">' +
+        '<div>' +
+          '<div style="font-size:13px;color:var(--text);">' + s.label + '</div>' +
+          '<div style="font-size:10px;color:var(--muted);margin-top:2px;">' + s.note + '</div>' +
+        '</div>' +
+        '<div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--accent);white-space:nowrap;margin-left:12px;">' + s.time + '</div>' +
+      '</div>';
+    }).join('');
+  } else {
+    exitHtml = '<div style="font-size:12px;color:var(--muted);">Enter entry time to see exit schedule</div>';
+  }
+  document.getElementById('calcExitTimes').innerHTML = exitHtml;
+
+  // Verdict
+  var verdictColor, verdictBg, verdictText, verdictIcon;
+  if (rr >= 0.6 && netCredit >= spreadWidth * 0.3) {
+    verdictColor = 'var(--green)'; verdictBg = 'rgba(0,224,150,.1)';
+    verdictIcon = '\u2705'; verdictText = 'GOOD TRADE SETUP';
+  } else if (rr >= 0.4) {
+    verdictColor = 'var(--yellow)'; verdictBg = 'rgba(255,209,102,.1)';
+    verdictIcon = '\u26a0\ufe0f'; verdictText = 'ACCEPTABLE — Proceed with caution';
+  } else {
+    verdictColor = 'var(--red)'; verdictBg = 'rgba(255,95,87,.1)';
+    verdictIcon = '\ud83d\udea8'; verdictText = 'POOR SETUP — Low reward vs risk';
+  }
+  document.getElementById('calcVerdict').style.background = verdictBg;
+  document.getElementById('calcVerdict').style.border = '1px solid ' + verdictColor;
+  document.getElementById('calcVerdict').innerHTML =
+    '<div style="font-size:20px;margin-bottom:4px;">' + verdictIcon + '</div>' +
+    '<div style="font-family:var(--mono);font-size:13px;font-weight:700;color:' + verdictColor + ';">' + verdictText + '</div>' +
+    '<div style="font-size:11px;color:var(--muted);margin-top:6px;">R:R = ' + maxProfit.toLocaleString('en-IN') + ' : ' + maxLoss.toLocaleString('en-IN') + ' (' + rr.toFixed(2) + ':1) · Credit = ' + ((netCredit/spreadWidth)*100).toFixed(0) + '% of width</div>';
+
+  // Live warnings
+  var warns = [];
+  if (netCredit < 20) warns.push('\u26a0\ufe0f Very low net credit (\u20b9' + netCredit + ') — charges may eat into profit');
+  if (netCredit < spreadWidth * 0.2) warns.push('\ud83d\udea8 Collecting less than 20% of spread width — not worth the risk');
+  if (lots * lotSize * spreadWidth > 100000) warns.push('\u26a0\ufe0f Large position — total exposure \u20b9' + (lots * lotSize * spreadWidth).toLocaleString('en-IN'));
+  if (spot && isBull && spot < breakEven + 100) warns.push('\ud83d\udea8 Spot is within 100pts of break-even — risky entry');
+  if (spot && !isBull && spot > breakEven - 100) warns.push('\ud83d\udea8 Spot is within 100pts of break-even — risky entry');
+  if (entryTime && entryTime > '12:30') warns.push('\u26a0\ufe0f Entering after 12:30 PM — less premium, more gamma risk');
+
+  document.getElementById('calcWarnings').innerHTML = warns.length ?
+    warns.map(function(w) {
+      return '<div style="background:rgba(255,209,102,.1);border:1px solid var(--yellow);border-radius:8px;padding:8px 12px;margin-bottom:6px;font-size:12px;color:var(--yellow);">' + w + '</div>';
+    }).join('') : '';
+}
+
+function addMins(baseMins, add) {
+  var total = baseMins + add;
+  var h = Math.floor(total / 60);
+  var m = total % 60;
+  return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
 }
 
 // ── DASHBOARD TRADE GUARD ──────────────────────────────────────────────────
