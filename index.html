@@ -397,136 +397,6 @@
     <div id="dashGuardStatus" style="text-align:center;"></div>
   </div>
 
-  <!-- TRADE CALCULATOR -->
-  <div class="card">
-    <div class="card-title">🧮 LIVE TRADE CALCULATOR</div>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:14px;">Enter your spread details — get all key levels instantly</div>
-
-    <!-- Instrument + Strategy -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
-      <div>
-        <label class="form-label">INSTRUMENT</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-          <button class="filter-btn active" id="calcNifty" onclick="selectCalcInst('NIFTY')" style="padding:8px;font-size:11px;">NIFTY</button>
-          <button class="filter-btn" id="calcSensex" onclick="selectCalcInst('SENSEX')" style="padding:8px;font-size:11px;">SENSEX</button>
-        </div>
-      </div>
-      <div>
-        <label class="form-label">STRATEGY</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-          <button class="filter-btn active" id="calcBullPut" onclick="selectCalcStrat('BullPut')" style="padding:8px;font-size:10px;color:var(--green);">🐂 Bull Put</button>
-          <button class="filter-btn" id="calcBearCall" onclick="selectCalcStrat('BearCall')" style="padding:8px;font-size:10px;">🐻 Bear Call</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Strike inputs -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
-      <div>
-        <label class="form-label" id="calcSellLabel">SELL STRIKE (PE)</label>
-        <input type="number" class="form-input" id="calcSellStrike" placeholder="24200" oninput="runCalc()">
-      </div>
-      <div>
-        <label class="form-label" id="calcBuyLabel">BUY STRIKE (PE)</label>
-        <input type="number" class="form-input" id="calcBuyStrike" placeholder="24100" oninput="runCalc()">
-      </div>
-    </div>
-
-    <!-- Premium inputs -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
-      <div>
-        <label class="form-label">SELL PREM (₹)</label>
-        <input type="number" class="form-input" id="calcSellPrem" placeholder="80" oninput="runCalc()">
-      </div>
-      <div>
-        <label class="form-label">BUY PREM (₹)</label>
-        <input type="number" class="form-input" id="calcBuyPrem" placeholder="50" oninput="runCalc()">
-      </div>
-      <div>
-        <label class="form-label">LOTS</label>
-        <input type="number" class="form-input" id="calcLots" placeholder="10" oninput="runCalc()">
-      </div>
-    </div>
-
-    <!-- Entry time -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
-      <div>
-        <label class="form-label">ENTRY TIME (IST)</label>
-        <input type="time" class="form-input" id="calcEntryTime" oninput="runCalc()">
-      </div>
-      <div>
-        <label class="form-label">SPOT PRICE (₹)</label>
-        <input type="number" class="form-input" id="calcSpot" placeholder="24500" oninput="runCalc()">
-      </div>
-    </div>
-
-    <!-- RESULTS -->
-    <div id="calcResults" style="display:none;">
-
-      <!-- Key levels -->
-      <div style="font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:2px;margin-bottom:8px;">— KEY LEVELS —</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
-        <div style="background:rgba(0,224,150,.08);border:1px solid var(--green);border-radius:10px;padding:12px;text-align:center;">
-          <div style="font-size:9px;color:var(--green);letter-spacing:1px;">✅ PROFIT TARGET</div>
-          <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--green);" id="calcTarget">₹0</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="calcTargetNote"></div>
-        </div>
-        <div style="background:rgba(255,95,87,.08);border:1px solid var(--red);border-radius:10px;padding:12px;text-align:center;">
-          <div style="font-size:9px;color:var(--red);letter-spacing:1px;">🛑 STOP LOSS</div>
-          <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--red);" id="calcSL">₹0</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="calcSLNote"></div>
-        </div>
-      </div>
-
-      <!-- P&L levels -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
-        <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
-          <div style="font-size:9px;color:var(--muted);">NET CREDIT</div>
-          <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--green);" id="calcNetCredit">₹0</div>
-        </div>
-        <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
-          <div style="font-size:9px;color:var(--muted);">MAX PROFIT</div>
-          <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--green);" id="calcMaxProfit">₹0</div>
-        </div>
-        <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
-          <div style="font-size:9px;color:var(--muted);">MAX LOSS</div>
-          <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--red);" id="calcMaxLoss">₹0</div>
-        </div>
-      </div>
-
-      <!-- Break-even and distance -->
-      <div style="font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:2px;margin-bottom:8px;">— BREAK-EVEN & SAFETY —</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
-        <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
-          <div style="font-size:9px;color:var(--muted);">BREAK-EVEN</div>
-          <div style="font-family:var(--mono);font-size:16px;font-weight:700;" id="calcBreakEven">-</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="calcBreakEvenNote"></div>
-        </div>
-        <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
-          <div style="font-size:9px;color:var(--muted);">DISTANCE TO BE</div>
-          <div style="font-family:var(--mono);font-size:16px;font-weight:700;" id="calcDistance">-</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="calcDistancePct"></div>
-        </div>
-      </div>
-
-      <!-- Exit times -->
-      <div style="font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:2px;margin-bottom:8px;">— EXIT SCHEDULE —</div>
-      <div id="calcExitTimes" style="background:var(--card2);border-radius:10px;padding:12px;margin-bottom:12px;"></div>
-
-      <!-- RR and verdict -->
-      <div style="font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:2px;margin-bottom:8px;">— TRADE VERDICT —</div>
-      <div id="calcVerdict" style="border-radius:10px;padding:14px;text-align:center;margin-bottom:12px;"></div>
-
-      <!-- Live warnings -->
-      <div id="calcWarnings"></div>
-
-    </div>
-
-    <div id="calcEmpty" style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">
-      Fill in the fields above to see your trade analysis
-    </div>
-  </div>
-
   <!-- LIVE MARKET CHART -->
   <div class="card" style="padding:10px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding:0 4px;">
@@ -1108,26 +978,160 @@
 </div>
 
 <!-- BOTTOM NAV -->
+
+<!-- CALCULATOR PAGE -->
+<div id="pageCalc" class="page">
+<div class="card">
+    <div class="card-title">🧮 LIVE TRADE CALCULATOR</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:14px;">Enter your spread details — get all key levels instantly</div>
+
+    <!-- Instrument + Strategy -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+      <div>
+        <label class="form-label">INSTRUMENT</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <button class="filter-btn active" id="calcNifty" onclick="selectCalcInst('NIFTY')" style="padding:8px;font-size:11px;">NIFTY</button>
+          <button class="filter-btn" id="calcSensex" onclick="selectCalcInst('SENSEX')" style="padding:8px;font-size:11px;">SENSEX</button>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">STRATEGY</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <button class="filter-btn active" id="calcBullPut" onclick="selectCalcStrat('BullPut')" style="padding:8px;font-size:10px;color:var(--green);">🐂 Bull Put</button>
+          <button class="filter-btn" id="calcBearCall" onclick="selectCalcStrat('BearCall')" style="padding:8px;font-size:10px;">🐻 Bear Call</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Strike inputs -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div>
+        <label class="form-label" id="calcSellLabel">SELL STRIKE (PE)</label>
+        <input type="number" class="form-input" id="calcSellStrike" placeholder="24200" oninput="runCalc()">
+      </div>
+      <div>
+        <label class="form-label" id="calcBuyLabel">BUY STRIKE (PE)</label>
+        <input type="number" class="form-input" id="calcBuyStrike" placeholder="24100" oninput="runCalc()">
+      </div>
+    </div>
+
+    <!-- Premium inputs -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div>
+        <label class="form-label">SELL PREM (₹)</label>
+        <input type="number" class="form-input" id="calcSellPrem" placeholder="80" oninput="runCalc()">
+      </div>
+      <div>
+        <label class="form-label">BUY PREM (₹)</label>
+        <input type="number" class="form-input" id="calcBuyPrem" placeholder="50" oninput="runCalc()">
+      </div>
+      <div>
+        <label class="form-label">LOTS</label>
+        <input type="number" class="form-input" id="calcLots" placeholder="10" oninput="runCalc()">
+      </div>
+    </div>
+
+    <!-- Entry time -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+      <div>
+        <label class="form-label">ENTRY TIME (IST)</label>
+        <input type="time" class="form-input" id="calcEntryTime" oninput="runCalc()">
+      </div>
+      <div>
+        <label class="form-label">SPOT PRICE (₹)</label>
+        <input type="number" class="form-input" id="calcSpot" placeholder="24500" oninput="runCalc()">
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="calcResults" style="display:none;">
+
+      <!-- Key levels -->
+      <div style="font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:2px;margin-bottom:8px;">— KEY LEVELS —</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+        <div style="background:rgba(0,224,150,.08);border:1px solid var(--green);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:9px;color:var(--green);letter-spacing:1px;">✅ PROFIT TARGET</div>
+          <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--green);" id="calcTarget">₹0</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="calcTargetNote"></div>
+        </div>
+        <div style="background:rgba(255,95,87,.08);border:1px solid var(--red);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:9px;color:var(--red);letter-spacing:1px;">🛑 STOP LOSS</div>
+          <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--red);" id="calcSL">₹0</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="calcSLNote"></div>
+        </div>
+      </div>
+
+      <!-- P&L levels -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
+        <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:9px;color:var(--muted);">NET CREDIT</div>
+          <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--green);" id="calcNetCredit">₹0</div>
+        </div>
+        <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:9px;color:var(--muted);">MAX PROFIT</div>
+          <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--green);" id="calcMaxProfit">₹0</div>
+        </div>
+        <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:9px;color:var(--muted);">MAX LOSS</div>
+          <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--red);" id="calcMaxLoss">₹0</div>
+        </div>
+      </div>
+
+      <!-- Break-even and distance -->
+      <div style="font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:2px;margin-bottom:8px;">— BREAK-EVEN & SAFETY —</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+        <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:9px;color:var(--muted);">BREAK-EVEN</div>
+          <div style="font-family:var(--mono);font-size:16px;font-weight:700;" id="calcBreakEven">-</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="calcBreakEvenNote"></div>
+        </div>
+        <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:9px;color:var(--muted);">DISTANCE TO BE</div>
+          <div style="font-family:var(--mono);font-size:16px;font-weight:700;" id="calcDistance">-</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="calcDistancePct"></div>
+        </div>
+      </div>
+
+      <!-- Exit times -->
+      <div style="font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:2px;margin-bottom:8px;">— EXIT SCHEDULE —</div>
+      <div id="calcExitTimes" style="background:var(--card2);border-radius:10px;padding:12px;margin-bottom:12px;"></div>
+
+      <!-- RR and verdict -->
+      <div style="font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:2px;margin-bottom:8px;">— TRADE VERDICT —</div>
+      <div id="calcVerdict" style="border-radius:10px;padding:14px;text-align:center;margin-bottom:12px;"></div>
+
+      <!-- Live warnings -->
+      <div id="calcWarnings"></div>
+
+    </div>
+
+    <div id="calcEmpty" style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">
+      Fill in the fields above to see your trade analysis
+    </div>
+  </div>
+</div>
+
+
 <div class="bottom-nav">
   <button class="nav-btn active" onclick="goPage('Dashboard')">
     <svg fill="currentColor" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
-    Dashboard
+    Home
   </button>
   <button class="nav-btn" onclick="goPage('Journal')">
-    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
     Journal
   </button>
   <button class="nav-btn" onclick="goPage('Add')">
     <svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
     Add
   </button>
-  <button class="nav-btn" onclick="goPage('Reports')">
-    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
-    Reports
+  <button class="nav-btn" onclick="goPage('Calc')">
+    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+    Calc
   </button>
   <button class="nav-btn" onclick="goPage('Progress')">
     <svg fill="currentColor" viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
-    Progress
+    More
   </button>
 </div>
 
@@ -1285,6 +1289,7 @@ function goPage(name) {
   if (name === 'Journal') renderJournal();
   if (name === 'Reports') renderReports();
   if (name === 'Progress') { loadProgressSettings(); renderProgress(); }
+  if (name === 'Calc') renderCalcPage();
   if (name === 'Add') {
     if (editingIndex === null) {
       cancelEdit();
@@ -1402,6 +1407,17 @@ function saveLinkEdits() {
 }
 
 // ── TRADE CALCULATOR ───────────────────────────────────────────────────────
+function renderCalcPage() {
+  // Auto-set current IST time on open
+  var now = new Date();
+  var ist = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+  var hh = String(ist.getHours()).padStart(2,'0');
+  var mm = String(ist.getMinutes()).padStart(2,'0');
+  var timeEl = document.getElementById('calcEntryTime');
+  if (timeEl && !timeEl.value) timeEl.value = hh + ':' + mm;
+  runCalc();
+}
+
 var calcInst = 'NIFTY';
 var calcStrat = 'BullPut';
 
