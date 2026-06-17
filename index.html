@@ -1821,11 +1821,13 @@ function renderDashboard() {
   const portfolioVal = depositedNow + portfolioPL;
 
   if (startCap > 0) {
+    const totalCharges = tradesForPortfolio.reduce((s, t) => s + (t.charges || 0), 0);
     document.getElementById('portfolioValue').textContent = '₹' + portfolioVal.toLocaleString('en-IN');
     const pctChange = depositedNow ? ((portfolioPL / depositedNow) * 100).toFixed(2) : 0;
     document.getElementById('portfolioMeta').innerHTML =
       `Deposited ₹${depositedNow.toLocaleString('en-IN')} · ` +
-      `<span style="color:${portfolioPL >= 0 ? 'var(--green)' : 'var(--red)'}">${portfolioPL >= 0 ? '+' : ''}${pctChange}%</span>`;
+      `<span style="color:${portfolioPL >= 0 ? 'var(--green)' : 'var(--red)'}">${portfolioPL >= 0 ? '+' : ''}${pctChange}%</span>` +
+      (totalCharges > 0 ? ` · <span style="color:var(--muted)">Charges: ₹${totalCharges.toLocaleString('en-IN')}</span>` : '');
     document.getElementById('portfolioValue').style.color = portfolioPL >= 0 ? 'var(--accent)' : 'var(--red)';
   } else {
     document.getElementById('portfolioValue').textContent = '₹0';
@@ -1968,16 +1970,24 @@ function renderJournal() {
     const originalIndex = trades.findIndex(orig => 
       orig._id ? orig._id === t._id : (orig.date === t.date && orig.capital === t.capital && orig.pl === t.pl)
     );
-    const analysisClass = !t.analysis ? '' : t.analysis.includes('✅') ? 'good' : t.analysis.includes('🚨') ? 'bad' : t.analysis.includes('⚠️') ? 'warn' : 'neutral';
+    const analysisClass = !t.analysis ? '' : t.analysis.includes('\u2705') ? 'good' : t.analysis.includes('\ud83d\udea8') ? 'bad' : t.analysis.includes('\u26a0\ufe0f') ? 'warn' : 'neutral';
+    const netPL = t.pl;
+    const charges = t.charges || 0;
+    const grossPL = t.grossPL !== undefined ? t.grossPL : t.pl;
+    const stratBadge = t.strategy ? 
+      '<span style="font-size:10px;background:' + (t.strategy.includes('Bull') ? 'rgba(0,224,150,.15)' : 'rgba(255,77,109,.15)') + ';color:' + (t.strategy.includes('Bull') ? 'var(--green)' : 'var(--red)') + ';padding:2px 7px;border-radius:10px;font-family:var(--mono);margin-left:6px;">' + (t.instrument||'') + ' ' + t.strategy + '</span>' : '';
     return `<div class="trade-item" onclick="editTrade(${originalIndex})">
       <div class="trade-row1">
         <div>
           <div class="trade-date">${t.date}</div>
-          <div class="trade-day">${t.day || ''}</div>
+          <div class="trade-day">${t.day || ''}${stratBadge}</div>
         </div>
-        <span class="pl-badge ${t.pl>=0?'pos':'neg'}">${fmt(t.pl)}</span>
+        <div style="text-align:right;">
+          <span class="pl-badge ${netPL>=0?'pos':'neg'}" style="font-size:15px;padding:6px 12px;">${fmt(netPL)}</span>
+          ${charges > 0 ? `<div style="font-size:10px;color:var(--muted);margin-top:3px;">Gross: ${fmt(grossPL)} · Chg: \u20b9${charges}</div>` : ''}
+        </div>
       </div>
-      <div class="trade-capital">Capital: ₹${(t.capital/100000).toFixed(1)}L · ${t.pct}%</div>
+      <div class="trade-capital">Capital: \u20b9${(t.capital/100000).toFixed(1)}L · ${t.pct}%${t.lots ? ' · ' + t.lots + ' lots' : ''}</div>
       ${t.comment ? `<div class="trade-comment">${t.comment}</div>` : ''}
       ${t.analysis ? `<div class="trade-analysis ${analysisClass}">${t.analysis}</div>` : ''}
     </div>`;
