@@ -570,47 +570,44 @@
         <div></div>
       </div>
 
-      <!-- SCALING IN SECTION -->
+      <!-- LOTS + ENTRY/EXIT TIME -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:14px;">
+        <div>
+          <label class="form-label">LOTS</label>
+          <input type="number" class="form-input" id="entryLots" placeholder="1" value="1" oninput="calcSpreadPnL();calcExitPnL();">
+        </div>
+        <div>
+          <label class="form-label">ENTRY TIME</label>
+          <input type="time" class="form-input" id="entryTime" style="font-family:var(--mono);">
+        </div>
+        <div>
+          <label class="form-label">EXIT TIME</label>
+          <input type="time" class="form-input" id="exitTime" style="font-family:var(--mono);">
+        </div>
+      </div>
+
+      <!-- EXIT PREMIUMS -->
       <div style="margin-top:14px;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-          <div style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:1.5px;">📊 LOT ENTRIES (SCALE IN)</div>
-          <button onclick="addScaleEntry()" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--mono);">+ ADD</button>
-        </div>
-
-        <!-- Header -->
-        <div style="display:grid;grid-template-columns:60px 1fr 1fr 1fr 36px;gap:6px;margin-bottom:6px;">
-          <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">TIME</div>
-          <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">LOTS</div>
-          <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">SELL PREM</div>
-          <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">BUY PREM</div>
-          <div></div>
-        </div>
-
-        <!-- Scale entries list -->
-        <div id="scaleEntriesList"></div>
-
-        <!-- Totals -->
-        <div id="scaleTotals" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;text-align:center;">
-            <div>
-              <div style="font-size:9px;color:var(--muted);">TOTAL LOTS</div>
-              <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--accent);" id="scaleTotalLots">0</div>
-            </div>
-            <div>
-              <div style="font-size:9px;color:var(--muted);">AVG CREDIT</div>
-              <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--green);" id="scaleAvgCredit">₹0</div>
-            </div>
-            <div>
-              <div style="font-size:9px;color:var(--muted);">MAX PROFIT</div>
-              <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--green);" id="scaleMaxProfit">₹0</div>
-            </div>
-            <div>
-              <div style="font-size:9px;color:var(--muted);">MAX LOSS</div>
-              <div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--red);" id="scaleMaxLoss">₹0</div>
-            </div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:1.5px;margin-bottom:10px;">📤 EXIT PREMIUMS (fill after closing trade)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div>
+            <label class="form-label" id="exitSellPremLabel" style="font-size:9px;">BUY BACK SOLD LEG (₹)</label>
+            <input type="number" class="form-input" id="exitSellPrem" placeholder="e.g. 20" oninput="calcExitPnL()">
           </div>
-          <!-- Warning -->
-          <div id="scaleWarning" style="margin-top:8px;"></div>
+          <div>
+            <label class="form-label" id="exitBuyPremLabel" style="font-size:9px;">SELL HEDGE LEG (₹)</label>
+            <input type="number" class="form-input" id="exitBuyPrem" placeholder="e.g. 1" oninput="calcExitPnL()">
+          </div>
+        </div>
+        <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:center;">
+          <div style="background:var(--bg);border-radius:8px;padding:8px;">
+            <div style="font-size:9px;color:var(--muted);">EXIT DEBIT</div>
+            <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--red);" id="exitDebitDisplay">₹0</div>
+          </div>
+          <div style="background:var(--bg);border-radius:8px;padding:8px;">
+            <div style="font-size:9px;color:var(--muted);">AUTO GROSS P/L</div>
+            <div style="font-family:var(--mono);font-size:14px;font-weight:700;" id="autoGrossPL">₹0</div>
+          </div>
         </div>
       </div>
 
@@ -665,7 +662,6 @@
       <div class="form-group" style="display:none;">
         <label class="form-label">NET P/L (auto)</label>
         <input type="number" class="form-input" id="entryNetPL" readonly>
-        <input type="number" id="entryLots" style="display:none;" value="1">
       </div>
 
       <!-- Stop Loss Hit -->
@@ -693,6 +689,7 @@
 
       <div id="addModeButtons">
         <button class="submit-btn" onclick="saveEntry()">💾 SAVE TRADE</button>
+        <button class="submit-btn" onclick="saveEntry(true)" style="background:var(--card2);color:var(--accent);border:1px solid var(--accent);margin-top:8px;">💾 SAVE & ADD ANOTHER</button>
       </div>
       <div id="editModeButtons" style="display:none;">
         <div class="btn-row">
@@ -1987,7 +1984,7 @@ function renderJournal() {
           ${charges > 0 ? `<div style="font-size:10px;color:var(--muted);margin-top:3px;">Gross: ${fmt(grossPL)} · Chg: \u20b9${charges}</div>` : ''}
         </div>
       </div>
-      <div class="trade-capital">Capital: \u20b9${(t.capital/100000).toFixed(1)}L · ${t.pct}%${t.lots ? ' · ' + t.lots + ' lots' : ''}</div>
+      <div class="trade-capital">Capital: \u20b9${(t.capital/100000).toFixed(1)}L · ${t.pct}%${t.lots ? ' · ' + t.lots + ' lots' : ''}${t.entryTime ? ' · ⏱' + t.entryTime + (t.exitTime ? '→' + t.exitTime : '') : ''}</div>
       ${t.comment ? `<div class="trade-comment">${t.comment}</div>` : ''}
       ${t.analysis ? `<div class="trade-analysis ${analysisClass}">${t.analysis}</div>` : ''}
     </div>`;
@@ -2002,9 +1999,30 @@ function editTrade(index) {
   // Fill form with existing data
   document.getElementById('entryDate').value = trade.date;
   document.getElementById('entryCapital').value = trade.capital;
-  document.getElementById('entryPL').value = trade.pl;
+  document.getElementById('entryPL').value = trade.grossPL !== undefined ? trade.grossPL : trade.pl;
+  document.getElementById('entryCharges').value = trade.charges || '';
   document.getElementById('entryComment').value = trade.comment || '';
   document.getElementById('entryAnalysis').value = trade.analysis || '';
+  document.getElementById('entrySellStrike').value = trade.sellStrike || '';
+  document.getElementById('entryBuyStrike').value = trade.buyStrike || '';
+  document.getElementById('entrySellPrem').value = trade.sellPrem || '';
+  document.getElementById('entryBuyPrem').value = trade.buyPrem || '';
+  document.getElementById('entryLots').value = trade.lots || 1;
+  document.getElementById('entryTime').value = trade.entryTime || '';
+  document.getElementById('exitTime').value = trade.exitTime || '';
+  document.getElementById('exitSellPrem').value = trade.exitSellPrem != null ? trade.exitSellPrem : '';
+  document.getElementById('exitBuyPrem').value = trade.exitBuyPrem != null ? trade.exitBuyPrem : '';
+
+  // Set instrument, strategy, bias, exit
+  if (trade.instrument) selectInstrument(trade.instrument);
+  if (trade.strategy) selectStrategy(trade.strategy);
+  if (trade.bias) selectBias(trade.bias);
+  if (trade.exitReason) selectExit(trade.exitReason);
+
+  // Recalculate displays
+  calcSpreadPnL();
+  calcExitPnL();
+  calcNetProfit();
   
   // Switch to edit mode
   document.getElementById('editModeBanner').classList.add('active');
@@ -2020,9 +2038,25 @@ function updateEntry() {
   
   const date = document.getElementById('entryDate').value;
   const capital = parseFloat(document.getElementById('entryCapital').value);
-  const pl = parseFloat(document.getElementById('entryPL').value);
+  const grossPL = parseFloat(document.getElementById('entryPL').value);
+  const charges = parseFloat(document.getElementById('entryCharges').value) || 0;
+  const pl = isNaN(grossPL) ? NaN : grossPL - charges;
   const comment = document.getElementById('entryComment').value.trim();
   const analysis = document.getElementById('entryAnalysis').value.trim();
+  const sellStrike = document.getElementById('entrySellStrike').value;
+  const buyStrike = document.getElementById('entryBuyStrike').value;
+  const sellPrem = parseFloat(document.getElementById('entrySellPrem').value) || 0;
+  const buyPrem = parseFloat(document.getElementById('entryBuyPrem').value) || 0;
+  const lots = parseFloat(document.getElementById('entryLots').value) || 1;
+  const lotSize = selectedInstrument === 'NIFTY' ? NIFTY_LOT : SENSEX_LOT;
+  const netCredit = sellPrem - buyPrem;
+  const spreadWidth = Math.abs((parseFloat(sellStrike)||0) - (parseFloat(buyStrike)||0));
+  const maxProfit = netCredit * lots * lotSize;
+  const maxLoss = (spreadWidth - netCredit) * lots * lotSize;
+  const entryTime = document.getElementById('entryTime').value || '';
+  const exitTime = document.getElementById('exitTime').value || '';
+  const exitSellPrem = parseFloat(document.getElementById('exitSellPrem').value);
+  const exitBuyPrem = parseFloat(document.getElementById('exitBuyPrem').value);
 
   if (!date || isNaN(capital) || isNaN(pl)) {
     alert('Please fill in Date, Capital, and P/L fields.');
@@ -2033,7 +2067,22 @@ function updateEntry() {
   const d = new Date(date);
   const pct = capital ? parseFloat(((pl/capital)*100).toFixed(2)) : 0;
 
-  const updatedTrade = { date, day: dayNames[d.getDay()], capital, pl, pct, comment, analysis };
+  const updatedTrade = {
+    date, day: dayNames[d.getDay()], capital,
+    grossPL: grossPL, charges: charges, pl, pct,
+    comment, analysis,
+    instrument: selectedInstrument,
+    strategy: selectedStrategy,
+    bias: selectedBias,
+    exitReason: selectedExit,
+    sellStrike, buyStrike,
+    sellPrem, buyPrem,
+    lots, netCredit,
+    maxProfit, maxLoss,
+    entryTime, exitTime,
+    exitSellPrem: isNaN(exitSellPrem) ? null : exitSellPrem,
+    exitBuyPrem: isNaN(exitBuyPrem) ? null : exitBuyPrem
+  };
   const cloudId = trades[editingIndex]._id;
   trades[editingIndex] = { _id: cloudId, ...updatedTrade };
   saveTradesToLocal(trades);
@@ -2065,14 +2114,21 @@ function cancelEdit() {
   editingIndex = null;
   document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
   ['entryCapital','entryPL','entryCharges','entryComment','entryAnalysis',
-   'entrySellStrike','entryBuyStrike','entrySellPrem','entryBuyPrem','entryLots'].forEach(function(id) {
+   'entrySellStrike','entryBuyStrike','entrySellPrem','entryBuyPrem',
+   'exitSellPrem','exitBuyPrem'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.value = '';
   });
+  document.getElementById('entryLots').value = '1';
+  document.getElementById('entryTime').value = '';
+  document.getElementById('exitTime').value = '';
   if (document.getElementById('netCreditDisplay')) document.getElementById('netCreditDisplay').textContent = '₹0';
   if (document.getElementById('maxProfitDisplay')) document.getElementById('maxProfitDisplay').textContent = '₹0';
   if (document.getElementById('maxLossDisplay')) document.getElementById('maxLossDisplay').textContent = '₹0';
   if (document.getElementById('rrDisplay')) document.getElementById('rrDisplay').innerHTML = '';
+  if (document.getElementById('exitDebitDisplay')) document.getElementById('exitDebitDisplay').textContent = '₹0';
+  if (document.getElementById('autoGrossPL')) { document.getElementById('autoGrossPL').textContent = '₹0'; document.getElementById('autoGrossPL').style.color = ''; }
+  if (document.getElementById('netProfitDisplay')) { document.getElementById('netProfitDisplay').textContent = '₹0'; document.getElementById('netProfitDisplay').style.color = ''; }
   document.getElementById('editModeBanner').classList.remove('active');
   document.getElementById('addModeButtons').style.display = 'block';
   document.getElementById('editModeButtons').style.display = 'none';
@@ -2122,11 +2178,15 @@ function selectStrategy(strat) {
     document.getElementById('buyStrikeLabel').textContent = 'BUY (Lower PE Strike)';
     document.getElementById('sellPremLabel').textContent = 'SELL PE PREMIUM (₹)';
     document.getElementById('buyPremLabel').textContent = 'BUY PE PREMIUM (₹)';
+    document.getElementById('exitSellPremLabel').textContent = 'BUY BACK SOLD PE (₹)';
+    document.getElementById('exitBuyPremLabel').textContent = 'SELL HEDGE PE (₹)';
   } else {
     document.getElementById('sellStrikeLabel').textContent = 'SELL (Lower CE Strike)';
     document.getElementById('buyStrikeLabel').textContent = 'BUY (Higher CE Strike)';
     document.getElementById('sellPremLabel').textContent = 'SELL CE PREMIUM (₹)';
     document.getElementById('buyPremLabel').textContent = 'BUY CE PREMIUM (₹)';
+    document.getElementById('exitSellPremLabel').textContent = 'BUY BACK SOLD CE (₹)';
+    document.getElementById('exitBuyPremLabel').textContent = 'SELL HEDGE CE (₹)';
   }
   calcSpreadPnL();
 }
@@ -2156,123 +2216,44 @@ function calcNetProfit() {
   document.getElementById('entryNetPL').value = net;
 }
 
-// ── SCALING IN ─────────────────────────────────────────────────────────────
-var scaleEntries = []; // [{time, lots, sellPrem, buyPrem}]
-
-function addScaleEntry() {
-  var now = new Date();
-  var ist = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
-  var hh = String(ist.getHours()).padStart(2,'0');
-  var mm = String(ist.getMinutes()).padStart(2,'0');
-  scaleEntries.push({ time: hh+':'+mm, lots: '', sellPrem: '', buyPrem: '' });
-  renderScaleEntries();
-}
-
-function removeScaleEntry(i) {
-  scaleEntries.splice(i, 1);
-  renderScaleEntries();
-}
-
-function updateScaleEntry(i, field, val) {
-  scaleEntries[i][field] = val;
-  calcScaleTotals();
-}
-
-function renderScaleEntries() {
-  var el = document.getElementById('scaleEntriesList');
-  if (!scaleEntries.length) {
-    el.innerHTML = '<div style="font-size:11px;color:var(--muted);text-align:center;padding:8px;">No scale entries yet. Click + ADD to log each lot batch.</div>';
-    document.getElementById('scaleTotals').style.display = 'none';
-    return;
-  }
-  el.innerHTML = scaleEntries.map(function(e, i) {
-    return '<div style="display:grid;grid-template-columns:60px 1fr 1fr 1fr 36px;gap:6px;margin-bottom:6px;align-items:center;">' +
-      '<input type="time" value="' + e.time + '" onchange="updateScaleEntry(' + i + ',\'time\',this.value)" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;padding:6px 4px;font-family:var(--mono);width:100%;">' +
-      '<input type="number" value="' + e.lots + '" placeholder="Lots" onchange="updateScaleEntry(' + i + ',\'lots\',this.value)" oninput="updateScaleEntry(' + i + ',\'lots\',this.value)" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;padding:7px 8px;font-family:var(--mono);width:100%;">' +
-      '<input type="number" value="' + e.sellPrem + '" placeholder="Sell" onchange="updateScaleEntry(' + i + ',\'sellPrem\',this.value)" oninput="updateScaleEntry(' + i + ',\'sellPrem\',this.value)" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;padding:7px 8px;font-family:var(--mono);width:100%;">' +
-      '<input type="number" value="' + e.buyPrem + '" placeholder="Buy" onchange="updateScaleEntry(' + i + ',\'buyPrem\',this.value)" oninput="updateScaleEntry(' + i + ',\'buyPrem\',this.value)" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;padding:7px 8px;font-family:var(--mono);width:100%;">' +
-      '<button onclick="removeScaleEntry(' + i + ')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:0;">✕</button>' +
-    '</div>';
-  }).join('');
-  calcScaleTotals();
-}
-
-function calcScaleTotals() {
+// ── EXIT PREMIUM P/L CALCULATION ─────────────────────────────────────────
+function calcExitPnL() {
+  var exitSell = parseFloat(document.getElementById('exitSellPrem').value);
+  var exitBuy = parseFloat(document.getElementById('exitBuyPrem').value);
+  var entrySellPrem = parseFloat(document.getElementById('entrySellPrem').value) || 0;
+  var entryBuyPrem = parseFloat(document.getElementById('entryBuyPrem').value) || 0;
+  var lots = parseFloat(document.getElementById('entryLots').value) || 1;
   var lotSize = selectedInstrument === 'NIFTY' ? NIFTY_LOT : SENSEX_LOT;
-  var spreadWidth = Math.abs((parseFloat(document.getElementById('entrySellStrike').value)||0) - (parseFloat(document.getElementById('entryBuyStrike').value)||0));
 
-  var totalLots = 0;
-  var weightedCredit = 0;
-  var valid = true;
-
-  scaleEntries.forEach(function(e) {
-    var lots = parseFloat(e.lots) || 0;
-    var sell = parseFloat(e.sellPrem) || 0;
-    var buy = parseFloat(e.buyPrem) || 0;
-    if (!lots) { valid = false; return; }
-    totalLots += lots;
-    weightedCredit += (sell - buy) * lots;
-  });
-
-  if (!totalLots) {
-    document.getElementById('scaleTotals').style.display = 'none';
+  if (isNaN(exitSell) && isNaN(exitBuy)) {
+    document.getElementById('exitDebitDisplay').textContent = '₹0';
+    document.getElementById('autoGrossPL').textContent = '₹0';
+    document.getElementById('autoGrossPL').style.color = '';
     return;
   }
 
-  var avgCredit = weightedCredit / totalLots;
-  var maxProfit = weightedCredit * lotSize;
-  var maxLoss = spreadWidth > 0 ? (spreadWidth - avgCredit) * totalLots * lotSize : 0;
-  var rr = maxLoss > 0 ? (maxProfit / maxLoss).toFixed(2) : '-';
+  var exitSellVal = isNaN(exitSell) ? 0 : exitSell;
+  var exitBuyVal = isNaN(exitBuy) ? 0 : exitBuy;
 
-  document.getElementById('scaleTotals').style.display = 'block';
-  document.getElementById('scaleTotalLots').textContent = totalLots;
-  document.getElementById('scaleAvgCredit').textContent = '₹' + avgCredit.toFixed(1);
-  document.getElementById('scaleMaxProfit').textContent = '₹' + maxProfit.toLocaleString('en-IN');
-  document.getElementById('scaleMaxLoss').textContent = maxLoss > 0 ? '₹' + maxLoss.toLocaleString('en-IN') : '-';
+  // Exit debit = what you pay to close (buy back sold - sell hedge)
+  var exitDebit = exitSellVal - exitBuyVal;
+  // Entry credit = what you collected
+  var entryCredit = entrySellPrem - entryBuyPrem;
+  // Profit per unit = entry credit - exit debit
+  var profitPerUnit = entryCredit - exitDebit;
+  var grossPL = profitPerUnit * lots * lotSize;
 
-  // Warnings
-  var warnings = [];
-  var lastTime = null;
-  scaleEntries.forEach(function(e, i) {
-    if (i === 0) { lastTime = e.time; return; }
-    // Warn if adding after 12:30
-    if (e.time > '12:30') warnings.push('⚠️ Entry ' + (i+1) + ' at ' + e.time + ' — after 12:30 PM, gamma risk rising');
-    // Warn if adding more lots than first batch
-    if (i > 0 && parseFloat(e.lots) > parseFloat(scaleEntries[0].lots)) {
-      warnings.push('🚨 Entry ' + (i+1) + ' has MORE lots than first entry — risky scaling');
-    }
-    // Warn if premium dropped significantly (less credit on later entries)
-    var firstCredit = (parseFloat(scaleEntries[0].sellPrem)||0) - (parseFloat(scaleEntries[0].buyPrem)||0);
-    var thisCredit = (parseFloat(e.sellPrem)||0) - (parseFloat(e.buyPrem)||0);
-    if (firstCredit > 0 && thisCredit < firstCredit * 0.5) {
-      warnings.push('⚠️ Entry ' + (i+1) + ': premium dropped >50% — less reward vs same risk');
-    }
-  });
-  if (maxLoss > 10000) warnings.push('🚨 Total max loss ₹' + maxLoss.toLocaleString('en-IN') + ' — verify this fits your daily limit');
+  document.getElementById('exitDebitDisplay').textContent = '₹' + exitDebit.toFixed(1);
+  var plEl = document.getElementById('autoGrossPL');
+  plEl.textContent = (grossPL >= 0 ? '+' : '') + '₹' + grossPL.toLocaleString('en-IN');
+  plEl.style.color = grossPL >= 0 ? 'var(--green)' : 'var(--red)';
 
-  var warnEl = document.getElementById('scaleWarning');
-  if (warnings.length) {
-    warnEl.innerHTML = warnings.map(function(w) {
-      return '<div style="font-size:11px;padding:5px 8px;margin-bottom:4px;border-radius:6px;background:rgba(255,209,102,.1);color:var(--yellow);">' + w + '</div>';
-    }).join('');
-  } else if (totalLots > 0) {
-    warnEl.innerHTML = '<div style="font-size:11px;color:var(--green);text-align:center;">✅ R:R = ' + rr + ':1 · ' + totalLots + ' lots · Avg credit ₹' + avgCredit.toFixed(1) + '</div>';
-  }
-
-  // Also update main summary
-  document.getElementById('netCreditDisplay').textContent = '₹' + avgCredit.toFixed(1);
-  document.getElementById('maxProfitDisplay').textContent = '₹' + maxProfit.toLocaleString('en-IN');
-  document.getElementById('maxLossDisplay').textContent = maxLoss > 0 ? '₹' + maxLoss.toLocaleString('en-IN') : '₹0';
-
-  // Store for saveEntry
-  document.getElementById('entryLots').value = totalLots;
-  document.getElementById('entrySellPrem').value = avgCredit.toFixed(1);
+  // Auto-fill Gross P/L field
+  document.getElementById('entryPL').value = grossPL;
+  calcNetProfit();
 }
 
-function resetScaleEntries() {
-  scaleEntries = [];
-  renderScaleEntries();
-}
+
 
 function calcSpreadPnL() {
   var sell = parseFloat(document.getElementById('entrySellStrike').value) || 0;
@@ -2309,10 +2290,15 @@ document.addEventListener('DOMContentLoaded', function() {
     var el = document.getElementById(id);
     if (el) el.addEventListener('input', calcSpreadPnL);
   });
-  renderScaleEntries();
+  // Set default entry time to current IST time
+  var now = new Date();
+  var ist = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+  var hh = String(ist.getHours()).padStart(2,'0');
+  var mm = String(ist.getMinutes()).padStart(2,'0');
+  document.getElementById('entryTime').value = hh + ':' + mm;
 });
 
-function saveEntry() {
+function saveEntry(addAnother) {
   var date = document.getElementById('entryDate').value;
   var capital = parseFloat(document.getElementById('entryCapital').value);
   var grossPL = parseFloat(document.getElementById('entryPL').value);
@@ -2330,6 +2316,10 @@ function saveEntry() {
   var spreadWidth = Math.abs((parseFloat(sellStrike)||0) - (parseFloat(buyStrike)||0));
   var maxProfit = netCredit * lots * lotSize;
   var maxLoss = (spreadWidth - netCredit) * lots * lotSize;
+  var entryTime = document.getElementById('entryTime').value || '';
+  var exitTime = document.getElementById('exitTime').value || '';
+  var exitSellPrem = parseFloat(document.getElementById('exitSellPrem').value);
+  var exitBuyPrem = parseFloat(document.getElementById('exitBuyPrem').value);
 
   if (!date || isNaN(capital) || isNaN(pl)) {
     alert('Please fill Date, Capital and P/L fields.');
@@ -2352,7 +2342,9 @@ function saveEntry() {
     sellPrem: sellPrem, buyPrem: buyPrem,
     lots: lots, netCredit: netCredit,
     maxProfit: maxProfit, maxLoss: maxLoss,
-    scaleEntries: scaleEntries.length ? JSON.parse(JSON.stringify(scaleEntries)) : []
+    entryTime: entryTime, exitTime: exitTime,
+    exitSellPrem: isNaN(exitSellPrem) ? null : exitSellPrem,
+    exitBuyPrem: isNaN(exitBuyPrem) ? null : exitBuyPrem
   };
 
   trades.push(tradeObj);
@@ -2361,10 +2353,11 @@ function saveEntry() {
   localStorage.setItem('tg_lastTradeTime', Date.now().toString());
 
   // Reset form
-  ['entrySellStrike','entryBuyStrike','entrySellPrem','entryBuyPrem','entryLots','entryCapital','entryPL','entryCharges','entryComment','entryAnalysis'].forEach(function(id) {
+  ['entrySellStrike','entryBuyStrike','entrySellPrem','entryBuyPrem','entryCapital','entryPL','entryCharges','entryComment','entryAnalysis','exitSellPrem','exitBuyPrem'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.value = '';
   });
+  document.getElementById('entryLots').value = '1';
   document.getElementById('entrySpreadWidth').value = '';
   document.getElementById('netCreditDisplay').textContent = '₹0';
   document.getElementById('maxProfitDisplay').textContent = '₹0';
@@ -2372,9 +2365,23 @@ function saveEntry() {
   document.getElementById('rrDisplay').innerHTML = '';
   document.getElementById('netProfitDisplay').textContent = '₹0';
   document.getElementById('netProfitDisplay').style.color = '';
-  resetScaleEntries();
+  document.getElementById('exitDebitDisplay').textContent = '₹0';
+  document.getElementById('autoGrossPL').textContent = '₹0';
+  document.getElementById('autoGrossPL').style.color = '';
+  document.getElementById('exitTime').value = '';
 
-  showToast('✓ Trade saved');
+  if (addAnother) {
+    // Keep date and capital, reset entry time to now
+    document.getElementById('entryDate').value = date;
+    document.getElementById('entryCapital').value = capital;
+    var now = new Date();
+    var ist = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+    document.getElementById('entryTime').value = String(ist.getHours()).padStart(2,'0') + ':' + String(ist.getMinutes()).padStart(2,'0');
+    showToast('✓ Trade saved — add next trade');
+  } else {
+    document.getElementById('entryTime').value = '';
+    showToast('✓ Trade saved');
+  }
   renderDashboard();
   renderJournal();
 }
