@@ -360,6 +360,26 @@
     <div id="quickLinksEdit" style="display:none;margin-top:10px;"></div>
   </div>
 
+  <!-- TODAY'S CAPITAL SETUP -->
+  <div class="card" style="border:1px solid var(--accent);border-radius:14px;">
+    <div class="card-title" style="margin-bottom:8px;">💰 TODAY'S CAPITAL</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+      <div>
+        <label class="form-label">TOTAL (₹)</label>
+        <input type="number" class="form-input" id="dailyTotalCap" placeholder="200000" oninput="onDailyCapChange()" style="font-size:14px;padding:10px;">
+      </div>
+      <div>
+        <label class="form-label">COLLATERAL (₹)</label>
+        <input type="number" class="form-input" id="dailyCollateral" placeholder="150000" oninput="onDailyCapChange()" style="font-size:14px;padding:10px;">
+      </div>
+      <div>
+        <label class="form-label">CASH (₹)</label>
+        <div id="dailyCashDisplay" style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--accent);padding:10px 0;text-align:center;">₹0</div>
+      </div>
+    </div>
+    <div style="font-size:10px;color:var(--muted);margin-top:6px;">Set once each morning. Auto-fills into every trade you add today.</div>
+  </div>
+
   <!-- PRE-TRADE CHECKLIST ON DASHBOARD -->
   <div class="card" style="border:1px solid var(--accent);border-radius:14px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
@@ -572,7 +592,7 @@
       <!-- RR display -->
       <div id="rrDisplay" style="text-align:center;margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--muted);"></div>
 
-      <!-- Date & Capital -->
+      <!-- Date & Capital (auto-filled from Today's Capital on Checklist) -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
         <div class="form-group" style="margin-bottom:0;">
           <label class="form-label">DATE</label>
@@ -580,19 +600,20 @@
         </div>
         <div class="form-group" style="margin-bottom:0;">
           <label class="form-label">TOTAL CAPITAL (₹)</label>
-          <input type="number" class="form-input" id="entryCapital" placeholder="200000" oninput="calcCashCapital()">
+          <input type="number" class="form-input" id="entryCapital" placeholder="Auto from Checklist" oninput="calcCashCapital()">
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
         <div class="form-group" style="margin-bottom:0;">
           <label class="form-label">COLLATERAL (₹)</label>
-          <input type="number" class="form-input" id="entryCollateral" placeholder="150000" oninput="calcCashCapital()">
+          <input type="number" class="form-input" id="entryCollateral" placeholder="Auto from Checklist" oninput="calcCashCapital()">
         </div>
         <div class="form-group" style="margin-bottom:0;">
           <label class="form-label">CASH (₹) — auto</label>
-          <input type="number" class="form-input" id="entryCash" readonly style="opacity:.7;">
+          <input type="number" class="form-input" id="entryCash" readonly style="opacity:.7;background:var(--bg);">
         </div>
       </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px;">Auto-filled from Today's Capital on Checklist. Edit here to override for this trade only.</div>
 
       <!-- P/L at exit -->
       <div class="form-group" style="margin-top:10px;">
@@ -1501,6 +1522,13 @@ function startTradeEntry() {
   var d = document.getElementById('gateDate').value;
   if (!d) { alert('Please select a date first'); return; }
   document.getElementById('entryDate').value = d;
+  // Auto-fill capital from daily setup
+  var cap = getTodayCapital();
+  if (cap.total > 0) {
+    document.getElementById('entryCapital').value = cap.total;
+    document.getElementById('entryCollateral').value = cap.collateral || '';
+    calcCashCapital();
+  }
   showAddForm(d);
 }
 
@@ -2028,10 +2056,64 @@ function switchChart(symbol) {
 }
 
 // ── DASHBOARD ──────────────────────────────────────────────────────────────
+// ── DAILY CAPITAL SETUP ────────────────────────────────────────────────────
+function getDailyCapKey() { return new Date().toISOString().split('T')[0]; }
+
+function loadDailyCapital() {
+  var today = getDailyCapKey();
+  var saved = appSettings['dailyCap_' + today];
+  var totalEl = document.getElementById('dailyTotalCap');
+  var collEl = document.getElementById('dailyCollateral');
+  if (saved) {
+    if (totalEl) totalEl.value = saved.total || '';
+    if (collEl) collEl.value = saved.collateral || '';
+  } else {
+    // Try to carry forward from the most recent day that has data
+    var keys = Object.keys(appSettings).filter(function(k){ return k.startsWith('dailyCap_') && k < 'dailyCap_' + today; }).sort();
+    if (keys.length) {
+      var prev = appSettings[keys[keys.length-1]];
+      if (prev && totalEl) totalEl.value = prev.total || '';
+      if (prev && collEl) collEl.value = prev.collateral || '';
+    }
+  }
+  updateDailyCashDisplay();
+}
+
+function onDailyCapChange() {
+  updateDailyCashDisplay();
+  var today = getDailyCapKey();
+  var total = parseFloat(document.getElementById('dailyTotalCap').value) || 0;
+  var collateral = parseFloat(document.getElementById('dailyCollateral').value) || 0;
+  appSettings['dailyCap_' + today] = { total: total, collateral: collateral };
+  saveSettingsToCloud();
+}
+
+function updateDailyCashDisplay() {
+  var total = parseFloat(document.getElementById('dailyTotalCap').value) || 0;
+  var collateral = parseFloat(document.getElementById('dailyCollateral').value) || 0;
+  var cash = Math.max(0, total - collateral);
+  var el = document.getElementById('dailyCashDisplay');
+  if (el) {
+    el.textContent = '\u20b9' + cash.toLocaleString('en-IN');
+    el.style.color = cash > 0 ? 'var(--accent)' : 'var(--red)';
+  }
+}
+
+function getTodayCapital() {
+  var today = getDailyCapKey();
+  var saved = appSettings['dailyCap_' + today];
+  if (saved && saved.total) return saved;
+  // fallback to most recent
+  var keys = Object.keys(appSettings).filter(function(k){ return k.startsWith('dailyCap_'); }).sort();
+  if (keys.length) return appSettings[keys[keys.length-1]];
+  return { total: 0, collateral: 0 };
+}
+
 function renderDashboard() {
-  // HOME = Pre-Trade Checklist + Quick Links + Live Market
+  // HOME = Pre-Trade Checklist + Quick Links + Daily Capital + Live Market
   updateMarketStatus();
   renderQuickLinks();
+  loadDailyCapital();
   renderDashGuard();
   // Load live chart if not already loaded
   if (!document.getElementById('tvChartWrap').querySelector('iframe')) {
@@ -2041,7 +2123,7 @@ function renderDashboard() {
 
 // ── ANALYTICS (rendered inside Reports) ────────────────────────────────────
 function renderAnalytics() {
-  const validTrades = trades.filter(t => typeof t.pl === 'number' && !isNaN(t.pl) && t.capital > 0);
+  const validTrades = trades.filter(t => typeof t.pl === 'number' && !isNaN(t.pl));
 
   // ── Portfolio Value (from Progress settings) ─────────────────────────
   const startCap = parseFloat(appSettings.pt_startcap) || 0;
@@ -2203,7 +2285,7 @@ function tradeItemHTML(t) {
           ${charges > 0 ? `<div style="font-size:10px;color:var(--muted);margin-top:3px;">Gross: ${fmt(grossPL)} · Chg: \u20b9${charges}</div>` : ''}
         </div>
       </div>
-      <div class="trade-capital">Capital: \u20b9${(t.capital/100000).toFixed(1)}L${t.collateral ? ' (Collateral: \u20b9'+(t.collateral/100000).toFixed(1)+'L · Cash: \u20b9'+((t.cash||t.capital-t.collateral)/100000).toFixed(1)+'L)' : ''} · ${t.pct}%${t.lots ? ' · ' + t.lots + ' lots' : ''}</div>
+      <div class="trade-capital">${t.capital ? 'Capital: \u20b9'+(t.capital/100000).toFixed(1)+'L' : ''}${t.collateral ? ' (Collateral: \u20b9'+(t.collateral/100000).toFixed(1)+'L · Cash: \u20b9'+((t.cash||(t.capital||0)-t.collateral)/100000).toFixed(1)+'L)' : ''}${t.pct ? ' · '+t.pct+'%' : ''}${t.lots ? ' · ' + t.lots + ' lots' : ''}</div>
       ${t.comment ? `<div class="trade-comment">${t.comment}</div>` : ''}
       ${t.analysis ? `<div class="trade-analysis ${analysisClass}">${t.analysis}</div>` : ''}
     </div>`;
@@ -2219,7 +2301,7 @@ function toggleJournalDay(id, headEl) {
 }
 
 function renderJournal() {
-  const validTrades = trades.filter(t => typeof t.pl === 'number' && !isNaN(t.pl) && t.capital > 0);
+  const validTrades = trades.filter(t => typeof t.pl === 'number' && !isNaN(t.pl));
   let filtered = [...validTrades];
   if (journalFilter === 'win') filtered = filtered.filter(t => t.pl > 0);
   if (journalFilter === 'loss') filtered = filtered.filter(t => t.pl < 0);
@@ -3298,7 +3380,7 @@ function renderReports() {
     try { s[1](); } catch(e){ console.warn('Report section failed:', s[0], e); }
   });
 
-  const validTrades = trades.filter(t => typeof t.pl === 'number' && !isNaN(t.pl) && t.capital > 0);
+  const validTrades = trades.filter(t => typeof t.pl === 'number' && !isNaN(t.pl));
 
   // Monthly chart
   const months = {};
@@ -3424,7 +3506,7 @@ function mondayOf(dateStr) {
 function renderWeeklyReport() {
   var el = document.getElementById('weeklyReport');
   if (!el) return;
-  var valid = trades.filter(function(t){ return typeof t.pl === 'number' && !isNaN(t.pl) && t.capital > 0; });
+  var valid = trades.filter(function(t){ return typeof t.pl === 'number' && !isNaN(t.pl); });
   if (!valid.length) { el.innerHTML = '<div class="empty" style="padding:12px;">No data</div>'; return; }
   var weeks = {};
   valid.forEach(function(t){
@@ -3454,7 +3536,7 @@ function renderWeeklyReport() {
 function renderDayByDay() {
   var el = document.getElementById('dayByDayReport');
   if (!el) return;
-  var valid = trades.filter(function(t){ return typeof t.pl === 'number' && !isNaN(t.pl) && t.capital > 0; });
+  var valid = trades.filter(function(t){ return typeof t.pl === 'number' && !isNaN(t.pl); });
   if (!valid.length) { el.innerHTML = '<div class="empty" style="padding:12px;">No data</div>'; return; }
   var byDate = {};
   valid.forEach(function(t){
