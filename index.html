@@ -410,73 +410,6 @@
     <div id="tvChartWrap" style="height:340px;border-radius:8px;overflow:hidden;">
     </div>
   </div>
-
-  <div class="card">
-    <div class="card-title">💼 PORTFOLIO VALUE</div>
-    <div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--accent);text-align:center;padding:8px 0;" id="portfolioValue">₹0</div>
-    <div style="font-size:11px;color:var(--muted);text-align:center;" id="portfolioMeta">Set up in Progress tab</div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">📅 PERIOD P&L</div>
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">This Week</div>
-        <div class="stat-val" id="weekPL">₹0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">This Month</div>
-        <div class="stat-val" id="monthPL">₹0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">This Year</div>
-        <div class="stat-val" id="yearPL">₹0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">All Time P&L</div>
-        <div class="stat-val" id="allTimePL">₹0</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">OVERVIEW</div>
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">Total P&L</div>
-        <div class="stat-val" id="totalPL">₹0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Win Rate</div>
-        <div class="stat-val accent" id="winRate">0%</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Avg Win</div>
-        <div class="stat-val green" id="avgWin">₹0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Avg Loss</div>
-        <div class="stat-val red" id="avgLoss">₹0</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">CUMULATIVE P&L</div>
-    <div class="chart-wrap">
-      <canvas id="plChart"></canvas>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">RECENT STREAK</div>
-    <div class="streak-row" id="streakRow"></div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">MONTHLY BREAKDOWN</div>
-    <div id="monthlySummary"></div>
-  </div>
 </div>
 
 <!-- JOURNAL PAGE -->
@@ -886,35 +819,108 @@
 
 <!-- REPORTS PAGE -->
 <div id="pageReports" class="page">
+
+  <!-- OVERVIEW -->
   <div class="card">
-    <div class="card-title">MONTHLY P&L</div>
-    <div class="chart-wrap">
-      <canvas id="monthChart"></canvas>
+    <div class="card-title">📊 OVERVIEW</div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total P&L</div>
+        <div class="stat-val" id="totalPL">₹0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Win Rate</div>
+        <div class="stat-val accent" id="winRate">0%</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg Win</div>
+        <div class="stat-val green" id="avgWin">₹0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg Loss</div>
+        <div class="stat-val red" id="avgLoss">₹0</div>
+      </div>
     </div>
   </div>
 
+  <!-- PORTFOLIO VALUE -->
   <div class="card">
-    <div class="card-title">DAY OF WEEK</div>
+    <div class="card-title">💼 PORTFOLIO VALUE</div>
+    <div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--accent);text-align:center;padding:8px 0;" id="portfolioValue">₹0</div>
+    <div style="font-size:11px;color:var(--muted);text-align:center;" id="portfolioMeta">Set up target below</div>
+  </div>
+
+  <!-- PERIOD P&L -->
+  <div class="card">
+    <div class="card-title">📅 PERIOD P&L</div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">This Week</div><div class="stat-val" id="weekPL">₹0</div></div>
+      <div class="stat-card"><div class="stat-label">This Month</div><div class="stat-val" id="monthPL">₹0</div></div>
+      <div class="stat-card"><div class="stat-label">This Year</div><div class="stat-val" id="yearPL">₹0</div></div>
+      <div class="stat-card"><div class="stat-label">All Time P&L</div><div class="stat-val" id="allTimePL">₹0</div></div>
+    </div>
+  </div>
+
+  <!-- CUMULATIVE P&L -->
+  <div class="card">
+    <div class="card-title">📈 CUMULATIVE P&L</div>
+    <div class="chart-wrap">
+      <canvas id="plChart"></canvas>
+    </div>
+  </div>
+
+  <!-- STREAK ANALYSIS -->
+  <div class="card">
+    <div class="card-title">🔥 STREAK ANALYSIS</div>
+    <div id="streakStats" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;"></div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:.5px;">RECENT TRADES (oldest → newest)</div>
+    <div class="streak-row" id="streakRow"></div>
+  </div>
+
+  <!-- WEEKLY REPORT -->
+  <div class="card">
+    <div class="card-title">🗓️ WEEKLY REPORT</div>
+    <div id="weeklyReport"></div>
+  </div>
+
+  <!-- MONTHLY REPORT -->
+  <div class="card">
+    <div class="card-title">📆 MONTHLY REPORT</div>
+    <div class="chart-wrap" style="margin-bottom:12px;">
+      <canvas id="monthChart"></canvas>
+    </div>
+    <div id="monthlySummary"></div>
+  </div>
+
+  <!-- DAY-WISE P/L -->
+  <div class="card">
+    <div class="card-title">📅 DAY-OF-WEEK P/L</div>
     <div class="chart-wrap">
       <canvas id="dayChart"></canvas>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-title">WIN/LOSS RATIO</div>
+    <div class="card-title">🗒️ DAY-BY-DAY P/L (recent)</div>
+    <div id="dayByDayReport"></div>
+  </div>
+
+  <!-- WIN/LOSS -->
+  <div class="card">
+    <div class="card-title">🥧 WIN / LOSS RATIO</div>
     <div class="chart-wrap" style="height: 180px;">
       <canvas id="pieChart"></canvas>
     </div>
   </div>
 
+  <!-- RULES NOT FOLLOWED -->
   <div class="card">
-    <div class="card-title">RULES BROKEN</div>
+    <div class="card-title">⚠️ RULES NOT FOLLOWED</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">From your Day Reviews — each time a rule was broken is counted below.</div>
     <div id="rulesBroken"></div>
   </div>
-</div>
 
-<!-- PROGRESS PAGE -->
-<div id="pageProgress" class="page">
+  <!-- PROGRESS vs TARGET (moved from More) -->
   <div class="card">
     <div class="card-title">⚙️ TARGET SETUP</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
@@ -957,11 +963,11 @@
   </div>
 
   <div class="card">
-    <div class="card-title">📊 PROGRESS vs TARGET</div>
+    <div class="card-title">🎯 PROGRESS vs TARGET</div>
     <div id="ptStats" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;"></div>
     <div id="ptGapBadge" style="text-align:center;margin-bottom:10px;"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-      <span style="font-size:11px;color:var(--muted);">📱 Pinch to zoom · 🖱 Scroll to zoom · Drag to pan</span>
+      <span style="font-size:11px;color:var(--muted);">📱 Pinch/scroll to zoom · Drag to pan</span>
       <button onclick="if(charts.progress)charts.progress.resetZoom()" style="background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:10px;padding:4px 10px;cursor:pointer;font-family:var(--mono);">↺ Reset</button>
     </div>
     <div style="height:380px;position:relative;">
@@ -973,6 +979,7 @@
     </div>
   </div>
 </div>
+
 
 <!-- BOTTOM NAV -->
 
@@ -1111,8 +1118,8 @@
 
 <div class="bottom-nav">
   <button class="nav-btn active" onclick="goPage('Dashboard')">
-    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
-    Home
+    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+    Checklist
   </button>
   <button class="nav-btn" onclick="goPage('Journal')">
     <svg fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
@@ -1126,9 +1133,9 @@
     <svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
     Calc
   </button>
-  <button class="nav-btn" onclick="goPage('Progress')">
-    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
-    More
+  <button class="nav-btn" onclick="goPage('Reports')">
+    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
+    Report
   </button>
 </div>
 
@@ -1189,13 +1196,21 @@ auth.onAuthStateChanged(user => {
     document.getElementById('appMain').style.display = 'block';
     document.getElementById('userAvatar').src = user.photoURL || '';
     document.getElementById('userName').textContent = user.displayName || user.email;
-    loadTradesFromCloud();
+    bootstrapFromCloud();
   } else {
     document.getElementById('authGate').style.display = 'flex';
     document.getElementById('appMain').style.display = 'none';
     trades = [];
+    dayReviews = [];
   }
 });
+
+// Load everything (trades + settings + reviews) then render
+async function bootstrapFromCloud() {
+  await loadSettingsFromCloud();
+  await loadReviewsFromCloud();
+  await loadTradesFromCloud();
+}
 
 // ── STORAGE (Firestore + localStorage fallback) ────────────────────────────
 function tradesRef() {
@@ -1267,6 +1282,124 @@ function setSyncStatus(s) {
   else { dot.className = 'sync-dot offline'; label.textContent = 'Syncing...'; }
 }
 
+// ── CLOUD SETTINGS (target setup, guard limits, quick links, lumpsums) ──────
+// Everything here syncs across devices via Firestore: users/{uid}/meta/app
+var DEFAULT_LINKS = [
+  { name: 'TradingView', url: 'https://www.tradingview.com/chart/?symbol=NSE:NIFTY' },
+  { name: 'Sensibull OI', url: 'https://web.sensibull.com/open-interest/oi-vs-strike?tradingsymbol=NIFTY' },
+  { name: 'Kite Login', url: 'https://kite.zerodha.com' }
+];
+
+var appSettings = {
+  pt_startdate: '', pt_startcap: '', pt_weeklypct: '', pt_monthlypct: '',
+  tg_maxTrades: '', tg_maxLoss: '', tg_cooldownMin: '',
+  quickLinks: DEFAULT_LINKS.slice(),
+  lumpsums: []
+};
+
+function settingsRef() { return db.collection('users').doc(currentUser.uid).collection('meta').doc('app'); }
+function reviewsRef() { return db.collection('users').doc(currentUser.uid).collection('reviews'); }
+function settingsLocalKey() { return 'appsettings_' + (currentUser ? currentUser.uid : 'local'); }
+
+function cacheSettingsLocal() {
+  try { localStorage.setItem(settingsLocalKey(), JSON.stringify(appSettings)); } catch(e){}
+}
+
+async function loadSettingsFromCloud() {
+  // start from local cache so UI isn't empty while cloud loads
+  try {
+    var cached = localStorage.getItem(settingsLocalKey());
+    if (cached) appSettings = Object.assign(appSettings, JSON.parse(cached));
+  } catch(e){}
+  try {
+    var doc = await settingsRef().get();
+    if (doc.exists) {
+      appSettings = Object.assign({
+        pt_startdate:'', pt_startcap:'', pt_weeklypct:'', pt_monthlypct:'',
+        tg_maxTrades:'', tg_maxLoss:'', tg_cooldownMin:'',
+        quickLinks: DEFAULT_LINKS.slice(), lumpsums: []
+      }, doc.data());
+      if (!Array.isArray(appSettings.quickLinks)) appSettings.quickLinks = DEFAULT_LINKS.slice();
+      if (!Array.isArray(appSettings.lumpsums)) appSettings.lumpsums = [];
+      cacheSettingsLocal();
+    } else {
+      // First run: migrate any old localStorage values up to the cloud
+      migrateLocalToCloud();
+    }
+  } catch(e) { console.warn('Settings load failed, using cache:', e); }
+}
+
+function migrateLocalToCloud() {
+  try {
+    var moved = false;
+    ['pt_startdate','pt_startcap','pt_weeklypct','pt_monthlypct','tg_maxTrades','tg_maxLoss','tg_cooldownMin'].forEach(function(k){
+      var v = localStorage.getItem(k);
+      if (v != null && v !== '') { appSettings[k] = v; moved = true; }
+    });
+    var ql = localStorage.getItem('quick_links_v2');
+    if (ql) { try { appSettings.quickLinks = JSON.parse(ql); moved = true; } catch(e){} }
+    var lk = 'lumpsums_' + (currentUser ? currentUser.uid : 'local');
+    var lump = localStorage.getItem(lk);
+    if (lump) { try { appSettings.lumpsums = JSON.parse(lump); moved = true; } catch(e){} }
+    if (moved) { cacheSettingsLocal(); saveSettingsToCloud(); }
+  } catch(e){}
+}
+
+var _settingsSaveTimer = null;
+function saveSettingsToCloud() {
+  cacheSettingsLocal();
+  if (!currentUser) return;
+  setSyncStatus('syncing');
+  if (_settingsSaveTimer) clearTimeout(_settingsSaveTimer);
+  _settingsSaveTimer = setTimeout(function() {
+    settingsRef().set(appSettings, { merge: true })
+      .then(function(){ setSyncStatus('online'); })
+      .catch(function(e){ console.warn('Settings save failed:', e); setSyncStatus('offline'); });
+  }, 500);
+}
+
+function getSetting(k) { return appSettings[k]; }
+function setSetting(k, v) { appSettings[k] = v; saveSettingsToCloud(); }
+
+// ── CLOUD DAY REVIEWS ──────────────────────────────────────────────────────
+var dayReviews = [];
+function reviewsLocalKey() { return 'day_reviews_' + (currentUser ? currentUser.uid : 'local'); }
+
+async function loadReviewsFromCloud() {
+  try {
+    var cached = localStorage.getItem(reviewsLocalKey());
+    if (cached) dayReviews = JSON.parse(cached);
+  } catch(e){}
+  try {
+    var snap = await reviewsRef().get();
+    dayReviews = snap.docs.map(function(d){ return Object.assign({ date: d.id }, d.data()); });
+    // migrate legacy single-key reviews if present and cloud empty
+    if (!dayReviews.length) {
+      var legacy = localStorage.getItem('day_reviews');
+      if (legacy) {
+        try {
+          var arr = JSON.parse(legacy);
+          arr.forEach(function(r){ reviewsRef().doc(r.date).set({ answers: r.answers || {}, lesson: r.lesson || '' }); });
+          dayReviews = arr;
+        } catch(e){}
+      }
+    }
+    try { localStorage.setItem(reviewsLocalKey(), JSON.stringify(dayReviews)); } catch(e){}
+  } catch(e) { console.warn('Reviews load failed, using cache:', e); }
+}
+
+async function saveReviewToCloud(review) {
+  dayReviews = dayReviews.filter(function(r){ return r.date !== review.date; });
+  dayReviews.push(review);
+  try { localStorage.setItem(reviewsLocalKey(), JSON.stringify(dayReviews)); } catch(e){}
+  if (!currentUser) return;
+  setSyncStatus('syncing');
+  try {
+    await reviewsRef().doc(review.date).set({ answers: review.answers || {}, lesson: review.lesson || '' });
+    setSyncStatus('online');
+  } catch(e) { console.warn('Review save failed:', e); setSyncStatus('offline'); }
+}
+
 let trades = loadTrades();
 let journalFilter = 'all';
 let editingIndex = null;  // Track which trade is being edited
@@ -1284,8 +1417,7 @@ function goPage(name) {
 
   if (name === 'Dashboard') renderDashboard();
   if (name === 'Journal') renderJournal();
-  if (name === 'Reports') renderReports();
-  if (name === 'Progress') { loadProgressSettings(); renderProgress(); }
+  if (name === 'Reports') { loadProgressSettings(); renderReports(); }
   if (name === 'Calc') renderCalcPage();
   if (name === 'Add') {
     if (editingIndex === null) {
@@ -1336,15 +1468,12 @@ var defaultLinks = [
 ];
 
 function getQuickLinks() {
-  try {
-    var saved = localStorage.getItem('quick_links_v2');
-    if (saved) return JSON.parse(saved);
-  } catch(e) {}
-  return defaultLinks.slice();
+  return (appSettings.quickLinks && appSettings.quickLinks.length) ? appSettings.quickLinks : defaultLinks.slice();
 }
 
 function saveQuickLinks(links) {
-  localStorage.setItem('quick_links_v2', JSON.stringify(links));
+  appSettings.quickLinks = links;
+  saveSettingsToCloud();
 }
 
 function getLinkIcon(name) {
@@ -1659,8 +1788,8 @@ function renderDashGuard() {
   var todayTrades = trades.filter(function(t) { return t.date === todayStr; });
   var todayPL = todayTrades.reduce(function(s,t) { return s + (t.pl || 0); }, 0);
   var tradeCount = todayTrades.length;
-  var maxTrades = parseInt(localStorage.getItem('tg_maxTrades')) || 2;
-  var maxLoss = parseInt(localStorage.getItem('tg_maxLoss')) || 999999;
+  var maxTrades = parseInt(appSettings.tg_maxTrades) || 2;
+  var maxLoss = parseInt(appSettings.tg_maxLoss) || 999999;
 
   // Streak
   var sorted = trades.filter(function(t) { return typeof t.pl === 'number'; }).sort(function(a,b) { return b.date.localeCompare(a.date); });
@@ -1800,15 +1929,24 @@ function switchChart(symbol) {
 
 // ── DASHBOARD ──────────────────────────────────────────────────────────────
 function renderDashboard() {
+  // HOME = Pre-Trade Checklist + Quick Links + Live Market
   updateMarketStatus();
   renderQuickLinks();
   renderDashGuard();
+  // Load live chart if not already loaded
+  if (!document.getElementById('tvChartWrap').querySelector('iframe')) {
+    loadTVChart(currentChartSymbol);
+  }
+}
+
+// ── ANALYTICS (rendered inside Reports) ────────────────────────────────────
+function renderAnalytics() {
   const validTrades = trades.filter(t => typeof t.pl === 'number' && !isNaN(t.pl) && t.capital > 0);
 
   // ── Portfolio Value (from Progress settings) ─────────────────────────
-  const startCap = parseFloat(localStorage.getItem('pt_startcap')) || 0;
-  const startDate = localStorage.getItem('pt_startdate') || '';
-  const lumps = JSON.parse(localStorage.getItem('lumpsums_' + (currentUser?.uid || 'local')) || '[]');
+  const startCap = parseFloat(appSettings.pt_startcap) || 0;
+  const startDate = appSettings.pt_startdate || '';
+  const lumps = getLumpsums();
   const today = new Date();
   const depositedNow = startCap + lumps.filter(l => new Date(l.date) <= today).reduce((s, l) => s + l.amt, 0);
   const tradesForPortfolio = startDate
@@ -1936,11 +2074,6 @@ function renderDashboard() {
       </div>
     </div>`
   ).join('');
-
-  // Load live chart if not already loaded
-  if (!document.getElementById('tvChartWrap').querySelector('iframe')) {
-    loadTVChart(currentChartSymbol);
-  }
 }
 
 // ── JOURNAL ────────────────────────────────────────────────────────────────
@@ -2437,10 +2570,7 @@ function saveDayReview() {
   var todayStr = new Date().toISOString().split('T')[0];
   var lesson = document.getElementById('reviewLesson').value.trim();
   var review = { date: todayStr, answers: Object.assign({}, reviewAnswers), lesson: lesson };
-  var reviews = JSON.parse(localStorage.getItem('day_reviews') || '[]');
-  reviews = reviews.filter(function(r) { return r.date !== todayStr; });
-  reviews.push(review);
-  localStorage.setItem('day_reviews', JSON.stringify(reviews));
+  saveReviewToCloud(review);
 
   var good = ['Yes','Good','Exited','Not expiry','No SL','No loss','No','N/A'];
   var badWords = ['Held','Rushed','Overtraded','Revenge','Poor','Bad analysis'];
@@ -2568,15 +2698,16 @@ var guardChecklist = [
 var cooldownInterval = null;
 
 function saveGuardSettings() {
-  localStorage.setItem('tg_maxTrades', document.getElementById('tgMaxTrades').value);
-  localStorage.setItem('tg_maxLoss', document.getElementById('tgMaxLoss').value);
-  localStorage.setItem('tg_cooldownMin', document.getElementById('tgCooldownMin').value);
+  appSettings.tg_maxTrades = document.getElementById('tgMaxTrades').value;
+  appSettings.tg_maxLoss = document.getElementById('tgMaxLoss').value;
+  appSettings.tg_cooldownMin = document.getElementById('tgCooldownMin').value;
+  saveSettingsToCloud();
 }
 
 function loadGuardSettings() {
-  document.getElementById('tgMaxTrades').value = localStorage.getItem('tg_maxTrades') || '';
-  document.getElementById('tgMaxLoss').value = localStorage.getItem('tg_maxLoss') || '';
-  document.getElementById('tgCooldownMin').value = localStorage.getItem('tg_cooldownMin') || '';
+  document.getElementById('tgMaxTrades').value = appSettings.tg_maxTrades || '';
+  document.getElementById('tgMaxLoss').value = appSettings.tg_maxLoss || '';
+  document.getElementById('tgCooldownMin').value = appSettings.tg_cooldownMin || '';
 }
 
 function renderTradeGuard() {
@@ -2757,22 +2888,22 @@ function lockTradeForm() {
 }
 
 // ── PROGRESS TRACKER ───────────────────────────────────────────────────────
-function getLumpsumsKey() { return 'lumpsums_' + (currentUser?.uid || 'local'); }
-function getLumpsums() { return JSON.parse(localStorage.getItem(getLumpsumsKey()) || '[]'); }
-function saveLumpsums(arr) { localStorage.setItem(getLumpsumsKey(), JSON.stringify(arr)); }
+function getLumpsums() { return appSettings.lumpsums || []; }
+function saveLumpsums(arr) { appSettings.lumpsums = arr; saveSettingsToCloud(); }
 
 function saveProgressSettings() {
-  localStorage.setItem('pt_startdate', document.getElementById('ptStartDate').value);
-  localStorage.setItem('pt_startcap', document.getElementById('ptStartCapital').value);
-  localStorage.setItem('pt_weeklypct', document.getElementById('ptWeeklyPct').value);
-  localStorage.setItem('pt_monthlypct', document.getElementById('ptMonthlyPct').value);
+  appSettings.pt_startdate = document.getElementById('ptStartDate').value;
+  appSettings.pt_startcap = document.getElementById('ptStartCapital').value;
+  appSettings.pt_weeklypct = document.getElementById('ptWeeklyPct').value;
+  appSettings.pt_monthlypct = document.getElementById('ptMonthlyPct').value;
+  saveSettingsToCloud();
 }
 
 function loadProgressSettings() {
-  document.getElementById('ptStartDate').value = localStorage.getItem('pt_startdate') || '';
-  document.getElementById('ptStartCapital').value = localStorage.getItem('pt_startcap') || '';
-  document.getElementById('ptWeeklyPct').value = localStorage.getItem('pt_weeklypct') || '';
-  document.getElementById('ptMonthlyPct').value = localStorage.getItem('pt_monthlypct') || '';
+  document.getElementById('ptStartDate').value = appSettings.pt_startdate || '';
+  document.getElementById('ptStartCapital').value = appSettings.pt_startcap || '';
+  document.getElementById('ptWeeklyPct').value = appSettings.pt_weeklypct || '';
+  document.getElementById('ptMonthlyPct').value = appSettings.pt_monthlypct || '';
 }
 
 function addLumpsum() {
@@ -2972,12 +3103,20 @@ function renderProgress() {
 
 // ── REPORTS ────────────────────────────────────────────────────────────────
 function renderReports() {
+  loadProgressSettings();
+  renderAnalytics();       // overview, portfolio, period P&L, cumulative chart, streak dots, monthly breakdown
+  renderProgress();        // progress vs target graph
+  renderStreakStats();     // current / longest win / longest loss
+  renderWeeklyReport();    // weekly P&L breakdown
+  renderDayByDay();        // recent day-by-day P&L
+  renderRulesBroken();     // rules-not-followed from day reviews
+
   const validTrades = trades.filter(t => typeof t.pl === 'number' && !isNaN(t.pl) && t.capital > 0);
 
   // Monthly chart
   const months = {};
   validTrades.forEach(t => {
-    const m = new Date(t.date).toLocaleString('en',{month:'short'});
+    const m = new Date(t.date).toLocaleString('en',{month:'short',year:'2-digit'});
     if (!months[m]) months[m] = 0;
     months[m] += t.pl;
   });
@@ -3049,28 +3188,161 @@ function renderReports() {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { labels: { color: '#e2e8f0', font: { size: 12 } } },
-        tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.raw} (${Math.round(ctx.raw/(wins+losses)*100)}%)` }, backgroundColor:'#181c24',titleColor:'#00e5ff',bodyColor:'#e2e8f0',borderColor:'#1f2535',borderWidth:1 }
+        tooltip: { callbacks: { label: ctx => ctx.label + ': ' + ctx.raw + ' (' + Math.round(ctx.raw/((wins+losses)||1)*100) + '%)' }, backgroundColor:'#181c24',titleColor:'#00e5ff',bodyColor:'#e2e8f0',borderColor:'#1f2535',borderWidth:1 }
       }
     }
   });
-
-  // Rules broken
-  const rules = [
-    { label: '⚠️ Revenge Trading', count: validTrades.filter(t=>t.analysis?.includes('REVENGE')).length },
-    { label: '⚠️ No Stop-Loss', count: validTrades.filter(t=>t.comment?.toLowerCase().includes('stoploss')||t.analysis?.toLowerCase().includes('stop-loss')).length },
-    { label: '⚠️ Distracted Trading', count: validTrades.filter(t=>t.analysis?.includes('DISTRACTED')).length },
-    { label: '⚠️ Overconfidence', count: validTrades.filter(t=>t.analysis?.includes('overconfidence')).length },
-    { label: '⚠️ Ego / External Pressure', count: validTrades.filter(t=>t.analysis?.includes('ego')||t.analysis?.includes('pressure')).length },
-    { label: '⚠️ Chasing After Loss', count: validTrades.filter(t=>t.analysis?.includes('CHASING')).length },
-  ].filter(r=>r.count>0);
-
-  document.getElementById('rulesBroken').innerHTML = rules.map(r =>
-    `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
-      <span style="color:var(--yellow)">${r.label}</span>
-      <span style="font-family:var(--mono);color:var(--red)">${r.count}x</span>
-    </div>`
-  ).join('') || '<div style="color:var(--muted);font-size:13px;padding:8px 0">No flagged entries found.</div>';
 }
+
+// ── STREAK ANALYSIS ────────────────────────────────────────────────────────
+function renderStreakStats() {
+  var el = document.getElementById('streakStats');
+  if (!el) return;
+  var valid = trades.filter(function(t){ return typeof t.pl === 'number' && !isNaN(t.pl); })
+                    .sort(function(a,b){ return a.date.localeCompare(b.date); });
+  if (!valid.length) {
+    el.innerHTML = '<div class="stat-card" style="grid-column:1/-1;text-align:center;color:var(--muted);font-size:12px;">No trades yet</div>';
+    return;
+  }
+  // longest win / loss streaks
+  var longestWin = 0, longestLoss = 0, runW = 0, runL = 0;
+  valid.forEach(function(t){
+    if (t.pl >= 0) { runW++; runL = 0; if (runW > longestWin) longestWin = runW; }
+    else { runL++; runW = 0; if (runL > longestLoss) longestLoss = runL; }
+  });
+  // current streak (from most recent backwards)
+  var cur = 0, curType = '';
+  for (var i = valid.length - 1; i >= 0; i--) {
+    var w = valid[i].pl >= 0;
+    if (curType === '') { curType = w ? 'W' : 'L'; cur = 1; }
+    else if ((curType === 'W' && w) || (curType === 'L' && !w)) cur++;
+    else break;
+  }
+  var curColor = curType === 'W' ? 'var(--green)' : 'var(--red)';
+  el.innerHTML =
+    '<div class="stat-card" style="text-align:center;"><div class="stat-label">CURRENT</div><div class="stat-val" style="color:' + curColor + '">' + cur + curType + '</div></div>' +
+    '<div class="stat-card" style="text-align:center;"><div class="stat-label">LONGEST WIN</div><div class="stat-val green">' + longestWin + 'W</div></div>' +
+    '<div class="stat-card" style="text-align:center;"><div class="stat-label">LONGEST LOSS</div><div class="stat-val red">' + longestLoss + 'L</div></div>';
+}
+
+// ── WEEKLY REPORT ──────────────────────────────────────────────────────────
+function mondayOf(dateStr) {
+  var d = new Date(dateStr);
+  var day = d.getDay() === 0 ? 6 : d.getDay() - 1; // Mon=0
+  d.setDate(d.getDate() - day);
+  return d.toISOString().split('T')[0];
+}
+
+function renderWeeklyReport() {
+  var el = document.getElementById('weeklyReport');
+  if (!el) return;
+  var valid = trades.filter(function(t){ return typeof t.pl === 'number' && !isNaN(t.pl) && t.capital > 0; });
+  if (!valid.length) { el.innerHTML = '<div class="empty" style="padding:12px;">No data</div>'; return; }
+  var weeks = {};
+  valid.forEach(function(t){
+    var wk = mondayOf(t.date);
+    if (!weeks[wk]) weeks[wk] = { pl:0, wins:0, total:0 };
+    weeks[wk].pl += t.pl; weeks[wk].total++;
+    if (t.pl > 0) weeks[wk].wins++;
+  });
+  var keys = Object.keys(weeks).sort(function(a,b){ return b.localeCompare(a); }).slice(0, 12);
+  el.innerHTML = keys.map(function(wk){
+    var d = weeks[wk];
+    var mon = new Date(wk);
+    var end = new Date(wk); end.setDate(end.getDate() + 4);
+    var lbl = mon.getDate() + ' ' + mon.toLocaleString('en',{month:'short'}) + ' – ' + end.getDate() + ' ' + end.toLocaleString('en',{month:'short'});
+    var wr = Math.round(d.wins / d.total * 100);
+    return '<div class="summary-row">' +
+      '<div class="summary-month" style="min-width:auto;font-size:11px;">' + lbl + '</div>' +
+      '<div class="summary-data" style="text-align:right;">' +
+        '<div class="summary-pl" style="color:' + (d.pl>=0?'var(--green)':'var(--red)') + '">' + fmt(d.pl) + '</div>' +
+        '<div class="summary-meta">' + d.wins + 'W / ' + (d.total-d.wins) + 'L · WR ' + wr + '%</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── DAY-BY-DAY REPORT ──────────────────────────────────────────────────────
+function renderDayByDay() {
+  var el = document.getElementById('dayByDayReport');
+  if (!el) return;
+  var valid = trades.filter(function(t){ return typeof t.pl === 'number' && !isNaN(t.pl) && t.capital > 0; });
+  if (!valid.length) { el.innerHTML = '<div class="empty" style="padding:12px;">No data</div>'; return; }
+  var byDate = {};
+  valid.forEach(function(t){
+    if (!byDate[t.date]) byDate[t.date] = { pl:0, wins:0, total:0, day:t.day };
+    byDate[t.date].pl += t.pl; byDate[t.date].total++;
+    if (t.pl > 0) byDate[t.date].wins++;
+  });
+  var keys = Object.keys(byDate).sort(function(a,b){ return b.localeCompare(a); }).slice(0, 15);
+  el.innerHTML = keys.map(function(dt){
+    var d = byDate[dt];
+    var dObj = new Date(dt);
+    var lbl = dObj.getDate() + ' ' + dObj.toLocaleString('en',{month:'short'});
+    var dayShort = (d.day || dObj.toLocaleString('en',{weekday:'short'})).slice(0,3);
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">' +
+      '<div><div style="font-family:var(--mono);font-size:13px;color:var(--accent);">' + lbl + '</div>' +
+      '<div style="font-size:10px;color:var(--muted);">' + dayShort + ' · ' + d.total + ' trade' + (d.total>1?'s':'') + ' · ' + d.wins + 'W/' + (d.total-d.wins) + 'L</div></div>' +
+      '<span class="pl-badge ' + (d.pl>=0?'pos':'neg') + '" style="font-size:14px;">' + fmt(d.pl) + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+// ── RULES NOT FOLLOWED (from day reviews) ──────────────────────────────────
+var reviewRuleDefs = [
+  { q:'rq1',  label:'Overtraded — broke 2-trade limit', bad:function(v){ return v==='No'; } },
+  { q:'rq2',  label:'Entered before 9:45 AM',            bad:function(v){ return v==='No'; } },
+  { q:'rq3',  label:'Took a revenge trade',              bad:function(v){ return v==='Yes'; } },
+  { q:'rq4',  label:"Skipped 15-min candle confirmation", bad:function(v){ return v==='No'; } },
+  { q:'rq5',  label:"Didn't confirm VWAP direction",     bad:function(v){ return v==='No'; } },
+  { q:'rq6',  label:"Didn't check OI walls",             bad:function(v){ return v==='No'; } },
+  { q:'rq7',  label:'Sold strikes inside the OI wall',   bad:function(v){ return v==='No'; } },
+  { q:'rq8',  label:"Didn't check India VIX",            bad:function(v){ return v==='No'; } },
+  { q:'rq9',  label:'No profit target set before entry', bad:function(v){ return v==='No'; } },
+  { q:'rq10', label:'No stop-loss set before entry',     bad:function(v){ return v==='No'; } },
+  { q:'rq11', label:'Held past stop-loss',               bad:function(v){ return v==='Held'; } },
+  { q:'rq12', label:'Poor risk-reward (<1:1)',           bad:function(v){ return v && v.indexOf('Poor')!==-1; } },
+  { q:'rq13', label:'Held late on expiry (past 2 PM)',   bad:function(v){ return v && v.indexOf('held late')!==-1; } }
+];
+
+function renderRulesBroken() {
+  var el = document.getElementById('rulesBroken');
+  if (!el) return;
+  if (!dayReviews.length) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px 0">No day reviews saved yet. Fill the Day Review (in Add) to track rule discipline.</div>';
+    return;
+  }
+  var counts = {};
+  var dates = {};
+  reviewRuleDefs.forEach(function(rule){
+    counts[rule.q] = 0; dates[rule.q] = [];
+  });
+  dayReviews.forEach(function(r){
+    var ans = r.answers || {};
+    reviewRuleDefs.forEach(function(rule){
+      if (rule.bad(ans[rule.q])) { counts[rule.q]++; dates[rule.q].push(r.date); }
+    });
+  });
+  var rows = reviewRuleDefs
+    .filter(function(rule){ return counts[rule.q] > 0; })
+    .sort(function(a,b){ return counts[b.q] - counts[a.q]; });
+
+  if (!rows.length) {
+    el.innerHTML = '<div class="pl-badge pos" style="font-size:13px;padding:8px 16px;">\u2705 Clean record — no rules broken in your reviews!</div>';
+    return;
+  }
+  el.innerHTML = rows.map(function(rule){
+    var recent = dates[rule.q].sort().slice(-3).reverse().join(', ');
+    return '<div style="padding:10px 0;border-bottom:1px solid var(--border);">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+        '<span style="color:var(--yellow);font-size:13px;font-weight:600;">\u26a0\ufe0f ' + rule.label + '</span>' +
+        '<span style="font-family:var(--mono);color:var(--red);font-size:14px;font-weight:700;">' + counts[rule.q] + 'x</span>' +
+      '</div>' +
+      '<div style="font-size:10px;color:var(--muted);margin-top:3px;">Recent: ' + recent + '</div>' +
+    '</div>';
+  }).join('');
+}
+
 
 // ── INITIAL RENDER ─────────────────────────────────────────────────────────
 renderDashboard();
