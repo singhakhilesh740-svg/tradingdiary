@@ -579,8 +579,18 @@
           <input type="date" class="form-input" id="entryDate">
         </div>
         <div class="form-group" style="margin-bottom:0;">
-          <label class="form-label">CAPITAL (₹)</label>
-          <input type="number" class="form-input" id="entryCapital" placeholder="200000">
+          <label class="form-label">TOTAL CAPITAL (₹)</label>
+          <input type="number" class="form-input" id="entryCapital" placeholder="200000" oninput="calcCashCapital()">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">COLLATERAL (₹)</label>
+          <input type="number" class="form-input" id="entryCollateral" placeholder="150000" oninput="calcCashCapital()">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">CASH (₹) — auto</label>
+          <input type="number" class="form-input" id="entryCash" readonly style="opacity:.7;">
         </div>
       </div>
 
@@ -2193,7 +2203,7 @@ function tradeItemHTML(t) {
           ${charges > 0 ? `<div style="font-size:10px;color:var(--muted);margin-top:3px;">Gross: ${fmt(grossPL)} · Chg: \u20b9${charges}</div>` : ''}
         </div>
       </div>
-      <div class="trade-capital">Capital: \u20b9${(t.capital/100000).toFixed(1)}L · ${t.pct}%${t.lots ? ' · ' + t.lots + ' lots' : ''}</div>
+      <div class="trade-capital">Capital: \u20b9${(t.capital/100000).toFixed(1)}L${t.collateral ? ' (Collateral: \u20b9'+(t.collateral/100000).toFixed(1)+'L · Cash: \u20b9'+((t.cash||t.capital-t.collateral)/100000).toFixed(1)+'L)' : ''} · ${t.pct}%${t.lots ? ' · ' + t.lots + ' lots' : ''}</div>
       ${t.comment ? `<div class="trade-comment">${t.comment}</div>` : ''}
       ${t.analysis ? `<div class="trade-analysis ${analysisClass}">${t.analysis}</div>` : ''}
     </div>`;
@@ -2260,6 +2270,8 @@ function editTrade(index) {
   // Fill form with existing data
   document.getElementById('entryDate').value = trade.date;
   document.getElementById('entryCapital').value = trade.capital;
+  document.getElementById('entryCollateral').value = trade.collateral || '';
+  calcCashCapital();
   document.getElementById('entryPL').value = trade.grossPL !== undefined ? trade.grossPL : trade.pl;
   document.getElementById('entryCharges').value = trade.charges || '';
   document.getElementById('entryComment').value = trade.comment || '';
@@ -2300,6 +2312,8 @@ function updateEntry() {
   
   const date = document.getElementById('entryDate').value;
   const capital = parseFloat(document.getElementById('entryCapital').value);
+  const collateral = parseFloat(document.getElementById('entryCollateral').value) || 0;
+  const cash = capital > 0 ? capital - collateral : 0;
   const grossPL = parseFloat(document.getElementById('entryPL').value);
   const charges = parseFloat(document.getElementById('entryCharges').value) || 0;
   const pl = isNaN(grossPL) ? NaN : grossPL - charges;
@@ -2331,6 +2345,7 @@ function updateEntry() {
 
   const updatedTrade = {
     date, day: dayNames[d.getDay()], capital,
+    collateral: collateral, cash: cash,
     grossPL: grossPL, charges: charges, pl, pct,
     comment, analysis,
     instrument: selectedInstrument,
@@ -2375,7 +2390,7 @@ function deleteEntry() {
 function cancelEdit() {
   editingIndex = null;
   document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
-  ['entryCapital','entryPL','entryCharges','entryComment','entryAnalysis',
+  ['entryCapital','entryCollateral','entryPL','entryCharges','entryComment','entryAnalysis',
    'entrySellStrike','entryBuyStrike','entrySellPrem','entryBuyPrem',
    'exitSellPrem','exitBuyPrem'].forEach(function(id) {
     var el = document.getElementById(id);
@@ -2384,6 +2399,7 @@ function cancelEdit() {
   document.getElementById('entryLots').value = '1';
   document.getElementById('entryTime').value = '';
   document.getElementById('exitTime').value = '';
+  if (document.getElementById('entryCash')) document.getElementById('entryCash').value = '';
   if (document.getElementById('netCreditDisplay')) document.getElementById('netCreditDisplay').textContent = '₹0';
   if (document.getElementById('maxProfitDisplay')) document.getElementById('maxProfitDisplay').textContent = '₹0';
   if (document.getElementById('maxLossDisplay')) document.getElementById('maxLossDisplay').textContent = '₹0';
@@ -2461,6 +2477,13 @@ function selectExit(reason) {
     var el = document.getElementById('exit' + r);
     if (el) el.classList.toggle('active', r === reason);
   });
+}
+
+function calcCashCapital() {
+  var total = parseFloat(document.getElementById('entryCapital').value) || 0;
+  var collateral = parseFloat(document.getElementById('entryCollateral').value) || 0;
+  var cash = total - collateral;
+  document.getElementById('entryCash').value = cash >= 0 ? cash : 0;
 }
 
 function calcNetProfit() {
@@ -2558,6 +2581,8 @@ document.addEventListener('DOMContentLoaded', function() {
 function saveEntry(addAnother) {
   var date = document.getElementById('entryDate').value;
   var capital = parseFloat(document.getElementById('entryCapital').value);
+  var collateral = parseFloat(document.getElementById('entryCollateral').value) || 0;
+  var cash = capital > 0 ? capital - collateral : 0;
   var grossPL = parseFloat(document.getElementById('entryPL').value);
   var charges = parseFloat(document.getElementById('entryCharges').value) || 0;
   var pl = isNaN(grossPL) ? NaN : grossPL - charges; // net P/L used everywhere
@@ -2589,6 +2614,7 @@ function saveEntry(addAnother) {
 
   var tradeObj = {
     date: date, day: dayNames[d.getDay()], capital: capital,
+    collateral: collateral, cash: cash,
     grossPL: grossPL, charges: charges, pl: pl, pct: pct,
     comment: comment, analysis: analysis,
     instrument: selectedInstrument,
@@ -2628,9 +2654,11 @@ function saveEntry(addAnother) {
   document.getElementById('exitTime').value = '';
 
   if (addAnother) {
-    // Keep date and capital, reset entry time to now — stay on the form
+    // Keep date, capital, and collateral — reset entry time to now — stay on the form
     document.getElementById('entryDate').value = date;
     document.getElementById('entryCapital').value = capital;
+    document.getElementById('entryCollateral').value = collateral || '';
+    calcCashCapital();
     var now = new Date();
     var ist = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
     document.getElementById('entryTime').value = String(ist.getHours()).padStart(2,'0') + ':' + String(ist.getMinutes()).padStart(2,'0');
