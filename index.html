@@ -431,6 +431,21 @@
 
   <!-- ADD TRADE PANEL -->
   <div id="panelAddTrade">
+
+    <!-- STEP 1: DATE GATE -->
+    <div id="addDateGate" class="card" style="border:1px solid var(--accent);">
+      <div class="card-title">📅 STEP 1 — SELECT TRADE DATE</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Pick the date of the trade, then continue to fill in the details.</div>
+      <input type="date" class="form-input" id="gateDate" style="margin-bottom:12px;">
+      <button class="submit-btn" onclick="startTradeEntry()">▶ CONTINUE TO TRADE ENTRY</button>
+    </div>
+
+    <!-- STEP 2: TRADE FORM (hidden until date chosen) -->
+    <div id="addFormBody" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:12px;">
+        <span style="font-size:12px;color:var(--muted);">Trade for <b id="addDateLabel" style="color:var(--accent);font-family:var(--mono);"></b></span>
+        <button onclick="backToDateGate()" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;padding:5px 10px;cursor:pointer;font-family:var(--mono);">✏️ Change date</button>
+      </div>
     <div class="card">
       <div class="card-title">➕ ADD TRADE ENTRY</div>
       <div class="edit-mode-banner" id="editModeBanner">✏️ Editing trade entry</div>
@@ -626,6 +641,7 @@
         <button class="btn-cancel" onclick="cancelEdit()" style="width:100%;margin-top:10px;">CANCEL</button>
       </div>
     </div>
+    </div><!-- /addFormBody -->
   </div>
 
 
@@ -945,8 +961,8 @@
   </div>
 
   <div class="card">
-    <div class="card-title">💰 LUMPSUM ADDITIONS</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;margin-bottom:12px;">
+    <div class="card-title">💰 FUND ADDITIONS & WITHDRAWALS</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
       <div>
         <label class="form-label">DATE</label>
         <input type="date" class="form-input" id="ptLumpsumDate">
@@ -955,7 +971,10 @@
         <label class="form-label">AMOUNT (₹)</label>
         <input type="number" class="form-input" id="ptLumpsumAmt" placeholder="50000">
       </div>
-      <button onclick="addLumpsum()" style="background:var(--accent);color:#000;border:none;border-radius:8px;padding:11px 14px;font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">+ ADD</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+      <button onclick="addLumpsum('add')" style="background:rgba(0,224,150,.15);color:var(--green);border:1px solid var(--green);border-radius:8px;padding:11px;font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;">➕ ADD FUND</button>
+      <button onclick="addLumpsum('withdraw')" style="background:rgba(255,77,109,.12);color:var(--red);border:1px solid var(--red);border-radius:8px;padding:11px;font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;">➖ WITHDRAW</button>
     </div>
     <div id="lumpsumList"></div>
   </div>
@@ -1450,9 +1469,52 @@ function goPage(name) {
   if (name === 'Add') {
     if (editingIndex === null) {
       cancelEdit();
-      document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
+      resetAddGate();
     }
   }
+}
+
+// ── ADD-ENTRY DATE GATE ────────────────────────────────────────────────────
+function resetAddGate() {
+  var today = new Date().toISOString().split('T')[0];
+  var gd = document.getElementById('gateDate');
+  var ed = document.getElementById('entryDate');
+  if (gd) gd.value = today;
+  if (ed) ed.value = today;
+  var gate = document.getElementById('addDateGate');
+  var body = document.getElementById('addFormBody');
+  if (gate) gate.style.display = 'block';
+  if (body) body.style.display = 'none';
+}
+
+function startTradeEntry() {
+  var d = document.getElementById('gateDate').value;
+  if (!d) { alert('Please select a date first'); return; }
+  document.getElementById('entryDate').value = d;
+  showAddForm(d);
+}
+
+function showAddForm(dateStr) {
+  var gate = document.getElementById('addDateGate');
+  var body = document.getElementById('addFormBody');
+  if (gate) gate.style.display = 'none';
+  if (body) body.style.display = 'block';
+  var lbl = document.getElementById('addDateLabel');
+  if (lbl && dateStr) {
+    var dd = new Date(dateStr);
+    lbl.textContent = isNaN(dd.getTime()) ? dateStr :
+      (dd.getDate() + ' ' + dd.toLocaleString('en',{month:'short'}) + ' ' + dd.getFullYear() + ' · ' + dd.toLocaleString('en',{weekday:'short'}));
+  }
+}
+
+function backToDateGate() {
+  var gate = document.getElementById('addDateGate');
+  var body = document.getElementById('addFormBody');
+  if (body) body.style.display = 'none';
+  if (gate) gate.style.display = 'block';
+  var ed = document.getElementById('entryDate').value;
+  var gd = document.getElementById('gateDate');
+  if (gd && ed) gd.value = ed;
 }
 
 // ── FORMATTING ─────────────────────────────────────────────────────────────
@@ -1976,7 +2038,7 @@ function renderAnalytics() {
   const startDate = appSettings.pt_startdate || '';
   const lumps = getLumpsums();
   const today = new Date();
-  const depositedNow = startCap + lumps.filter(l => new Date(l.date) <= today).reduce((s, l) => s + l.amt, 0);
+  const depositedNow = startCap + lumps.filter(l => new Date(l.date) <= today).reduce((s, l) => s + lumpSigned(l), 0);
   const tradesForPortfolio = startDate
     ? validTrades.filter(t => t.date >= startDate)
     : validTrades;
@@ -2112,43 +2174,81 @@ function setFilter(f, el) {
   renderJournal();
 }
 
+function tradeItemHTML(t) {
+  const originalIndex = trades.findIndex(orig =>
+    orig._id ? orig._id === t._id : (orig.date === t.date && orig.capital === t.capital && orig.pl === t.pl));
+  const analysisClass = !t.analysis ? '' : t.analysis.includes('\u2705') ? 'good' : t.analysis.includes('\ud83d\udea8') ? 'bad' : t.analysis.includes('\u26a0\ufe0f') ? 'warn' : 'neutral';
+  const netPL = t.pl;
+  const charges = t.charges || 0;
+  const grossPL = t.grossPL !== undefined ? t.grossPL : t.pl;
+  const stratBadge = t.strategy ?
+    '<span style="font-size:10px;background:' + (t.strategy.includes('Bull') ? 'rgba(0,224,150,.15)' : 'rgba(255,77,109,.15)') + ';color:' + (t.strategy.includes('Bull') ? 'var(--green)' : 'var(--red)') + ';padding:2px 7px;border-radius:10px;font-family:var(--mono);">' + (t.instrument||'') + ' ' + t.strategy + '</span>'
+    : '<span style="font-size:12px;color:var(--muted);">Trade</span>';
+  const timeStr = t.entryTime ? '\u23f1' + t.entryTime + (t.exitTime ? '\u2192' + t.exitTime : '') : '';
+  return `<div class="trade-item" onclick="editTrade(${originalIndex})">
+      <div class="trade-row1">
+        <div>${stratBadge}${timeStr ? `<div class="trade-day" style="margin-top:4px;">${timeStr}</div>` : ''}</div>
+        <div style="text-align:right;">
+          <span class="pl-badge ${netPL>=0?'pos':'neg'}" style="font-size:15px;padding:6px 12px;">${fmt(netPL)}</span>
+          ${charges > 0 ? `<div style="font-size:10px;color:var(--muted);margin-top:3px;">Gross: ${fmt(grossPL)} · Chg: \u20b9${charges}</div>` : ''}
+        </div>
+      </div>
+      <div class="trade-capital">Capital: \u20b9${(t.capital/100000).toFixed(1)}L · ${t.pct}%${t.lots ? ' · ' + t.lots + ' lots' : ''}</div>
+      ${t.comment ? `<div class="trade-comment">${t.comment}</div>` : ''}
+      ${t.analysis ? `<div class="trade-analysis ${analysisClass}">${t.analysis}</div>` : ''}
+    </div>`;
+}
+
+function toggleJournalDay(id, headEl) {
+  var body = document.getElementById(id);
+  if (!body) return;
+  var isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  var chev = headEl.querySelector('.jchev');
+  if (chev) chev.textContent = isOpen ? '\u25b8' : '\u25be';
+}
+
 function renderJournal() {
   const validTrades = trades.filter(t => typeof t.pl === 'number' && !isNaN(t.pl) && t.capital > 0);
-  let filtered = [...validTrades].sort((a,b) => b.date.localeCompare(a.date));
+  let filtered = [...validTrades];
   if (journalFilter === 'win') filtered = filtered.filter(t => t.pl > 0);
   if (journalFilter === 'loss') filtered = filtered.filter(t => t.pl < 0);
-  if (journalFilter === 'flag') filtered = filtered.filter(t => t.analysis && (t.analysis.includes('⚠️') || t.analysis.includes('🚨')));
+  if (journalFilter === 'flag') filtered = filtered.filter(t => t.analysis && (t.analysis.includes('\u26a0\ufe0f') || t.analysis.includes('\ud83d\udea8')));
 
   if (!filtered.length) {
     document.getElementById('journalList').innerHTML = '<div class="empty">No entries found</div>';
     return;
   }
 
-  document.getElementById('journalList').innerHTML = filtered.map(t => {
-    const originalIndex = trades.findIndex(orig => 
-      orig._id ? orig._id === t._id : (orig.date === t.date && orig.capital === t.capital && orig.pl === t.pl)
-    );
-    const analysisClass = !t.analysis ? '' : t.analysis.includes('\u2705') ? 'good' : t.analysis.includes('\ud83d\udea8') ? 'bad' : t.analysis.includes('\u26a0\ufe0f') ? 'warn' : 'neutral';
-    const netPL = t.pl;
-    const charges = t.charges || 0;
-    const grossPL = t.grossPL !== undefined ? t.grossPL : t.pl;
-    const stratBadge = t.strategy ? 
-      '<span style="font-size:10px;background:' + (t.strategy.includes('Bull') ? 'rgba(0,224,150,.15)' : 'rgba(255,77,109,.15)') + ';color:' + (t.strategy.includes('Bull') ? 'var(--green)' : 'var(--red)') + ';padding:2px 7px;border-radius:10px;font-family:var(--mono);margin-left:6px;">' + (t.instrument||'') + ' ' + t.strategy + '</span>' : '';
-    return `<div class="trade-item" onclick="editTrade(${originalIndex})">
-      <div class="trade-row1">
-        <div>
-          <div class="trade-date">${t.date}</div>
-          <div class="trade-day">${t.day || ''}${stratBadge}</div>
-        </div>
-        <div style="text-align:right;">
-          <span class="pl-badge ${netPL>=0?'pos':'neg'}" style="font-size:15px;padding:6px 12px;">${fmt(netPL)}</span>
-          ${charges > 0 ? `<div style="font-size:10px;color:var(--muted);margin-top:3px;">Gross: ${fmt(grossPL)} · Chg: \u20b9${charges}</div>` : ''}
-        </div>
-      </div>
-      <div class="trade-capital">Capital: \u20b9${(t.capital/100000).toFixed(1)}L · ${t.pct}%${t.lots ? ' · ' + t.lots + ' lots' : ''}${t.entryTime ? ' · ⏱' + t.entryTime + (t.exitTime ? '→' + t.exitTime : '') : ''}</div>
-      ${t.comment ? `<div class="trade-comment">${t.comment}</div>` : ''}
-      ${t.analysis ? `<div class="trade-analysis ${analysisClass}">${t.analysis}</div>` : ''}
-    </div>`;
+  // Group by date, newest day first
+  var groups = {};
+  filtered.forEach(function(t){ (groups[t.date] = groups[t.date] || []).push(t); });
+  var dates = Object.keys(groups).sort(function(a,b){ return b.localeCompare(a); });
+
+  document.getElementById('journalList').innerHTML = dates.map(function(date, idx){
+    var dayTrades = groups[date].slice().sort(function(a,b){ return (a.entryTime||'').localeCompare(b.entryTime||''); });
+    var net = dayTrades.reduce(function(s,t){ return s + t.pl; }, 0);
+    var wins = dayTrades.filter(function(t){ return t.pl > 0; }).length;
+    var losses = dayTrades.filter(function(t){ return t.pl < 0; }).length;
+    var dObj = new Date(date);
+    var pretty = isNaN(dObj.getTime()) ? date : (dObj.getDate() + ' ' + dObj.toLocaleString('en',{month:'short'}) + ' ' + dObj.getFullYear());
+    var dayName = dayTrades[0].day || (isNaN(dObj.getTime()) ? '' : dObj.toLocaleString('en',{weekday:'long'}));
+    var bodyId = 'jday_' + date.replace(/[^0-9a-zA-Z]/g,'_');
+    var open = idx === 0; // expand the most recent day by default
+    var items = dayTrades.map(tradeItemHTML).join('');
+    return '<div style="margin-bottom:10px;border:1px solid var(--border);border-radius:12px;overflow:hidden;">' +
+      '<div class="journal-day-head" onclick="toggleJournalDay(\'' + bodyId + '\',this)" style="display:flex;justify-content:space-between;align-items:center;padding:14px;background:var(--card2);cursor:pointer;">' +
+        '<div>' +
+          '<div style="font-family:var(--mono);font-size:13px;color:var(--accent);">' + pretty + '</div>' +
+          '<div style="font-size:11px;color:var(--muted);margin-top:2px;">' + dayName + ' · ' + dayTrades.length + ' trade' + (dayTrades.length>1?'s':'') + ' · ' + wins + 'W/' + losses + 'L</div>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:10px;">' +
+          '<span class="pl-badge ' + (net>=0?'pos':'neg') + '" style="font-size:14px;">' + fmt(net) + '</span>' +
+          '<span class="jchev" style="color:var(--muted);font-size:14px;">' + (open?'\u25be':'\u25b8') + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div id="' + bodyId + '" style="display:' + (open?'block':'none') + ';padding:0 14px;">' + items + '</div>' +
+    '</div>';
   }).join('');
 }
 
@@ -2189,9 +2289,10 @@ function editTrade(index) {
   document.getElementById('editModeBanner').classList.add('active');
   document.getElementById('addModeButtons').style.display = 'none';
   document.getElementById('editModeButtons').style.display = 'block';
-  
-  // Navigate to Add page
+
+  // Navigate to Add page and reveal the form directly (skip date gate)
   goPage('Add');
+  showAddForm(trade.date);
 }
 
 function updateEntry() {
@@ -2293,6 +2394,7 @@ function cancelEdit() {
   document.getElementById('editModeBanner').classList.remove('active');
   document.getElementById('addModeButtons').style.display = 'block';
   document.getElementById('editModeButtons').style.display = 'none';
+  if (document.getElementById('addDateGate')) resetAddGate();
 }
 
 // ── ADD ENTRY ──────────────────────────────────────────────────────────────
@@ -2526,15 +2628,17 @@ function saveEntry(addAnother) {
   document.getElementById('exitTime').value = '';
 
   if (addAnother) {
-    // Keep date and capital, reset entry time to now
+    // Keep date and capital, reset entry time to now — stay on the form
     document.getElementById('entryDate').value = date;
     document.getElementById('entryCapital').value = capital;
     var now = new Date();
     var ist = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
     document.getElementById('entryTime').value = String(ist.getHours()).padStart(2,'0') + ':' + String(ist.getMinutes()).padStart(2,'0');
+    showAddForm(date);
     showToast('✓ Trade saved — add next trade');
   } else {
     document.getElementById('entryTime').value = '';
+    resetAddGate(); // back to Step 1 (pick date) for the next entry
     showToast('✓ Trade saved');
   }
   renderDashboard();
@@ -2927,6 +3031,8 @@ function lockTradeForm() {
 // ── PROGRESS TRACKER ───────────────────────────────────────────────────────
 function getLumpsums() { return appSettings.lumpsums || []; }
 function saveLumpsums(arr) { appSettings.lumpsums = arr; saveSettingsToCloud(); }
+// Signed value: additions are positive, withdrawals negative
+function lumpSigned(l) { return (l && l.type === 'withdraw' ? -1 : 1) * ((l && l.amt) || 0); }
 
 function saveProgressSettings() {
   appSettings.pt_startdate = document.getElementById('ptStartDate').value;
@@ -2943,18 +3049,20 @@ function loadProgressSettings() {
   document.getElementById('ptMonthlyPct').value = appSettings.pt_monthlypct || '';
 }
 
-function addLumpsum() {
+function addLumpsum(type) {
+  type = (type === 'withdraw') ? 'withdraw' : 'add';
   const date = document.getElementById('ptLumpsumDate').value;
   const amt = parseFloat(document.getElementById('ptLumpsumAmt').value);
   if (!date || isNaN(amt) || amt <= 0) { alert('Enter valid date and amount'); return; }
   const lumps = getLumpsums();
-  lumps.push({ date, amt });
+  lumps.push({ date, amt, type });
   lumps.sort((a, b) => a.date.localeCompare(b.date));
   saveLumpsums(lumps);
   document.getElementById('ptLumpsumAmt').value = '';
   document.getElementById('ptLumpsumDate').value = '';
   renderProgress();
-  showToast('✓ Lumpsum added');
+  renderReports();
+  showToast(type === 'withdraw' ? '✓ Withdrawal recorded' : '✓ Fund added');
 }
 
 function deleteLumpsum(i) {
@@ -2962,19 +3070,28 @@ function deleteLumpsum(i) {
   lumps.splice(i, 1);
   saveLumpsums(lumps);
   renderProgress();
+  renderReports();
 }
 
 function renderLumpsumList() {
   const lumps = getLumpsums();
   const el = document.getElementById('lumpsumList');
-  if (!lumps.length) { el.innerHTML = '<div class="empty" style="padding:10px;">No lumpsum additions yet</div>'; return; }
-  el.innerHTML = lumps.map((l, i) =>
-    `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+  if (!lumps.length) { el.innerHTML = '<div class="empty" style="padding:10px;">No fund additions or withdrawals yet</div>'; return; }
+  const totalIn = lumps.filter(l => l.type !== 'withdraw').reduce((s,l)=>s+(l.amt||0),0);
+  const totalOut = lumps.filter(l => l.type === 'withdraw').reduce((s,l)=>s+(l.amt||0),0);
+  const summary = '<div style="display:flex;justify-content:space-between;font-size:11px;font-family:var(--mono);margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border);">' +
+    '<span style="color:var(--green);">IN +₹' + totalIn.toLocaleString('en-IN') + '</span>' +
+    '<span style="color:var(--red);">OUT −₹' + totalOut.toLocaleString('en-IN') + '</span>' +
+    '<span style="color:var(--accent);">NET ₹' + (totalIn-totalOut).toLocaleString('en-IN') + '</span></div>';
+  el.innerHTML = summary + lumps.map((l, i) => {
+    const isW = l.type === 'withdraw';
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
       <span style="color:var(--muted);font-family:var(--mono);font-size:12px;">${l.date}</span>
-      <span style="color:var(--green);font-family:var(--mono);font-weight:700;">+₹${l.amt.toLocaleString('en-IN')}</span>
+      <span style="font-size:9px;letter-spacing:1px;color:${isW?'var(--red)':'var(--green)'};font-family:var(--mono);">${isW?'WITHDRAW':'ADD'}</span>
+      <span style="color:${isW?'var(--red)':'var(--green)'};font-family:var(--mono);font-weight:700;">${isW?'−':'+'}₹${(l.amt||0).toLocaleString('en-IN')}</span>
       <button onclick="deleteLumpsum(${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:0 6px;">✕</button>
-    </div>`
-  ).join('');
+    </div>`;
+  }).join('');
 }
 
 function renderProgress() {
@@ -2996,7 +3113,7 @@ function renderProgress() {
   var start = new Date(startDate);
   var today = new Date();
 
-  var depositedNow = startCap + lumps.filter(function(l) { return new Date(l.date) <= today; }).reduce(function(s,l) { return s+l.amt; }, 0);
+  var depositedNow = startCap + lumps.filter(function(l) { return new Date(l.date) <= today; }).reduce(function(s,l) { return s+lumpSigned(l); }, 0);
   var totalPL = validTrades.reduce(function(s,t) { return s+t.pl; }, 0);
   var actualNow = depositedNow + totalPL;
 
@@ -3007,7 +3124,7 @@ function renderProgress() {
   var tradeByDate = {};
   validTrades.forEach(function(t) { tradeByDate[t.date] = (tradeByDate[t.date] || 0) + t.pl; });
   var lumpByDate = {};
-  lumps.forEach(function(l) { lumpByDate[l.date] = (lumpByDate[l.date] || 0) + l.amt; });
+  lumps.forEach(function(l) { lumpByDate[l.date] = (lumpByDate[l.date] || 0) + lumpSigned(l); });
 
   var allLabels = [];
   var allActual = [];
