@@ -3314,14 +3314,18 @@ function renderProgress() {
   var allLabels = [];
   var allActual = [];
   var allTarget = [];
+  var allPL = [];     // cumulative P/L from trades only
+  var allDeposit = []; // cumulative deposited capital
   var portfolio = startCap;
   var target = startCap;
+  var cumPL = 0;
+  var cumDeposit = startCap;
   var cur = new Date(start);
 
   while (cur <= today) {
     var ds = cur.toISOString().split('T')[0];
-    if (lumpByDate[ds]) { portfolio += lumpByDate[ds]; target += lumpByDate[ds]; }
-    if (tradeByDate[ds]) portfolio += tradeByDate[ds];
+    if (lumpByDate[ds]) { portfolio += lumpByDate[ds]; target += lumpByDate[ds]; cumDeposit += lumpByDate[ds]; }
+    if (tradeByDate[ds]) { portfolio += tradeByDate[ds]; cumPL += tradeByDate[ds]; }
     if (dailyRate > 0) target = target * (1 + dailyRate);
     var dd = cur.getDate();
     var mm = cur.toLocaleString('en', {month:'short'});
@@ -3329,6 +3333,8 @@ function renderProgress() {
     allLabels.push(dd + ' ' + mm + ' ' + yy);
     allActual.push(Math.round(portfolio));
     allTarget.push(Math.round(target));
+    allPL.push(Math.round(cumPL));
+    allDeposit.push(Math.round(cumDeposit));
     cur.setDate(cur.getDate() + 1);
   }
 
@@ -3398,9 +3404,27 @@ function renderProgress() {
           bodyColor: '#e2e8f0',
           borderColor: '#1f2535',
           borderWidth: 1,
-          padding: 10,
+          padding: 12,
+          bodySpacing: 6,
           callbacks: {
-            label: function(ctx) { return ' ' + ctx.dataset.label + ': \u20b9' + ctx.raw.toLocaleString('en-IN'); }
+            label: function(ctx) {
+              var idx = ctx.dataIndex;
+              var actual = allActual[idx];
+              var tgt = allTarget[idx];
+              var pl = allPL[idx];
+              var dep = allDeposit[idx];
+              var gap = actual - tgt;
+              if (ctx.datasetIndex === 0) {
+                return [
+                  ' Actual: \u20b9' + actual.toLocaleString('en-IN'),
+                  ' Target: \u20b9' + tgt.toLocaleString('en-IN'),
+                  ' P/L: ' + (pl >= 0 ? '+' : '') + '\u20b9' + pl.toLocaleString('en-IN'),
+                  ' Deposited: \u20b9' + dep.toLocaleString('en-IN'),
+                  ' Gap: ' + (gap >= 0 ? '\u2705 +' : '\u26a0\ufe0f ') + '\u20b9' + gap.toLocaleString('en-IN')
+                ];
+              }
+              return null; // only show once (from Actual dataset)
+            }
           }
         },
         zoom: {
@@ -3654,7 +3678,7 @@ function renderRulesBroken() {
   var el = document.getElementById('rulesBroken');
   if (!el) return;
   if (!dayReviews.length) {
-    el.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px 0">No day reviews saved yet. Fill the Day Review (in Add) to track rule discipline.</div>';
+    el.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px 0">No day reviews saved yet. Fill the Day Review to track rule discipline.</div>';
     return;
   }
   var counts = {};
@@ -3662,21 +3686,41 @@ function renderRulesBroken() {
   reviewRuleDefs.forEach(function(rule){
     counts[rule.q] = 0; dates[rule.q] = [];
   });
+  // Track which days had ANY rule broken
+  var daysWithViolation = {};
   dayReviews.forEach(function(r){
     var ans = r.answers || {};
+    var dayBroke = false;
     reviewRuleDefs.forEach(function(rule){
-      if (rule.bad(ans[rule.q])) { counts[rule.q]++; dates[rule.q].push(r.date); }
+      if (rule.bad(ans[rule.q])) { counts[rule.q]++; dates[rule.q].push(r.date); dayBroke = true; }
     });
+    if (dayBroke) daysWithViolation[r.date] = true;
   });
+
+  var totalDays = dayReviews.length;
+  var badDays = Object.keys(daysWithViolation).length;
+  var cleanDays = totalDays - badDays;
+  var disciplinePct = totalDays > 0 ? Math.round((cleanDays / totalDays) * 100) : 100;
+  var discColor = disciplinePct >= 80 ? 'var(--green)' : disciplinePct >= 50 ? 'var(--yellow)' : 'var(--red)';
+
   var rows = reviewRuleDefs
     .filter(function(rule){ return counts[rule.q] > 0; })
     .sort(function(a,b){ return counts[b.q] - counts[a.q]; });
 
+  // Summary header
+  var summaryHtml =
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">' +
+      '<div class="stat-card" style="text-align:center;"><div class="stat-label">TOTAL REVIEWS</div><div class="stat-val accent">' + totalDays + '</div></div>' +
+      '<div class="stat-card" style="text-align:center;"><div class="stat-label">DAYS RULES BROKEN</div><div class="stat-val red">' + badDays + '</div></div>' +
+      '<div class="stat-card" style="text-align:center;"><div class="stat-label">DISCIPLINE</div><div class="stat-val" style="color:' + discColor + ';">' + disciplinePct + '%</div></div>' +
+    '</div>';
+
   if (!rows.length) {
-    el.innerHTML = '<div class="pl-badge pos" style="font-size:13px;padding:8px 16px;">\u2705 Clean record — no rules broken in your reviews!</div>';
+    el.innerHTML = summaryHtml + '<div class="pl-badge pos" style="font-size:13px;padding:8px 16px;">\u2705 Clean record — no rules broken in your reviews!</div>';
     return;
   }
-  el.innerHTML = rows.map(function(rule){
+
+  el.innerHTML = summaryHtml + rows.map(function(rule){
     var recent = dates[rule.q].sort().slice(-3).reverse().join(', ');
     return '<div style="padding:10px 0;border-bottom:1px solid var(--border);">' +
       '<div style="display:flex;justify-content:space-between;align-items:center;">' +
