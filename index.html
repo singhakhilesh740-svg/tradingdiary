@@ -360,6 +360,187 @@
     <div id="quickLinksEdit" style="display:none;margin-top:10px;"></div>
   </div>
 
+  <!-- DAILY MARKET ANALYSIS (evening before) -->
+  <div class="card" style="border:1px solid #ffd166;border-radius:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div class="card-title" style="margin:0;">📉 MARKET ANALYSIS</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span id="analysisDateLabel" style="font-size:10px;color:var(--muted);font-family:var(--mono);"></span>
+        <button onclick="toggleAnalysisPanel()" id="analysisToggleBtn" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:10px;padding:4px 10px;cursor:pointer;font-family:var(--mono);">▾ OPEN</button>
+      </div>
+    </div>
+
+    <!-- Analysis summary (always visible) -->
+    <div id="analysisSummary" style="display:none;"></div>
+
+    <!-- Analysis form (collapsed by default) -->
+    <div id="analysisPanel" style="display:none;">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">Fill this in the evening before trading. It becomes your game plan for tomorrow.</div>
+
+      <!-- Date selector -->
+      <div style="margin-bottom:12px;">
+        <label class="form-label">ANALYSIS FOR DATE</label>
+        <input type="date" class="form-input" id="analysisDate" onchange="loadAnalysisForDate()" style="font-size:14px;">
+      </div>
+
+      <!-- Market Bias -->
+      <div style="margin-bottom:12px;">
+        <label class="form-label">MARKET BIAS</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+          <button class="filter-btn" id="biasUp" onclick="setAnalysisField('bias','Bullish')" style="padding:10px;font-size:12px;background:rgba(0,224,150,.1);border-color:var(--green);color:var(--green);">🐂 Bullish</button>
+          <button class="filter-btn" id="biasSide" onclick="setAnalysisField('bias','Sideways')" style="padding:10px;font-size:12px;">↔️ Sideways</button>
+          <button class="filter-btn" id="biasDown" onclick="setAnalysisField('bias','Bearish')" style="padding:10px;font-size:12px;background:rgba(255,77,109,.08);border-color:var(--red);color:var(--red);">🐻 Bearish</button>
+        </div>
+      </div>
+
+      <!-- VIX & Trend -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div>
+          <label class="form-label">INDIA VIX</label>
+          <input type="number" class="form-input" id="analysisVIX" placeholder="e.g. 13.5" step="0.1" oninput="onAnalysisInput()">
+        </div>
+        <div>
+          <label class="form-label">TREND (DAILY CHART)</label>
+          <select class="form-input" id="analysisTrend" onchange="onAnalysisInput()" style="padding:10px;">
+            <option value="">Select...</option>
+            <option value="Strong Uptrend">Strong Uptrend ↑↑</option>
+            <option value="Mild Uptrend">Mild Uptrend ↑</option>
+            <option value="Range-bound">Range-bound ↔</option>
+            <option value="Mild Downtrend">Mild Downtrend ↓</option>
+            <option value="Strong Downtrend">Strong Downtrend ↓↓</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- PDH / PDL -->
+      <div style="font-family:var(--mono);font-size:10px;color:var(--yellow);letter-spacing:2px;margin-bottom:6px;">— PREVIOUS DAY LEVELS —</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div>
+          <label class="form-label">PDH (Prev Day High)</label>
+          <input type="number" class="form-input" id="analysisPDH" placeholder="24450" oninput="onAnalysisInput()">
+        </div>
+        <div>
+          <label class="form-label">PDL (Prev Day Low)</label>
+          <input type="number" class="form-input" id="analysisPDL" placeholder="24180" oninput="onAnalysisInput()">
+        </div>
+      </div>
+
+      <!-- NIFTY S/R -->
+      <div style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:2px;margin-bottom:6px;">— NIFTY SUPPORT & RESISTANCE —</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px;">
+        <div>
+          <label class="form-label">SUPPORT 1 (near)</label>
+          <input type="number" class="form-input" id="niftyS1" placeholder="24200" oninput="onAnalysisInput()">
+        </div>
+        <div>
+          <label class="form-label">RESISTANCE 1 (near)</label>
+          <input type="number" class="form-input" id="niftyR1" placeholder="24500" oninput="onAnalysisInput()">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div>
+          <label class="form-label">SUPPORT 2 (strong)</label>
+          <input type="number" class="form-input" id="niftyS2" placeholder="24000" oninput="onAnalysisInput()">
+        </div>
+        <div>
+          <label class="form-label">RESISTANCE 2 (strong)</label>
+          <input type="number" class="form-input" id="niftyR2" placeholder="24700" oninput="onAnalysisInput()">
+        </div>
+      </div>
+
+      <!-- SENSEX S/R -->
+      <div style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:2px;margin-bottom:6px;">— SENSEX SUPPORT & RESISTANCE —</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px;">
+        <div>
+          <label class="form-label">SUPPORT 1</label>
+          <input type="number" class="form-input" id="sensexS1" placeholder="80000" oninput="onAnalysisInput()">
+        </div>
+        <div>
+          <label class="form-label">RESISTANCE 1</label>
+          <input type="number" class="form-input" id="sensexR1" placeholder="80800" oninput="onAnalysisInput()">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div>
+          <label class="form-label">SUPPORT 2</label>
+          <input type="number" class="form-input" id="sensexS2" placeholder="79500" oninput="onAnalysisInput()">
+        </div>
+        <div>
+          <label class="form-label">RESISTANCE 2</label>
+          <input type="number" class="form-input" id="sensexR2" placeholder="81200" oninput="onAnalysisInput()">
+        </div>
+      </div>
+
+      <!-- OI Walls -->
+      <div style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:2px;margin-bottom:6px;">— OI WALLS (from Sensibull) —</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div>
+          <label class="form-label">HIGHEST PUT OI (Support)</label>
+          <input type="number" class="form-input" id="analysisOIPut" placeholder="24000" oninput="onAnalysisInput()">
+        </div>
+        <div>
+          <label class="form-label">HIGHEST CALL OI (Resistance)</label>
+          <input type="number" class="form-input" id="analysisOICall" placeholder="25000" oninput="onAnalysisInput()">
+        </div>
+      </div>
+
+      <!-- CPR -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div>
+          <label class="form-label">CPR TYPE (Tomorrow)</label>
+          <select class="form-input" id="analysisCPR" onchange="onAnalysisInput()" style="padding:10px;">
+            <option value="">Select...</option>
+            <option value="Narrow">Narrow (trending day expected)</option>
+            <option value="Medium">Medium</option>
+            <option value="Wide">Wide (range-bound expected)</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">PIVOT POINT</label>
+          <input type="number" class="form-input" id="analysisPivot" placeholder="24300" oninput="onAnalysisInput()">
+        </div>
+      </div>
+
+      <!-- Plan for tomorrow -->
+      <div style="font-family:var(--mono);font-size:10px;color:var(--green);letter-spacing:2px;margin-bottom:6px;">— TRADING PLAN —</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div>
+          <label class="form-label">INSTRUMENT</label>
+          <select class="form-input" id="analysisPlanInst" onchange="onAnalysisInput()" style="padding:10px;">
+            <option value="">Select...</option>
+            <option value="NIFTY">NIFTY (Tue expiry)</option>
+            <option value="SENSEX">SENSEX (Thu expiry)</option>
+            <option value="Both">Both</option>
+            <option value="No Trade">No Trade tomorrow</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">STRATEGY</label>
+          <select class="form-input" id="analysisPlanStrat" onchange="onAnalysisInput()" style="padding:10px;">
+            <option value="">Select...</option>
+            <option value="Bull Put Spread">🐂 Bull Put Spread</option>
+            <option value="Bear Call Spread">🐻 Bear Call Spread</option>
+            <option value="Wait & Watch">⏳ Wait & Watch</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Key events -->
+      <div class="form-group" style="margin-bottom:12px;">
+        <label class="form-label">KEY EVENTS / NEWS TOMORROW</label>
+        <textarea class="form-input" id="analysisEvents" placeholder="e.g. RBI policy, F&O expiry, US Fed meeting, earnings..." oninput="onAnalysisInput()" rows="2"></textarea>
+      </div>
+
+      <!-- Notes -->
+      <div class="form-group" style="margin-bottom:14px;">
+        <label class="form-label">ANALYSIS NOTES</label>
+        <textarea class="form-input" id="analysisNotes" placeholder="Your observations: chart patterns, gap zone, trend strength, what to watch for..." oninput="onAnalysisInput()" rows="3"></textarea>
+      </div>
+
+      <button class="submit-btn" onclick="saveAnalysis()" style="background:linear-gradient(135deg,#ffd166,#e5a800);color:#000;">💾 SAVE ANALYSIS</button>
+    </div>
+  </div>
+
   <!-- TODAY'S CAPITAL SETUP -->
   <div class="card" style="border:1px solid var(--accent);border-radius:14px;">
     <div class="card-title" style="margin-bottom:8px;">💰 TODAY'S CAPITAL</div>
@@ -2089,6 +2270,213 @@ function switchChart(symbol) {
 }
 
 // ── DASHBOARD ──────────────────────────────────────────────────────────────
+// ── DAILY MARKET ANALYSIS ──────────────────────────────────────────────────
+var currentAnalysis = {};
+var analysisFields = ['bias','vix','trend','pdh','pdl','niftyS1','niftyS2','niftyR1','niftyR2',
+  'sensexS1','sensexS2','sensexR1','sensexR2','oiPut','oiCall','cpr','pivot',
+  'planInst','planStrat','events','notes'];
+
+function analysisRef(date) {
+  return db.collection('users').doc(currentUser.uid).collection('analysis').doc(date);
+}
+
+function getAnalysisDate() {
+  var el = document.getElementById('analysisDate');
+  return el ? el.value : '';
+}
+
+function getTomorrowStr() {
+  var d = new Date();
+  d.setDate(d.getDate() + 1);
+  // skip weekends
+  if (d.getDay() === 0) d.setDate(d.getDate() + 1);
+  if (d.getDay() === 6) d.setDate(d.getDate() + 2);
+  return d.toISOString().split('T')[0];
+}
+
+function getTodayStr() { return new Date().toISOString().split('T')[0]; }
+
+function toggleAnalysisPanel() {
+  var panel = document.getElementById('analysisPanel');
+  var btn = document.getElementById('analysisToggleBtn');
+  var isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  btn.textContent = isOpen ? '▾ OPEN' : '▴ CLOSE';
+  if (!isOpen && !getAnalysisDate()) {
+    document.getElementById('analysisDate').value = getTomorrowStr();
+    loadAnalysisForDate();
+  }
+}
+
+function setAnalysisField(field, val) {
+  currentAnalysis[field] = val;
+  // highlight bias buttons
+  if (field === 'bias') {
+    ['biasUp','biasSide','biasDown'].forEach(function(id){ document.getElementById(id).classList.remove('active'); });
+    if (val === 'Bullish') document.getElementById('biasUp').classList.add('active');
+    if (val === 'Sideways') document.getElementById('biasSide').classList.add('active');
+    if (val === 'Bearish') document.getElementById('biasDown').classList.add('active');
+  }
+}
+
+function onAnalysisInput() {
+  currentAnalysis.vix = document.getElementById('analysisVIX').value;
+  currentAnalysis.trend = document.getElementById('analysisTrend').value;
+  currentAnalysis.pdh = document.getElementById('analysisPDH').value;
+  currentAnalysis.pdl = document.getElementById('analysisPDL').value;
+  currentAnalysis.niftyS1 = document.getElementById('niftyS1').value;
+  currentAnalysis.niftyS2 = document.getElementById('niftyS2').value;
+  currentAnalysis.niftyR1 = document.getElementById('niftyR1').value;
+  currentAnalysis.niftyR2 = document.getElementById('niftyR2').value;
+  currentAnalysis.sensexS1 = document.getElementById('sensexS1').value;
+  currentAnalysis.sensexS2 = document.getElementById('sensexS2').value;
+  currentAnalysis.sensexR1 = document.getElementById('sensexR1').value;
+  currentAnalysis.sensexR2 = document.getElementById('sensexR2').value;
+  currentAnalysis.oiPut = document.getElementById('analysisOIPut').value;
+  currentAnalysis.oiCall = document.getElementById('analysisOICall').value;
+  currentAnalysis.cpr = document.getElementById('analysisCPR').value;
+  currentAnalysis.pivot = document.getElementById('analysisPivot').value;
+  currentAnalysis.planInst = document.getElementById('analysisPlanInst').value;
+  currentAnalysis.planStrat = document.getElementById('analysisPlanStrat').value;
+  currentAnalysis.events = document.getElementById('analysisEvents').value;
+  currentAnalysis.notes = document.getElementById('analysisNotes').value;
+}
+
+function populateAnalysisForm(data) {
+  currentAnalysis = Object.assign({}, data || {});
+  document.getElementById('analysisVIX').value = data.vix || '';
+  document.getElementById('analysisTrend').value = data.trend || '';
+  document.getElementById('analysisPDH').value = data.pdh || '';
+  document.getElementById('analysisPDL').value = data.pdl || '';
+  document.getElementById('niftyS1').value = data.niftyS1 || '';
+  document.getElementById('niftyS2').value = data.niftyS2 || '';
+  document.getElementById('niftyR1').value = data.niftyR1 || '';
+  document.getElementById('niftyR2').value = data.niftyR2 || '';
+  document.getElementById('sensexS1').value = data.sensexS1 || '';
+  document.getElementById('sensexS2').value = data.sensexS2 || '';
+  document.getElementById('sensexR1').value = data.sensexR1 || '';
+  document.getElementById('sensexR2').value = data.sensexR2 || '';
+  document.getElementById('analysisOIPut').value = data.oiPut || '';
+  document.getElementById('analysisOICall').value = data.oiCall || '';
+  document.getElementById('analysisCPR').value = data.cpr || '';
+  document.getElementById('analysisPivot').value = data.pivot || '';
+  document.getElementById('analysisPlanInst').value = data.planInst || '';
+  document.getElementById('analysisPlanStrat').value = data.planStrat || '';
+  document.getElementById('analysisEvents').value = data.events || '';
+  document.getElementById('analysisNotes').value = data.notes || '';
+  // bias buttons
+  ['biasUp','biasSide','biasDown'].forEach(function(id){ document.getElementById(id).classList.remove('active'); });
+  if (data.bias === 'Bullish') document.getElementById('biasUp').classList.add('active');
+  if (data.bias === 'Sideways') document.getElementById('biasSide').classList.add('active');
+  if (data.bias === 'Bearish') document.getElementById('biasDown').classList.add('active');
+}
+
+async function loadAnalysisForDate() {
+  var date = getAnalysisDate();
+  if (!date) return;
+  currentAnalysis = {};
+  populateAnalysisForm({});
+  if (!currentUser) return;
+  try {
+    var doc = await analysisRef(date).get();
+    if (doc.exists) {
+      populateAnalysisForm(doc.data());
+    }
+  } catch(e) { console.warn('Analysis load failed:', e); }
+  renderAnalysisSummary();
+}
+
+async function saveAnalysis() {
+  var date = getAnalysisDate();
+  if (!date) { alert('Select a date first'); return; }
+  onAnalysisInput(); // capture latest values
+  if (!currentUser) return;
+  setSyncStatus('syncing');
+  try {
+    await analysisRef(date).set(currentAnalysis, { merge: true });
+    setSyncStatus('online');
+    showToast('✓ Analysis saved for ' + date);
+    renderAnalysisSummary();
+  } catch(e) {
+    console.warn('Analysis save failed:', e);
+    setSyncStatus('offline');
+  }
+}
+
+function renderAnalysisSummary() {
+  var el = document.getElementById('analysisSummary');
+  if (!el) return;
+  var a = currentAnalysis;
+  var hasData = a.bias || a.niftyS1 || a.niftyR1 || a.planInst;
+  if (!hasData) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+
+  var biasColor = a.bias === 'Bullish' ? 'var(--green)' : a.bias === 'Bearish' ? 'var(--red)' : 'var(--yellow)';
+  var biasIcon = a.bias === 'Bullish' ? '🐂' : a.bias === 'Bearish' ? '🐻' : '↔️';
+
+  var html = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;">';
+  if (a.bias) html += '<div style="text-align:center;background:rgba(0,0,0,.2);border-radius:8px;padding:8px;"><div style="font-size:9px;color:var(--muted);">BIAS</div><div style="font-size:14px;font-weight:700;color:'+biasColor+';">'+biasIcon+' '+a.bias+'</div></div>';
+  if (a.vix) html += '<div style="text-align:center;background:rgba(0,0,0,.2);border-radius:8px;padding:8px;"><div style="font-size:9px;color:var(--muted);">VIX</div><div style="font-family:var(--mono);font-size:14px;font-weight:700;color:'+(parseFloat(a.vix)>15?'var(--red)':'var(--green)')+';">'+a.vix+'</div></div>';
+  if (a.cpr) html += '<div style="text-align:center;background:rgba(0,0,0,.2);border-radius:8px;padding:8px;"><div style="font-size:9px;color:var(--muted);">CPR</div><div style="font-size:12px;font-weight:700;color:var(--accent);">'+a.cpr+'</div></div>';
+  html += '</div>';
+
+  // S/R levels compact
+  if (a.niftyS1 || a.niftyR1) {
+    html += '<div style="font-size:10px;margin-bottom:4px;">';
+    html += '<span style="color:var(--accent);font-family:var(--mono);">NIFTY</span> ';
+    if (a.niftyS2) html += '<span style="color:var(--green);">S2:'+a.niftyS2+'</span> → ';
+    if (a.niftyS1) html += '<span style="color:var(--green);">S1:'+a.niftyS1+'</span>';
+    html += ' | ';
+    if (a.niftyR1) html += '<span style="color:var(--red);">R1:'+a.niftyR1+'</span>';
+    if (a.niftyR2) html += ' → <span style="color:var(--red);">R2:'+a.niftyR2+'</span>';
+    html += '</div>';
+  }
+  if (a.sensexS1 || a.sensexR1) {
+    html += '<div style="font-size:10px;margin-bottom:4px;">';
+    html += '<span style="color:var(--accent);font-family:var(--mono);">SENSEX</span> ';
+    if (a.sensexS2) html += '<span style="color:var(--green);">S2:'+a.sensexS2+'</span> → ';
+    if (a.sensexS1) html += '<span style="color:var(--green);">S1:'+a.sensexS1+'</span>';
+    html += ' | ';
+    if (a.sensexR1) html += '<span style="color:var(--red);">R1:'+a.sensexR1+'</span>';
+    if (a.sensexR2) html += ' → <span style="color:var(--red);">R2:'+a.sensexR2+'</span>';
+    html += '</div>';
+  }
+  if (a.oiPut || a.oiCall) {
+    html += '<div style="font-size:10px;margin-bottom:4px;"><span style="color:var(--muted);">OI:</span> <span style="color:var(--green);">PUT ' + (a.oiPut||'—') + '</span> | <span style="color:var(--red);">CALL ' + (a.oiCall||'—') + '</span></div>';
+  }
+  if (a.planInst || a.planStrat) {
+    html += '<div style="font-size:10px;color:var(--yellow);margin-top:4px;">📋 Plan: ' + (a.planInst||'') + ' ' + (a.planStrat||'') + '</div>';
+  }
+  el.innerHTML = html;
+}
+
+// Load today's analysis summary on dashboard render
+async function loadTodayAnalysis() {
+  var el = document.getElementById('analysisDate');
+  var today = getTodayStr();
+  if (el && !el.value) el.value = getTomorrowStr();
+  // Show today's saved analysis as summary
+  if (!currentUser) return;
+  try {
+    var doc = await analysisRef(today).get();
+    if (doc.exists) {
+      currentAnalysis = doc.data();
+      var lbl = document.getElementById('analysisDateLabel');
+      if (lbl) lbl.textContent = 'Today';
+      renderAnalysisSummary();
+    } else {
+      // no analysis for today — try loading tomorrow's if panel open
+      var tomorrowDoc = await analysisRef(getTomorrowStr()).get();
+      if (tomorrowDoc.exists) {
+        currentAnalysis = tomorrowDoc.data();
+        var lbl2 = document.getElementById('analysisDateLabel');
+        if (lbl2) lbl2.textContent = 'Tomorrow';
+        renderAnalysisSummary();
+      }
+    }
+  } catch(e) {}
+}
+
 // ── DAILY CAPITAL SETUP ────────────────────────────────────────────────────
 function getDailyCapKey() { return new Date().toISOString().split('T')[0]; }
 
@@ -2146,6 +2534,7 @@ function renderDashboard() {
   // HOME = Pre-Trade Checklist + Quick Links + Daily Capital + Live Market
   updateMarketStatus();
   renderQuickLinks();
+  loadTodayAnalysis();
   loadDailyCapital();
   renderDashGuard();
   // Load live chart if not already loaded
