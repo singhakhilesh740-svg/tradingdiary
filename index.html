@@ -513,23 +513,16 @@
         </div>
       </div>
 
-      <!-- Spread Width -->
+      <!-- Premiums -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
-        <div>
-          <label class="form-label">SPREAD WIDTH</label>
-          <input type="number" class="form-input" id="entrySpreadWidth" placeholder="100" readonly style="opacity:.7;">
-        </div>
         <div>
           <label class="form-label" id="sellPremLabel">SELL PREMIUM (₹)</label>
           <input type="number" class="form-input" id="entrySellPrem" placeholder="80" oninput="calcSpreadPnL()">
         </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
         <div>
           <label class="form-label" id="buyPremLabel">BUY PREMIUM (₹)</label>
           <input type="number" class="form-input" id="entryBuyPrem" placeholder="50" oninput="calcSpreadPnL()">
         </div>
-        <div></div>
       </div>
 
       <!-- LOTS + ENTRY/EXIT TIME -->
@@ -637,8 +630,24 @@
         <input type="number" class="form-input" id="entryNetPL" readonly>
       </div>
 
+      <!-- SL & TARGET -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">STOP LOSS (₹ per lot)</label>
+          <input type="number" class="form-input" id="entrySLAmount" placeholder="e.g. 10" style="border-color:var(--red);">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">TARGET</label>
+          <div style="display:flex;gap:6px;margin-bottom:6px;">
+            <button class="filter-btn" id="targetTypeCustom" onclick="selectTargetType('custom')" style="padding:6px 10px;font-size:10px;flex:1;">₹ Fixed</button>
+            <button class="filter-btn active" id="targetTypeDayClose" onclick="selectTargetType('dayclose')" style="padding:6px 10px;font-size:10px;flex:1;">🌙 Day Close</button>
+          </div>
+          <input type="number" class="form-input" id="entryTargetAmount" placeholder="e.g. 15" style="border-color:var(--green);display:none;">
+        </div>
+      </div>
+
       <!-- Stop Loss Hit -->
-      <div class="form-group">
+      <div class="form-group" style="margin-top:14px;">
         <label class="form-label">EXIT REASON</label>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:6px;">
           <button class="filter-btn active" id="exitTarget" onclick="selectExit('Target')" style="padding:8px;font-size:11px;">✅ Target Hit</button>
@@ -777,17 +786,18 @@
         <div style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:2px;padding:4px 0;">— TRADE MANAGEMENT —</div>
 
         <div>
-          <label class="form-label">9. Did you set profit target (50% premium) before entering?
-          <span style="font-size:11px;color:var(--muted);display:block;margin-top:3px;">(If you collected ₹30 net credit, your target = close when spread is worth ₹15 (50% captured). Don't wait for 100% — the last 30% gives same risk for tiny reward. Always calculate this BEFORE entering.)</span></label>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-            <button class="filter-btn" id="rq9yes" onclick="selectReview('rq9','Yes')" style="padding:10px;">✅ Yes</button>
-            <button class="filter-btn" id="rq9no" onclick="selectReview('rq9','No')" style="padding:10px;">❌ No</button>
+          <label class="form-label">9. Did you set a profit target before entering?
+          <span style="font-size:11px;color:var(--muted);display:block;margin-top:3px;">(Either a fixed ₹ amount or "wait for day close". Having a plan before entry prevents greed-driven exits.)</span></label>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <button class="filter-btn" id="rq9yes" onclick="selectReview('rq9','Yes - Fixed')" style="padding:10px;">✅ Fixed ₹</button>
+            <button class="filter-btn" id="rq9dc" onclick="selectReview('rq9','Yes - Day Close')" style="padding:10px;">🌙 Day Close</button>
+            <button class="filter-btn" id="rq9no" onclick="selectReview('rq9','No')" style="padding:10px;">❌ No plan</button>
           </div>
         </div>
 
         <div>
-          <label class="form-label">10. Did you set SL (2x premium) before entering?
-          <span style="font-size:11px;color:var(--muted);display:block;margin-top:3px;">(If you sold spread for ₹30 net credit, your SL = exit when spread costs ₹60 (premium doubled). No exceptions. Also exit immediately if spot crosses your sold strike — don't wait for 2x rule.)</span></label>
+          <label class="form-label">10. Did you set a Stop Loss before entering?
+          <span style="font-size:11px;color:var(--muted);display:block;margin-top:3px;">(A fixed ₹ SL amount decided BEFORE entry. E.g. "exit if loss reaches ₹10 per lot". No SL = gambling.)</span></label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
             <button class="filter-btn" id="rq10yes" onclick="selectReview('rq10','Yes')" style="padding:10px;">✅ Yes</button>
             <button class="filter-btn" id="rq10no" onclick="selectReview('rq10','No')" style="padding:10px;">❌ No</button>
@@ -1092,6 +1102,19 @@
       <div>
         <label class="form-label">SPOT PRICE (₹)</label>
         <input type="number" class="form-input" id="calcSpot" placeholder="24500" oninput="runCalc()">
+      </div>
+    </div>
+
+    <!-- SL & TARGET settings -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+      <div>
+        <label class="form-label">MY SL (₹ per lot)</label>
+        <input type="number" class="form-input" id="calcSLInput" placeholder="e.g. 10" value="10" oninput="runCalc()" style="border-color:var(--red);">
+      </div>
+      <div>
+        <label class="form-label">MY TARGET (₹ per lot)</label>
+        <input type="number" class="form-input" id="calcTargetInput" placeholder="Day close = leave 0" oninput="runCalc()" style="border-color:var(--green);">
+        <div style="font-size:9px;color:var(--muted);margin-top:2px;">Leave empty = wait for day close</div>
       </div>
     </div>
 
@@ -1771,13 +1794,23 @@ function runCalc() {
   // Break-even
   var breakEven = isBull ? (sellStrike - netCredit) : (sellStrike + netCredit);
 
-  // TARGET = close when spread costs 50% of net credit (i.e. you keep 50%)
-  var targetPremium = netCredit * 0.5;
-  var targetPnL = targetPremium * lots * lotSize;
+  // TARGET from user input (₹ per lot); 0 = day close (keep full credit)
+  var userTargetInput = parseFloat(document.getElementById('calcTargetInput').value) || 0;
+  var targetPremium, targetPnL;
+  var targetIsDayClose = !userTargetInput;
+  if (targetIsDayClose) {
+    targetPremium = 0;
+    targetPnL = maxProfit; // full net credit
+  } else {
+    targetPremium = netCredit - userTargetInput;
+    if (targetPremium < 0) targetPremium = 0;
+    targetPnL = userTargetInput * lots * lotSize;
+  }
 
-  // SL = spread costs 2x net credit
-  var slPremium = netCredit * 2;
-  var slPnL = (slPremium - netCredit) * lots * lotSize;
+  // SL from user input (₹ per lot)
+  var userSLInput = parseFloat(document.getElementById('calcSLInput').value) || 10;
+  var slPremium = netCredit + userSLInput;
+  var slPnL = userSLInput * lots * lotSize;
 
   // Also SL if spot crosses sold strike
   document.getElementById('calcNetCredit').textContent = '\u20b9' + netCredit.toFixed(1) + ' × ' + (lots * lotSize) + ' = \u20b9' + (netCredit * lots * lotSize).toLocaleString('en-IN');
@@ -1785,10 +1818,10 @@ function runCalc() {
   document.getElementById('calcMaxLoss').textContent = '\u20b9' + maxLoss.toLocaleString('en-IN');
 
   document.getElementById('calcTarget').textContent = '+\u20b9' + targetPnL.toLocaleString('en-IN');
-  document.getElementById('calcTargetNote').textContent = 'When spread = \u20b9' + targetPremium.toFixed(1) + ' (50% captured)';
+  document.getElementById('calcTargetNote').textContent = targetIsDayClose ? 'Day close — keep full credit' : 'Exit at \u20b9' + userTargetInput + '/lot profit';
 
   document.getElementById('calcSL').textContent = '-\u20b9' + slPnL.toLocaleString('en-IN');
-  document.getElementById('calcSLNote').textContent = 'When spread = \u20b9' + slPremium.toFixed(1) + ' (2x premium)';
+  document.getElementById('calcSLNote').textContent = 'Exit at \u20b9' + userSLInput + '/lot loss (spread = \u20b9' + slPremium.toFixed(1) + ')';
 
   document.getElementById('calcBreakEven').textContent = breakEven.toFixed(0);
   document.getElementById('calcBreakEvenNote').textContent = isBull ? 'NIFTY must stay above ' + breakEven.toFixed(0) : 'NIFTY must stay below ' + breakEven.toFixed(0);
@@ -1870,12 +1903,14 @@ function runCalc() {
     '<div style="font-family:var(--mono);font-size:14px;font-weight:700;color:' + verdictColor + ';margin-bottom:10px;">' + verdictText + '</div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;">' +
       '<div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;">' +
-        '<div style="font-size:9px;color:var(--muted);margin-bottom:4px;">TARGET (50%)</div>' +
+        '<div style="font-size:9px;color:var(--muted);margin-bottom:4px;">TARGET</div>' +
         '<div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--green);">+\u20b9' + targetPnL.toLocaleString('en-IN') + '</div>' +
+        '<div style="font-size:9px;color:var(--muted);margin-top:2px;">' + (targetIsDayClose ? 'Day close' : '\u20b9'+userTargetInput+'/lot') + '</div>' +
       '</div>' +
       '<div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;">' +
-        '<div style="font-size:9px;color:var(--muted);margin-bottom:4px;">SL (2x rule)</div>' +
+        '<div style="font-size:9px;color:var(--muted);margin-bottom:4px;">SL</div>' +
         '<div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--red);">-\u20b9' + slPnL.toLocaleString('en-IN') + '</div>' +
+        '<div style="font-size:9px;color:var(--muted);margin-top:2px;">\u20b9'+userSLInput+'/lot</div>' +
       '</div>' +
       '<div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;">' +
         '<div style="font-size:9px;color:var(--muted);margin-bottom:4px;">ACTUAL R:R</div>' +
@@ -1884,15 +1919,13 @@ function runCalc() {
     '</div>' +
     '<div style="font-size:11px;color:var(--muted);line-height:1.6;">' +
       'Risk \u20b9' + slPnL.toLocaleString('en-IN') + ' to earn \u20b9' + targetPnL.toLocaleString('en-IN') + ' &nbsp;|&nbsp; ' +
-      'Need <b style="color:' + verdictColor + ';">' + winsNeeded + ' win' + (winsNeeded > 1 ? 's' : '') + '</b> to recover 1 SL hit &nbsp;|&nbsp; ' +
-      'Credit = ' + ((netCredit/spreadWidth)*100).toFixed(0) + '% of width' +
+      'Need <b style="color:' + verdictColor + ';">' + winsNeeded + ' win' + (winsNeeded > 1 ? 's' : '') + '</b> to recover 1 SL hit' +
     '</div>';
 
     // Live warnings
   var warns = [];
   if (netCredit < 20) warns.push('\u26a0\ufe0f Very low net credit (\u20b9' + netCredit + ') — charges may eat into profit');
-  if (netCredit < spreadWidth * 0.2) warns.push('\ud83d\udea8 Collecting less than 20% of spread width — not worth the risk');
-  if (lots * lotSize * spreadWidth > 100000) warns.push('\u26a0\ufe0f Large position — total exposure \u20b9' + (lots * lotSize * spreadWidth).toLocaleString('en-IN'));
+  if (lots * lotSize * maxLoss > 100000) warns.push('\u26a0\ufe0f Large position — max loss \u20b9' + (lots * lotSize * maxLoss > 0 ? maxLoss : 0).toLocaleString('en-IN'));
   if (spot && isBull && spot < breakEven + 100) warns.push('\ud83d\udea8 Spot is within 100pts of break-even — risky entry');
   if (spot && !isBull && spot > breakEven - 100) warns.push('\ud83d\udea8 Spot is within 100pts of break-even — risky entry');
   if (entryTime && entryTime > '12:30') warns.push('\u26a0\ufe0f Entering after 12:30 PM — less premium, more gamma risk');
@@ -2373,6 +2406,13 @@ function editTrade(index) {
   if (trade.strategy) selectStrategy(trade.strategy);
   if (trade.bias) selectBias(trade.bias);
   if (trade.exitReason) selectExit(trade.exitReason);
+  document.getElementById('entrySLAmount').value = trade.slAmount || '';
+  if (trade.targetType === 'custom') {
+    selectTargetType('custom');
+    document.getElementById('entryTargetAmount').value = trade.targetAmount || '';
+  } else {
+    selectTargetType('dayclose');
+  }
 
   // Recalculate displays
   calcSpreadPnL();
@@ -2425,6 +2465,10 @@ function updateEntry() {
   const d = new Date(date);
   const pct = capital ? parseFloat(((pl/capital)*100).toFixed(2)) : 0;
 
+  const slAmount = parseFloat(document.getElementById('entrySLAmount').value) || 0;
+  const targetType = selectedTargetType;
+  const targetAmount = targetType === 'custom' ? (parseFloat(document.getElementById('entryTargetAmount').value) || 0) : 0;
+
   const updatedTrade = {
     date, day: dayNames[d.getDay()], capital,
     collateral: collateral, cash: cash,
@@ -2434,6 +2478,9 @@ function updateEntry() {
     strategy: selectedStrategy,
     bias: selectedBias,
     exitReason: selectedExit,
+    slAmount: slAmount,
+    targetType: targetType,
+    targetAmount: targetAmount,
     sellStrike, buyStrike,
     sellPrem, buyPrem,
     lots, netCredit,
@@ -2472,7 +2519,7 @@ function deleteEntry() {
 function cancelEdit() {
   editingIndex = null;
   document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
-  ['entryCapital','entryCollateral','entryPL','entryCharges','entryComment','entryAnalysis',
+  ['entryCapital','entryCollateral','entryPL','entryCharges','entryComment','entryAnalysis','entrySLAmount','entryTargetAmount',
    'entrySellStrike','entryBuyStrike','entrySellPrem','entryBuyPrem',
    'exitSellPrem','exitBuyPrem'].forEach(function(id) {
     var el = document.getElementById(id);
@@ -2482,6 +2529,7 @@ function cancelEdit() {
   document.getElementById('entryTime').value = '';
   document.getElementById('exitTime').value = '';
   if (document.getElementById('entryCash')) document.getElementById('entryCash').value = '';
+  selectTargetType('dayclose');
   if (document.getElementById('netCreditDisplay')) document.getElementById('netCreditDisplay').textContent = '₹0';
   if (document.getElementById('maxProfitDisplay')) document.getElementById('maxProfitDisplay').textContent = '₹0';
   if (document.getElementById('maxLossDisplay')) document.getElementById('maxLossDisplay').textContent = '₹0';
@@ -2499,6 +2547,24 @@ function cancelEdit() {
 var selectedInstrument = 'NIFTY';
 var selectedStrategy = 'Bull Put Spread';
 var selectedBias = 'Bullish';
+var selectedTargetType = 'dayclose';
+
+function selectTargetType(type) {
+  selectedTargetType = type;
+  var customEl = document.getElementById('entryTargetAmount');
+  var btnCustom = document.getElementById('targetTypeCustom');
+  var btnDC = document.getElementById('targetTypeDayClose');
+  if (type === 'custom') {
+    if (customEl) customEl.style.display = 'block';
+    if (btnCustom) { btnCustom.classList.add('active'); }
+    if (btnDC) { btnDC.classList.remove('active'); }
+  } else {
+    if (customEl) { customEl.style.display = 'none'; customEl.value = ''; }
+    if (btnCustom) { btnCustom.classList.remove('active'); }
+    if (btnDC) { btnDC.classList.add('active'); }
+  }
+}
+
 var selectedExit = 'Target';
 var reviewAnswers = {};
 var NIFTY_LOT = 65;
@@ -2626,7 +2692,8 @@ function calcSpreadPnL() {
   var lotSize = selectedInstrument === 'NIFTY' ? NIFTY_LOT : SENSEX_LOT;
 
   var width = Math.abs(sell - buy);
-  document.getElementById('entrySpreadWidth').value = width || '';
+  var swEl = document.getElementById('entrySpreadWidth');
+  if (swEl) swEl.value = width || '';
 
   var netCredit = (sellPrem - buyPrem);
   var maxProfit = netCredit * lots * lotSize;
@@ -2694,6 +2761,10 @@ function saveEntry(addAnother) {
   var d = new Date(date);
   var pct = capital ? parseFloat(((pl/capital)*100).toFixed(2)) : 0;
 
+  var slAmount = parseFloat(document.getElementById('entrySLAmount').value) || 0;
+  var targetType = selectedTargetType;
+  var targetAmount = targetType === 'custom' ? (parseFloat(document.getElementById('entryTargetAmount').value) || 0) : 0;
+
   var tradeObj = {
     date: date, day: dayNames[d.getDay()], capital: capital,
     collateral: collateral, cash: cash,
@@ -2703,6 +2774,9 @@ function saveEntry(addAnother) {
     strategy: selectedStrategy,
     bias: selectedBias,
     exitReason: selectedExit,
+    slAmount: slAmount,
+    targetType: targetType,
+    targetAmount: targetAmount,
     sellStrike: sellStrike, buyStrike: buyStrike,
     sellPrem: sellPrem, buyPrem: buyPrem,
     lots: lots, netCredit: netCredit,
@@ -2723,7 +2797,8 @@ function saveEntry(addAnother) {
     if (el) el.value = '';
   });
   document.getElementById('entryLots').value = '1';
-  document.getElementById('entrySpreadWidth').value = '';
+  var swEl2 = document.getElementById('entrySpreadWidth');
+  if (swEl2) swEl2.value = '';
   document.getElementById('netCreditDisplay').textContent = '₹0';
   document.getElementById('maxProfitDisplay').textContent = '₹0';
   document.getElementById('maxLossDisplay').textContent = '₹0';
@@ -3568,7 +3643,7 @@ var reviewRuleDefs = [
   { q:'rq6',  label:"Didn't check OI walls",             bad:function(v){ return v==='No'; } },
   { q:'rq7',  label:'Sold strikes inside the OI wall',   bad:function(v){ return v==='No'; } },
   { q:'rq8',  label:"Didn't check India VIX",            bad:function(v){ return v==='No'; } },
-  { q:'rq9',  label:'No profit target set before entry', bad:function(v){ return v==='No'; } },
+  { q:'rq9',  label:'No profit target set before entry', bad:function(v){ return v==='No' || v==='No plan'; } },
   { q:'rq10', label:'No stop-loss set before entry',     bad:function(v){ return v==='No'; } },
   { q:'rq11', label:'Held past stop-loss',               bad:function(v){ return v==='Held'; } },
   { q:'rq12', label:'Poor risk-reward (<1:1)',           bad:function(v){ return v && v.indexOf('Poor')!==-1; } },

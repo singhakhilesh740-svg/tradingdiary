@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tradelog-v29';
+const CACHE_NAME = 'tradelog-v30';
 
 self.addEventListener('install', e => {
   self.skipWaiting();
