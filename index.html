@@ -546,8 +546,8 @@
     <div class="card-title" style="margin-bottom:8px;">💰 TODAY'S CAPITAL</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
       <div>
-        <label class="form-label">TOTAL (₹)</label>
-        <input type="number" class="form-input" id="dailyTotalCap" placeholder="200000" oninput="onDailyCapChange()" style="font-size:14px;padding:10px;">
+        <label class="form-label">TOTAL (₹) <span style="font-size:8px;color:var(--accent);">= Portfolio</span></label>
+        <input type="number" class="form-input" id="dailyTotalCap" readonly style="font-size:14px;padding:10px;opacity:.8;background:var(--bg);">
       </div>
       <div>
         <label class="form-label">COLLATERAL (₹)</label>
@@ -558,7 +558,7 @@
         <div id="dailyCashDisplay" style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--accent);padding:10px 0;text-align:center;">₹0</div>
       </div>
     </div>
-    <div style="font-size:10px;color:var(--muted);margin-top:6px;">Set once each morning. Auto-fills into every trade you add today.</div>
+    <div style="font-size:10px;color:var(--muted);margin-top:6px;">Total = portfolio value (auto). Enter collateral daily. Cash = Total − Collateral.</div>
   </div>
 
   <!-- PRE-TRADE CHECKLIST ON DASHBOARD -->
@@ -2480,24 +2480,48 @@ async function loadTodayAnalysis() {
 // ── DAILY CAPITAL SETUP ────────────────────────────────────────────────────
 function getDailyCapKey() { return new Date().toISOString().split('T')[0]; }
 
+function getPortfolioValue() {
+  var startCap = parseFloat(appSettings.pt_startcap) || 0;
+  var startDate = appSettings.pt_startdate || '';
+  var lumps = getLumpsums();
+  var today = new Date();
+  var depositedNow = startCap + lumps.filter(function(l){ return new Date(l.date) <= today; }).reduce(function(s,l){ return s + lumpSigned(l); }, 0);
+  var validTrades = trades.filter(function(t){ return typeof t.pl === 'number' && !isNaN(t.pl); });
+  var tradesForPortfolio = startDate ? validTrades.filter(function(t){ return t.date >= startDate; }) : validTrades;
+  var portfolioPL = tradesForPortfolio.reduce(function(s,t){ return s + t.pl; }, 0);
+  return depositedNow + portfolioPL;
+}
+
 function loadDailyCapital() {
   var today = getDailyCapKey();
   var saved = appSettings['dailyCap_' + today];
   var totalEl = document.getElementById('dailyTotalCap');
   var collEl = document.getElementById('dailyCollateral');
-  if (saved) {
-    if (totalEl) totalEl.value = saved.total || '';
-    if (collEl) collEl.value = saved.collateral || '';
+
+  // Total capital = portfolio value (auto-calculated, read-only)
+  var pv = getPortfolioValue();
+  if (totalEl) {
+    if (pv > 0) {
+      totalEl.value = Math.round(pv);
+    } else if (saved && saved.total) {
+      totalEl.value = saved.total;
+    }
+  }
+
+  // Collateral from saved daily setting
+  if (saved && saved.collateral) {
+    if (collEl) collEl.value = saved.collateral;
   } else {
-    // Try to carry forward from the most recent day that has data
+    // carry forward collateral from most recent day
     var keys = Object.keys(appSettings).filter(function(k){ return k.startsWith('dailyCap_') && k < 'dailyCap_' + today; }).sort();
     if (keys.length) {
       var prev = appSettings[keys[keys.length-1]];
-      if (prev && totalEl) totalEl.value = prev.total || '';
       if (prev && collEl) collEl.value = prev.collateral || '';
     }
   }
   updateDailyCashDisplay();
+  // Auto-save so the portfolio-derived total is persisted
+  onDailyCapChange();
 }
 
 function onDailyCapChange() {
