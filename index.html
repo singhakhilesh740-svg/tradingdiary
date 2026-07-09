@@ -1369,27 +1369,27 @@
 
 
 <div class="bottom-nav">
-  <button class="nav-btn active" onclick="goPage('Dashboard')">
+  <button class="nav-btn active" onclick="goPage('Dashboard', event)">
     <svg fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
     Checklist
   </button>
-  <button class="nav-btn" onclick="goPage('Journal')">
+  <button class="nav-btn" onclick="goPage('Journal', event)">
     <svg fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
     Journal
   </button>
-  <button class="nav-btn" onclick="goPage('Add')">
+  <button class="nav-btn" onclick="goPage('Add', event)">
     <svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
     Add
   </button>
-  <button class="nav-btn" onclick="goPage('Calc')">
+  <button class="nav-btn" onclick="goPage('Calc', event)">
     <svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
     Calc
   </button>
-  <button class="nav-btn" onclick="goPage('Review')">
+  <button class="nav-btn" onclick="goPage('Review', event)">
     <svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
     Review
   </button>
-  <button class="nav-btn" onclick="goPage('Reports')">
+  <button class="nav-btn" onclick="goPage('Reports', event)">
     <svg fill="currentColor" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
     Report
   </button>
@@ -1689,16 +1689,20 @@ let editingIndex = null;  // Track which trade is being edited
 document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
 
 // ── NAVIGATION ─────────────────────────────────────────────────────────────
-function goPage(name) {
+function goPage(name, evt) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   
   document.getElementById('page' + name).classList.add('active');
-  event.target.closest('.nav-btn').classList.add('active');
+  var e = evt || window.event;
+  if (e && e.target) {
+    var btn = e.target.closest('.nav-btn');
+    if (btn) btn.classList.add('active');
+  }
 
   if (name === 'Dashboard') renderDashboard();
   if (name === 'Journal') renderJournal();
-  if (name === 'Reports') { loadProgressSettings(); renderReports(); }
+  if (name === 'Reports') { loadProgressSettings(); requestAnimationFrame(function(){ renderReports(); }); }
   if (name === 'Review') { renderReviewStats(); loadTodayReview(); }
   if (name === 'Calc') renderCalcPage();
   if (name === 'Add') {
