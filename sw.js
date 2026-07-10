@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tradelog-v35';
+const CACHE_NAME = 'tradelog-v36';
 
 self.addEventListener('install', e => {
   self.skipWaiting();
@@ -14,7 +14,5 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Let ALL requests go directly to network — no caching interference
-  // This prevents SW from blocking auth redirects and CDN requests
   return;
 });
