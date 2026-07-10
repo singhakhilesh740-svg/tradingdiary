@@ -1471,10 +1471,11 @@
       <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">Scaling into the SAME spread in steps? Enter each leg's premiums &amp; lots. You'll get the lot-weighted average entry price for the sold and bought legs. Entry time follows Leg 1.</div>
 
       <!-- Strikes (shared across all legs — same spread) -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;">
         <div><label class="form-label" style="font-size:9px;" id="avgSellStrikeLabel">SELL STRIKE</label><input type="number" class="form-input" id="avgSellStrike" placeholder="24200"></div>
         <div><label class="form-label" style="font-size:9px;" id="avgBuyStrikeLabel">BUY STRIKE</label><input type="number" class="form-input" id="avgBuyStrike" placeholder="24100"></div>
       </div>
+      <div style="font-size:9px;color:var(--muted);margin-bottom:10px;">Leave blank to use the strikes from the Calculator above.</div>
 
       <div id="avgLegs">
         <div class="avg-leg" data-leg="1" style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;">
@@ -4356,14 +4357,23 @@ function calcAverage() {
     document.getElementById('avgTotalLots').textContent = totalLots;
     document.getElementById('avgTotalPrem').textContent = '₹' + Math.round(totalCredit * lotSize).toLocaleString('en-IN');
 
+    // Strikes: prefer the averaging-section fields, else fall back to the
+    // strikes chosen in the main Calculator above.
+    var avgSS = document.getElementById('avgSellStrike');
+    var avgBS = document.getElementById('avgBuyStrike');
+    var mainSS = document.getElementById('calcSellStrike');
+    var mainBS = document.getElementById('calcBuyStrike');
+    var sellStrike = (avgSS && avgSS.value) ? avgSS.value : (mainSS ? mainSS.value : '');
+    var buyStrike  = (avgBS && avgBS.value) ? avgBS.value : (mainBS ? mainBS.value : '');
+
     // stash the averaged result
     lastAvgResult = {
       avgSell: parseFloat(avgSell.toFixed(2)),
       avgBuy: parseFloat(avgBuy.toFixed(2)),
       avgNC: parseFloat(avgNC.toFixed(2)),
       totalLots: totalLots,
-      sellStrike: document.getElementById('avgSellStrike') ? document.getElementById('avgSellStrike').value : '',
-      buyStrike: document.getElementById('avgBuyStrike') ? document.getElementById('avgBuyStrike').value : '',
+      sellStrike: sellStrike,
+      buyStrike: buyStrike,
       entryTime: document.getElementById('avgTime1') ? document.getElementById('avgTime1').value : ''
     };
   } else {
