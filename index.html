@@ -364,8 +364,8 @@
   </div>
 </div>
 
-<!-- QUICK LINKS BAR -->
-<div class="links-bar">
+<!-- QUICK LINKS BAR (home only) -->
+<div class="links-bar" id="linksBar">
   <div class="links-bar-head">
     <span class="links-bar-title">🔗 QUICK LINKS</span>
     <button onclick="toggleLinkEdit()" id="linkEditBtn" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:10px;padding:3px 10px;cursor:pointer;font-family:var(--mono);">✏️ EDIT</button>
@@ -1185,6 +1185,87 @@
     <div class="chart-wrap">
       <canvas id="plChart"></canvas>
     </div>
+    <div style="display:flex;gap:16px;justify-content:center;margin-top:10px;font-size:10px;color:var(--muted);">
+      <span style="display:flex;align-items:center;gap:5px;"><span style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:9px solid #00e096;display:inline-block;"></span>Fund Added</span>
+      <span style="display:flex;align-items:center;gap:5px;"><span style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:9px solid #ff5f57;display:inline-block;"></span>Withdrawal</span>
+      <span style="color:var(--muted);">· hover markers for details</span>
+    </div>
+  </div>
+
+  <!-- PORTFOLIO FORECAST CALCULATOR -->
+  <div class="card">
+    <div class="card-title">🔮 PORTFOLIO FORECAST</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:14px;">Project your portfolio's future value using a compounding rate of return, plus any planned lumpsum additions.</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+      <div>
+        <label class="form-label" style="font-size:9px;">START VALUE (₹)</label>
+        <input type="number" class="form-input" id="fcStartVal" placeholder="500000" oninput="calcForecast()">
+      </div>
+      <div>
+        <label class="form-label" style="font-size:9px;">START DATE</label>
+        <input type="date" class="form-input" id="fcStartDate" oninput="calcForecast()">
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+      <div>
+        <label class="form-label" style="font-size:9px;">RATE OF RETURN (%)</label>
+        <input type="number" class="form-input" id="fcRate" placeholder="2" step="0.1" oninput="calcForecast()">
+      </div>
+      <div>
+        <label class="form-label" style="font-size:9px;">RATE PERIOD</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;">
+          <button class="filter-btn active" id="fcWeek" onclick="setFcPeriod('week')" style="padding:8px 4px;font-size:10px;">Week</button>
+          <button class="filter-btn" id="fcMonth" onclick="setFcPeriod('month')" style="padding:8px 4px;font-size:10px;">Month</button>
+          <button class="filter-btn" id="fcYear" onclick="setFcPeriod('year')" style="padding:8px 4px;font-size:10px;">Year</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+      <div>
+        <label class="form-label" style="font-size:9px;">FORECAST DURATION</label>
+        <input type="number" class="form-input" id="fcDuration" placeholder="12" oninput="calcForecast()">
+      </div>
+      <div>
+        <label class="form-label" style="font-size:9px;">DURATION UNIT</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;">
+          <button class="filter-btn" id="fcDurWeek" onclick="setFcDurUnit('week')" style="padding:8px 4px;font-size:10px;">Wk</button>
+          <button class="filter-btn" id="fcDurMonth" onclick="setFcDurUnit('month')" style="padding:8px 4px;font-size:10px;">Mo</button>
+          <button class="filter-btn active" id="fcDurYear" onclick="setFcDurUnit('year')" style="padding:8px 4px;font-size:10px;">Yr</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Planned lumpsum additions -->
+    <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:6px;margin-bottom:10px;">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--accent);margin-bottom:8px;">PLANNED LUMPSUM ADDITIONS (optional)</div>
+      <div id="fcLumpList"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:6px;align-items:end;margin-top:6px;">
+        <div><label class="form-label" style="font-size:9px;">DATE</label><input type="date" class="form-input" id="fcLumpDate"></div>
+        <div><label class="form-label" style="font-size:9px;">AMOUNT (₹)</label><input type="number" class="form-input" id="fcLumpAmt" placeholder="50000"></div>
+        <button onclick="addFcLump()" style="background:rgba(0,224,150,.15);color:var(--green);border:1px solid var(--green);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;">➕</button>
+      </div>
+    </div>
+
+    <button onclick="calcForecast()" style="width:100%;background:linear-gradient(135deg,#00e5ff,#0088aa);border:none;border-radius:8px;color:#000;font-size:13px;padding:12px;cursor:pointer;font-family:var(--mono);font-weight:700;margin-bottom:12px;">📊 CALCULATE FORECAST</button>
+
+    <div id="fcResult" style="display:none;">
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;margin-bottom:12px;">
+        <div style="font-size:9px;color:var(--muted);letter-spacing:1.5px;margin-bottom:4px;">PROJECTED PORTFOLIO VALUE</div>
+        <div style="font-family:var(--mono);font-size:30px;font-weight:700;color:var(--green);" id="fcFinalVal">₹0</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;" id="fcFinalMeta"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
+        <div class="stat-card" style="text-align:center;"><div class="stat-label">INVESTED</div><div class="stat-val" style="font-size:14px;color:var(--accent);" id="fcInvested">₹0</div></div>
+        <div class="stat-card" style="text-align:center;"><div class="stat-label">GAINS</div><div class="stat-val" style="font-size:14px;color:var(--green);" id="fcGains">₹0</div></div>
+        <div class="stat-card" style="text-align:center;"><div class="stat-label">GROWTH</div><div class="stat-val" style="font-size:14px;color:var(--green);" id="fcGrowth">0%</div></div>
+      </div>
+      <div class="chart-wrap" style="height:240px;">
+        <canvas id="forecastChart"></canvas>
+      </div>
+    </div>
   </div>
 
   <!-- STREAK ANALYSIS -->
@@ -1823,10 +1904,13 @@ function goPage(name, evt) {
   }
   window.scrollTo(0, 0);
 
+  var lb = document.getElementById('linksBar');
+  if (lb) lb.style.display = (name === 'Home') ? 'block' : 'none';
+
   if (name === 'Home') renderHome();
   if (name === 'Dashboard') renderDashboard();
   if (name === 'Journal') renderJournal();
-  if (name === 'Reports') { loadProgressSettings(); requestAnimationFrame(function(){ renderReports(); }); }
+  if (name === 'Reports') { loadProgressSettings(); requestAnimationFrame(function(){ renderReports(); prefillForecast(); }); }
   if (name === 'Review') { renderReviewStats(); loadTodayReview(); }
   if (name === 'Calc') renderCalcPage();
   if (name === 'Capital') renderCapitalPage();
@@ -1894,7 +1978,7 @@ const fmt = v => (v >= 0 ? '+' : '') + '₹' + v.toLocaleString('en-IN');
 const fmtK = v => Math.abs(v) >= 1000 ? (v / 1000).toFixed(1) + 'K' : v.toFixed(0);
 
 // ── CHARTS ─────────────────────────────────────────────────────────────────
-const charts = { pl: null, month: null, day: null, pie: null, portfolio: null, progress: null, discipline: null };
+const charts = { pl: null, month: null, day: null, pie: null, portfolio: null, progress: null, discipline: null, forecast: null };
 
 // ── MARKET STATUS ──────────────────────────────────────────────────────────
 function updateMarketStatus() {
@@ -2779,28 +2863,82 @@ function renderAnalytics() {
   let cum = 0;
   const chartData = sorted.map(t => { cum += t.pl; return { x: t.date, y: cum }; });
 
+  // Build fund-event markers (additions / withdrawals) positioned on the
+  // cumulative line at the nearest trade date on/after the fund date.
+  const fundLumps = getLumpsums().slice().sort((a,b) => a.date.localeCompare(b.date));
+  const fundMarkers = [];
+  fundLumps.forEach(function(l) {
+    if (!chartData.length) return;
+    // find cumulative y at the trade on/just-before the fund date
+    var y = 0; var xDate = l.date;
+    for (var i = 0; i < chartData.length; i++) {
+      if (chartData[i].x <= l.date) { y = chartData[i].y; xDate = chartData[i].x; }
+      else break;
+    }
+    // if fund date is before the first trade, pin to first point
+    if (l.date < chartData[0].x) { y = chartData[0].y; xDate = chartData[0].x; }
+    var signed = lumpSigned(l);
+    fundMarkers.push({
+      x: xDate, y: y,
+      _fundAmt: signed,
+      _fundType: l.type === 'withdraw' ? 'Withdraw' : 'Add Fund',
+      _fundDate: l.date
+    });
+  });
+
   if (charts.pl) charts.pl.destroy();
   charts.pl = new Chart(document.getElementById('plChart'), {
     type: 'line',
     data: {
-      datasets: [{
-        data: chartData,
-        borderColor: '#00e5ff',
-        backgroundColor: 'rgba(0,229,255,.1)',
-        borderWidth: 2,
-        fill: true,
-        tension: 0.3,
-        pointRadius: 3,
-        pointBackgroundColor: '#00e5ff'
-      }]
+      datasets: [
+        {
+          label: 'Cumulative P&L',
+          data: chartData,
+          borderColor: '#00e5ff',
+          backgroundColor: 'rgba(0,229,255,.1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3,
+          pointRadius: 3,
+          pointBackgroundColor: '#00e5ff',
+          order: 2
+        },
+        {
+          label: 'Fund Events',
+          data: fundMarkers,
+          type: 'scatter',
+          pointStyle: 'triangle',
+          pointRadius: 8,
+          pointHoverRadius: 11,
+          borderWidth: 1,
+          pointBorderColor: '#0a0c10',
+          backgroundColor: function(ctx) {
+            var d = ctx.raw;
+            return (d && d._fundAmt < 0) ? '#ff5f57' : '#00e096';
+          },
+          order: 1
+        }
+      ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: {
-        callbacks: { label: ctx => fmt(ctx.raw.y) },
-        backgroundColor: '#181c24', titleColor: '#00e5ff', bodyColor: '#e2e8f0',
-        borderColor: '#1f2535', borderWidth: 1
-      }},
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              var d = ctx.raw;
+              if (d && d._fundAmt !== undefined) {
+                var sign = d._fundAmt >= 0 ? '+' : '−';
+                return '💰 ' + d._fundType + ': ' + sign + '₹' + Math.abs(d._fundAmt).toLocaleString('en-IN') + ' (' + d._fundDate + ')';
+              }
+              return 'P&L: ' + fmt(ctx.raw.y);
+            }
+          },
+          backgroundColor: '#181c24', titleColor: '#00e5ff', bodyColor: '#e2e8f0',
+          borderColor: '#1f2535', borderWidth: 1
+        }
+      },
       scales: {
         x: { type: 'time', time: { unit: 'day' }, ticks: { color: '#64748b', font: { size: 9 }, maxTicksLimit: 6 }, grid: { color: '#1f2535' } },
         y: { ticks: { color: '#64748b', font: { size: 9 }, callback: v => fmtK(v) }, grid: { color: '#1f2535' } }
@@ -4305,6 +4443,204 @@ function renderCapitalPage() {
   onDailyCapChange();
 }
 
+// ── PORTFOLIO FORECAST CALCULATOR ────────────────────────────────────
+var fcPeriod = 'week';   // rate period
+var fcDurUnit = 'year';  // duration unit
+var fcLumps = [];        // planned future lumpsums [{date, amt}]
+
+function setFcPeriod(p) {
+  fcPeriod = p;
+  document.getElementById('fcWeek').classList.toggle('active', p === 'week');
+  document.getElementById('fcMonth').classList.toggle('active', p === 'month');
+  document.getElementById('fcYear').classList.toggle('active', p === 'year');
+  calcForecast();
+}
+
+function setFcDurUnit(u) {
+  fcDurUnit = u;
+  document.getElementById('fcDurWeek').classList.toggle('active', u === 'week');
+  document.getElementById('fcDurMonth').classList.toggle('active', u === 'month');
+  document.getElementById('fcDurYear').classList.toggle('active', u === 'year');
+  calcForecast();
+}
+
+function addFcLump() {
+  var date = document.getElementById('fcLumpDate').value;
+  var amt = parseFloat(document.getElementById('fcLumpAmt').value) || 0;
+  if (!date || !amt) { alert('Enter both date and amount'); return; }
+  fcLumps.push({ date: date, amt: amt });
+  fcLumps.sort(function(a,b){ return a.date.localeCompare(b.date); });
+  document.getElementById('fcLumpDate').value = '';
+  document.getElementById('fcLumpAmt').value = '';
+  renderFcLumpList();
+  calcForecast();
+}
+
+function removeFcLump(i) {
+  fcLumps.splice(i, 1);
+  renderFcLumpList();
+  calcForecast();
+}
+
+function renderFcLumpList() {
+  var el = document.getElementById('fcLumpList');
+  if (!el) return;
+  if (!fcLumps.length) { el.innerHTML = ''; return; }
+  el.innerHTML = fcLumps.map(function(l, i) {
+    return '<div style="display:flex;justify-content:space-between;align-items:center;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:6px;">' +
+      '<span style="font-family:var(--mono);font-size:11px;color:var(--text);">' + l.date + ' · +₹' + l.amt.toLocaleString('en-IN') + '</span>' +
+      '<button onclick="removeFcLump(' + i + ')" style="background:none;border:none;color:var(--red);font-size:14px;cursor:pointer;">✕</button>' +
+    '</div>';
+  }).join('');
+}
+
+// Convert a per-period rate into an equivalent per-week compounding factor
+function fcWeeklyFactor(ratePct, period) {
+  var r = ratePct / 100;
+  if (period === 'week') return 1 + r;
+  if (period === 'month') return Math.pow(1 + r, 1/4.345);   // ~4.345 weeks/month
+  if (period === 'year') return Math.pow(1 + r, 1/52.143);   // ~52.143 weeks/year
+  return 1 + r;
+}
+
+function fcDurationWeeks(dur, unit) {
+  if (unit === 'week') return dur;
+  if (unit === 'month') return dur * 4.345;
+  if (unit === 'year') return dur * 52.143;
+  return dur;
+}
+
+function calcForecast() {
+  var startVal = parseFloat(document.getElementById('fcStartVal').value) || 0;
+  var startDateStr = document.getElementById('fcStartDate').value;
+  var ratePct = parseFloat(document.getElementById('fcRate').value) || 0;
+  var dur = parseFloat(document.getElementById('fcDuration').value) || 0;
+
+  if (startVal <= 0 || dur <= 0) {
+    document.getElementById('fcResult').style.display = 'none';
+    return;
+  }
+
+  var startDate = startDateStr ? new Date(startDateStr) : new Date();
+  var weeklyFactor = fcWeeklyFactor(ratePct, fcPeriod);
+  var totalWeeks = Math.round(fcDurationWeeks(dur, fcDurUnit));
+  if (totalWeeks < 1) totalWeeks = 1;
+
+  // Map planned lumpsums to a week-offset from start
+  var lumpsByWeek = {};
+  var investedFromLumps = 0;
+  fcLumps.forEach(function(l) {
+    var ld = new Date(l.date);
+    var weekOffset = Math.round((ld - startDate) / (7 * 24 * 3600 * 1000));
+    if (weekOffset < 0) weekOffset = 0;
+    if (weekOffset <= totalWeeks) {
+      lumpsByWeek[weekOffset] = (lumpsByWeek[weekOffset] || 0) + l.amt;
+      investedFromLumps += l.amt;
+    }
+  });
+
+  // Simulate week by week
+  var val = startVal;
+  var labels = [];
+  var valueSeries = [];
+  var investedSeries = [];
+  var runningInvested = startVal;
+
+  // week 0 (start)
+  if (lumpsByWeek[0]) { val += lumpsByWeek[0]; }
+  labels.push(fcFormatWeekLabel(startDate, 0, totalWeeks));
+  valueSeries.push(Math.round(val));
+  investedSeries.push(Math.round(runningInvested));
+
+  for (var w = 1; w <= totalWeeks; w++) {
+    val = val * weeklyFactor;              // apply weekly compounding
+    if (lumpsByWeek[w]) {                   // add planned lumpsum
+      val += lumpsByWeek[w];
+      runningInvested += lumpsByWeek[w];
+    }
+    labels.push(fcFormatWeekLabel(startDate, w, totalWeeks));
+    valueSeries.push(Math.round(val));
+    investedSeries.push(Math.round(runningInvested));
+  }
+
+  var finalVal = val;
+  var totalInvested = startVal + investedFromLumps;
+  var gains = finalVal - totalInvested;
+  var growthPct = totalInvested > 0 ? ((gains / totalInvested) * 100) : 0;
+
+  document.getElementById('fcResult').style.display = 'block';
+  document.getElementById('fcFinalVal').textContent = '₹' + Math.round(finalVal).toLocaleString('en-IN');
+  var endDate = new Date(startDate.getTime() + totalWeeks * 7 * 24 * 3600 * 1000);
+  document.getElementById('fcFinalMeta').textContent =
+    'After ' + dur + ' ' + fcDurUnit + (dur > 1 ? 's' : '') + ' · by ' +
+    endDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) +
+    ' · @ ' + ratePct + '%/' + fcPeriod;
+  document.getElementById('fcInvested').textContent = '₹' + Math.round(totalInvested).toLocaleString('en-IN');
+  document.getElementById('fcGains').textContent = (gains >= 0 ? '+₹' : '−₹') + Math.abs(Math.round(gains)).toLocaleString('en-IN');
+  document.getElementById('fcGains').style.color = gains >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('fcGrowth').textContent = (growthPct >= 0 ? '+' : '') + growthPct.toFixed(1) + '%';
+  document.getElementById('fcGrowth').style.color = growthPct >= 0 ? 'var(--green)' : 'var(--red)';
+
+  // Chart
+  if (charts.forecast) charts.forecast.destroy();
+  charts.forecast = new Chart(document.getElementById('forecastChart'), {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Projected Value',
+          data: valueSeries,
+          borderColor: '#00e096',
+          backgroundColor: 'rgba(0,224,150,.12)',
+          borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0, pointHoverRadius: 5
+        },
+        {
+          label: 'Invested',
+          data: investedSeries,
+          borderColor: '#ffd166',
+          borderWidth: 1.5, borderDash: [5,4], fill: false, tension: 0, pointRadius: 0, pointHoverRadius: 4
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#e2e8f0', font: { size: 10 }, usePointStyle: true, boxWidth: 8 } },
+        tooltip: {
+          callbacks: { label: function(ctx){ return ctx.dataset.label + ': ₹' + ctx.raw.toLocaleString('en-IN'); } },
+          backgroundColor: '#181c24', titleColor: '#00e5ff', bodyColor: '#e2e8f0', borderColor: '#1f2535', borderWidth: 1
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#64748b', font: { size: 9 }, maxTicksLimit: 7 }, grid: { display: false } },
+        y: { ticks: { color: '#64748b', font: { size: 9 }, callback: function(v){ return fmtK(v); } }, grid: { color: '#1f2535' } }
+      }
+    }
+  });
+}
+
+function fcFormatWeekLabel(startDate, weekOffset, totalWeeks) {
+  var d = new Date(startDate.getTime() + weekOffset * 7 * 24 * 3600 * 1000);
+  // For long horizons show month/year, else show date
+  if (totalWeeks > 60) return d.toLocaleDateString('en', { month: 'short', year: '2-digit' });
+  return d.getDate() + '/' + (d.getMonth() + 1);
+}
+
+// Prefill forecast start value from current portfolio when Reports opens
+function prefillForecast() {
+  var sv = document.getElementById('fcStartVal');
+  var sd = document.getElementById('fcStartDate');
+  if (sv && !sv.value) {
+    var pv = document.getElementById('portfolioValue');
+    if (pv) {
+      var num = parseFloat((pv.textContent || '').replace(/[^0-9.]/g, ''));
+      if (num > 0) sv.value = Math.round(num);
+    }
+  }
+  if (sd && !sd.value) sd.value = new Date().toISOString().split('T')[0];
+}
+
 // ── TRADE AVERAGING ──────────────────────────────────────────────────
 var avgLegCount = 1;
 var lastAvgResult = null; // stash for import-to-Add
@@ -4626,6 +4962,7 @@ function renderDisciplineReport() {
 renderHome();
 renderDisciplineChecks({});
 renderQuickLinks();
+(function(){ var lb=document.getElementById('linksBar'); if(lb) lb.style.display='block'; })();
 
 // ── PWA SERVICE WORKER ─────────────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
