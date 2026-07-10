@@ -224,6 +224,28 @@
   }
   .edit-mode-banner.active { display: block; }
 
+
+  /* HOME GRID */
+  .home-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 8px 0; }
+  .home-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .home-card:active { transform: scale(.96); background: var(--card2); }
+  .home-card .hicon { font-size: 28px; }
+  .home-card .hlabel { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+  .home-card .hbadge { font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+  .page-back { background: none; border: none; color: var(--accent); font-size: 13px; cursor: pointer; padding: 8px 0; margin-bottom: 8px; font-family: var(--mono); letter-spacing: 1px; }
+
   /* CHART */
   .chart-wrap { position: relative; height: 200px; }
 
@@ -348,19 +370,126 @@
 </div>
 
 <!-- DASHBOARD PAGE -->
-<div id="pageDashboard" class="page active">
-
-  <!-- QUICK LINKS -->
-  <div class="card" style="padding:12px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-      <div class="card-title" style="margin:0;">🔗 QUICK LINKS</div>
-      <button onclick="toggleLinkEdit()" id="linkEditBtn" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:10px;padding:4px 10px;cursor:pointer;font-family:var(--mono);">✏️ EDIT</button>
+<div id="pageHome" class="page active">
+  <div class="home-grid">
+    <div class="home-card" onclick="goPage('Dashboard')">
+      <div class="hicon">✅</div>
+      <div class="hlabel">Checklist</div>
     </div>
-    <div id="quickLinksRow" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
-    <div id="quickLinksEdit" style="display:none;margin-top:10px;"></div>
+    <div class="home-card" onclick="goPage('Journal')">
+      <div class="hicon">📓</div>
+      <div class="hlabel">Journal</div>
+    </div>
+    <div class="home-card" onclick="goPage('Add')">
+      <div class="hicon">➕</div>
+      <div class="hlabel">Add Trade</div>
+    </div>
+    <div class="home-card" onclick="goPage('Calc')">
+      <div class="hicon">🧮</div>
+      <div class="hlabel">Calculator</div>
+    </div>
+    <div class="home-card" onclick="goPage('Review')">
+      <div class="hicon">📋</div>
+      <div class="hlabel">Review</div>
+    </div>
+    <div class="home-card" onclick="goPage('Reports')">
+      <div class="hicon">📊</div>
+      <div class="hlabel">Report</div>
+      <div class="hbadge" id="homePLBadge" style="color:var(--muted);">—</div>
+    </div>
+    <div class="home-card" onclick="goPage('Analysis')">
+      <div class="hicon">📉</div>
+      <div class="hlabel">Market Analysis</div>
+    </div>
+    <div class="home-card" onclick="goPage('Capital')">
+      <div class="hicon">💰</div>
+      <div class="hlabel">Capital</div>
+    </div>
+    <div class="home-card" onclick="goPage('Links')">
+      <div class="hicon">🔗</div>
+      <div class="hlabel">Quick Links</div>
+    </div>
   </div>
 
-  <!-- DAILY MARKET ANALYSIS (evening before) -->
+  <!-- Mini today summary on home -->
+  <div class="card" style="margin-top:8px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
+      <div>
+        <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">TODAY P&L</div>
+        <div style="font-family:var(--mono);font-size:18px;font-weight:700;" id="homeTodayPL">₹0</div>
+      </div>
+      <div>
+        <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">TRADES</div>
+        <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--accent);" id="homeTrades">0</div>
+      </div>
+      <div>
+        <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">STREAK</div>
+        <div style="font-family:var(--mono);font-size:18px;font-weight:700;" id="homeStreak">-</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIVE MARKET CHART on home -->
+  <div class="card" style="padding:10px;margin-top:4px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding:0 4px;">
+      <div class="card-title" style="margin:0;">📊 LIVE MARKET</div>
+      <div style="display:flex;gap:6px;">
+        <button class="filter-btn active" id="chartNifty" onclick="switchChart('NIFTY')" style="font-size:10px;padding:4px 10px;">NIFTY</button>
+        <button class="filter-btn" id="chartSensex" onclick="switchChart('SENSEX')" style="font-size:10px;padding:4px 10px;">SENSEX</button>
+        <button class="filter-btn" id="chartBankNifty" onclick="switchChart('BANKNIFTY')" style="font-size:10px;padding:4px 10px;">BANK NIFTY</button>
+      </div>
+    </div>
+    <div id="tvChartWrap" style="height:340px;border-radius:8px;overflow:hidden;"></div>
+  </div>
+</div>
+
+<div id="pageDashboard" class="page">
+
+  <button class="page-back" onclick="goPage('Home')">← HOME</button>
+
+  <!-- PRE-TRADE CHECKLIST ON DASHBOARD -->
+  <div class="card" style="border:1px solid var(--accent);border-radius:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+      <div class="card-title" style="margin:0;">✅ PRE-TRADE CHECKLIST</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span style="font-size:11px;color:var(--muted);font-family:var(--mono);" id="dashTradeCount">0 trades</span>
+        <span style="font-size:12px;font-family:var(--mono);" id="dashTodayPL">₹0</span>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">Tick all before entering any trade. Be honest.</div>
+
+    <!-- Warning banners -->
+    <div id="dashWarnings" style="margin-bottom:10px;"></div>
+
+    <!-- Checklist with sections -->
+    <div id="dashChecklist" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>
+
+    <!-- Stats row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
+      <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">TRADES</div>
+        <div style="font-family:var(--mono);font-size:18px;font-weight:700;" id="dashMaxTrades">-</div>
+      </div>
+      <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">MAX LOSS</div>
+        <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--text);" id="dashMaxLoss">-</div>
+      </div>
+      <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">STREAK</div>
+        <div style="font-family:var(--mono);font-size:18px;font-weight:700;" id="dashStreak">-</div>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div id="dashGuardStatus" style="text-align:center;"></div>
+  </div>
+
+</div>
+
+
+<div id="pageAnalysis" class="page">
+  <button class="page-back" onclick="goPage('Home')">← HOME</button>
+    <!-- DAILY MARKET ANALYSIS (evening before) -->
   <div class="card" style="border:1px solid #ffd166;border-radius:14px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
       <div class="card-title" style="margin:0;">📉 MARKET ANALYSIS</div>
@@ -541,7 +670,11 @@
     </div>
   </div>
 
-  <!-- TODAY'S CAPITAL SETUP -->
+</div>
+
+<div id="pageCapital" class="page">
+  <button class="page-back" onclick="goPage('Home')">← HOME</button>
+    <!-- TODAY'S CAPITAL SETUP -->
   <div class="card" style="border:1px solid var(--accent);border-radius:14px;">
     <div class="card-title" style="margin-bottom:8px;">💰 TODAY'S CAPITAL</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
@@ -561,60 +694,23 @@
     <div style="font-size:10px;color:var(--muted);margin-top:6px;">Total = portfolio value (auto). Enter collateral daily. Cash = Total − Collateral.</div>
   </div>
 
-  <!-- PRE-TRADE CHECKLIST ON DASHBOARD -->
-  <div class="card" style="border:1px solid var(--accent);border-radius:14px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-      <div class="card-title" style="margin:0;">✅ PRE-TRADE CHECKLIST</div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <span style="font-size:11px;color:var(--muted);font-family:var(--mono);" id="dashTradeCount">0 trades</span>
-        <span style="font-size:12px;font-family:var(--mono);" id="dashTodayPL">₹0</span>
-      </div>
+</div>
+
+<div id="pageLinks" class="page">
+  <button class="page-back" onclick="goPage('Home')">← HOME</button>
+  <div class="card" style="padding:12px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div class="card-title" style="margin:0;">🔗 QUICK LINKS</div>
+      <button onclick="toggleLinkEdit()" id="linkEditBtn2" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:10px;padding:4px 10px;cursor:pointer;font-family:var(--mono);">✏️ EDIT</button>
     </div>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">Tick all before entering any trade. Be honest.</div>
-
-    <!-- Warning banners -->
-    <div id="dashWarnings" style="margin-bottom:10px;"></div>
-
-    <!-- Checklist with sections -->
-    <div id="dashChecklist" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>
-
-    <!-- Stats row -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
-      <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
-        <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">TRADES</div>
-        <div style="font-family:var(--mono);font-size:18px;font-weight:700;" id="dashMaxTrades">-</div>
-      </div>
-      <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
-        <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">MAX LOSS</div>
-        <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--text);" id="dashMaxLoss">-</div>
-      </div>
-      <div style="background:var(--card2);border-radius:8px;padding:10px;text-align:center;">
-        <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">STREAK</div>
-        <div style="font-family:var(--mono);font-size:18px;font-weight:700;" id="dashStreak">-</div>
-      </div>
-    </div>
-
-    <!-- Status -->
-    <div id="dashGuardStatus" style="text-align:center;"></div>
-  </div>
-
-  <!-- LIVE MARKET CHART -->
-  <div class="card" style="padding:10px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding:0 4px;">
-      <div class="card-title" style="margin:0;">📊 LIVE MARKET</div>
-      <div style="display:flex;gap:6px;">
-        <button class="filter-btn active" id="chartNifty" onclick="switchChart('NIFTY')" style="font-size:10px;padding:4px 10px;">NIFTY</button>
-        <button class="filter-btn" id="chartSensex" onclick="switchChart('SENSEX')" style="font-size:10px;padding:4px 10px;">SENSEX</button>
-        <button class="filter-btn" id="chartBankNifty" onclick="switchChart('BANKNIFTY')" style="font-size:10px;padding:4px 10px;">BANK NIFTY</button>
-      </div>
-    </div>
-    <div id="tvChartWrap" style="height:340px;border-radius:8px;overflow:hidden;">
-    </div>
+    <div id="quickLinksRow" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+    <div id="quickLinksEdit" style="display:none;margin-top:10px;"></div>
   </div>
 </div>
 
 <!-- JOURNAL PAGE -->
 <div id="pageJournal" class="page">
+  <button class="page-back" onclick="goPage('Home')">← HOME</button>
   <div class="card">
     <div class="filter-row">
       <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
@@ -629,6 +725,7 @@
 <!-- ADD ENTRY PAGE -->
 <!-- ADD ENTRY PAGE -->
 <div id="pageAdd" class="page">
+  <button class="page-back" onclick="goPage('Home')">← HOME</button>
 
   <!-- ADD TRADE PANEL -->
   <div id="panelAddTrade">
@@ -850,6 +947,13 @@
         <textarea class="form-input" id="entryAnalysis" placeholder="✅ Followed plan  ⚠️ Hesitated  🚨 Broke rules  📖 Lesson learned"></textarea>
       </div>
 
+      <!-- DISCIPLINE CHECKLIST -->
+      <div class="form-group" style="margin-top:10px;">
+        <label class="form-label">📏 DISCIPLINE (tick what you followed)</label>
+        <div id="disciplineChecks" style="display:flex;flex-direction:column;gap:6px;margin-top:6px;">
+        </div>
+      </div>
+
       <div id="addModeButtons">
         <button class="submit-btn" onclick="saveEntry()">💾 SAVE TRADE</button>
         <button class="submit-btn" onclick="saveEntry(true)" style="background:var(--card2);color:var(--accent);border:1px solid var(--accent);margin-top:8px;">💾 SAVE & ADD ANOTHER</button>
@@ -871,6 +975,7 @@
 
 <!-- DAY REVIEW PAGE -->
 <div id="pageReview" class="page">
+  <button class="page-back" onclick="goPage('Home')">← HOME</button>
   <div id="panelDayReview">
     <div class="card">
       <div class="card-title">📋 POST-TRADE DAY REVIEW</div>
@@ -1055,6 +1160,7 @@
 
 <!-- REPORTS PAGE -->
 <div id="pageReports" class="page">
+  <button class="page-back" onclick="goPage('Home')">← HOME</button>
 
   <!-- OVERVIEW -->
   <div class="card">
@@ -1149,6 +1255,26 @@
     </div>
   </div>
 
+
+  <!-- DISCIPLINE TRACKER -->
+  <div class="card">
+    <div class="card-title">📏 DISCIPLINE SCORE</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">How well you followed your rules — from your trade discipline checklist.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
+      <div class="stat-card" style="text-align:center;"><div class="stat-label">TODAY</div><div class="stat-val" id="discToday" style="color:var(--accent);">—</div></div>
+      <div class="stat-card" style="text-align:center;"><div class="stat-label">THIS WEEK</div><div class="stat-val" id="discWeek" style="color:var(--accent);">—</div></div>
+      <div class="stat-card" style="text-align:center;"><div class="stat-label">ALL TIME</div><div class="stat-val" id="discAllTime" style="color:var(--accent);">—</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+      <div class="stat-card" style="text-align:center;"><div class="stat-label">THIS MONTH</div><div class="stat-val" id="discMonth" style="color:var(--accent);">—</div></div>
+      <div class="stat-card" style="text-align:center;"><div class="stat-label">CUM. SCORE</div><div class="stat-val" id="discCumulative" style="color:var(--accent);">—</div></div>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="disciplineChart"></canvas>
+    </div>
+    <div id="disciplineDayList" style="margin-top:12px;"></div>
+  </div>
+
   <!-- RULES NOT FOLLOWED -->
   <div class="card">
     <div class="card-title">⚠️ RULES NOT FOLLOWED</div>
@@ -1224,6 +1350,7 @@
 
 <!-- CALCULATOR PAGE -->
 <div id="pageCalc" class="page">
+  <button class="page-back" onclick="goPage('Home')">← HOME</button>
 <div class="card">
     <div class="card-title">🧮 LIVE TRADE CALCULATOR</div>
     <div style="font-size:11px;color:var(--muted);margin-bottom:14px;">Enter your spread details — get all key levels instantly</div>
@@ -1361,6 +1488,33 @@
 
     </div>
 
+
+    <!-- TRADE AVERAGING -->
+    <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px;">
+      <div class="card-title">📊 TRADE AVERAGING (Same Spread in Steps)</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">When you build the same spread in steps (scaling in), enter each leg to get the average entry price.</div>
+      
+      <div id="avgLegs">
+        <div class="avg-leg" data-leg="1" style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--accent);margin-bottom:8px;">LEG 1</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <div><label class="form-label" style="font-size:9px;">SELL PREM</label><input type="number" class="form-input avg-sell" placeholder="80" oninput="calcAverage()"></div>
+            <div><label class="form-label" style="font-size:9px;">BUY PREM</label><input type="number" class="form-input avg-buy" placeholder="50" oninput="calcAverage()"></div>
+            <div><label class="form-label" style="font-size:9px;">LOTS</label><input type="number" class="form-input avg-lots" placeholder="1" value="1" oninput="calcAverage()"></div>
+          </div>
+        </div>
+      </div>
+      <button onclick="addAvgLeg()" style="background:var(--card2);border:1px solid var(--accent);border-radius:8px;color:var(--accent);font-size:12px;padding:8px 16px;cursor:pointer;font-family:var(--mono);width:100%;margin-bottom:12px;">+ ADD ANOTHER LEG</button>
+      
+      <div id="avgResult" style="display:none;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+          <div><div style="font-size:9px;color:var(--muted);">AVG NET CREDIT</div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--green);" id="avgNetCredit">₹0</div></div>
+          <div><div style="font-size:9px;color:var(--muted);">TOTAL LOTS</div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--accent);" id="avgTotalLots">0</div></div>
+          <div><div style="font-size:9px;color:var(--muted);">TOTAL PREMIUM</div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--green);" id="avgTotalPrem">₹0</div></div>
+        </div>
+      </div>
+    </div>
+
     <div id="calcEmpty" style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">
       Fill in the fields above to see your trade analysis
     </div>
@@ -1369,21 +1523,17 @@
 
 
 <div class="bottom-nav">
-  <button class="nav-btn active" onclick="goPage('Dashboard', event)">
-    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-    Checklist
+  <button class="nav-btn active" onclick="goPage('Home', event)">
+    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    Home
   </button>
-  <button class="nav-btn" onclick="goPage('Journal', event)">
-    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-    Journal
+  <button class="nav-btn" onclick="goPage('Dashboard', event)">
+    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+    Check
   </button>
   <button class="nav-btn" onclick="goPage('Add', event)">
     <svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
     Add
-  </button>
-  <button class="nav-btn" onclick="goPage('Calc', event)">
-    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
-    Calc
   </button>
   <button class="nav-btn" onclick="goPage('Review', event)">
     <svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
@@ -1493,7 +1643,7 @@ async function loadTradesFromCloud() {
     trades = loadTrades();
     setSyncStatus('offline');
   }
-  renderDashboard();
+  renderHome();
 }
 
 async function saveTradeToCloud(trade) {
@@ -1699,12 +1849,17 @@ function goPage(name, evt) {
     var btn = e.target.closest('.nav-btn');
     if (btn) btn.classList.add('active');
   }
+  window.scrollTo(0, 0);
 
+  if (name === 'Home') renderHome();
   if (name === 'Dashboard') renderDashboard();
   if (name === 'Journal') renderJournal();
   if (name === 'Reports') { loadProgressSettings(); requestAnimationFrame(function(){ renderReports(); }); }
   if (name === 'Review') { renderReviewStats(); loadTodayReview(); }
   if (name === 'Calc') renderCalcPage();
+  if (name === 'Capital') renderCapitalPage();
+  if (name === 'Analysis') loadAnalysisForDate();
+  if (name === 'Links') renderQuickLinks();
   if (name === 'Add') {
     if (editingIndex === null) {
       cancelEdit();
@@ -1768,7 +1923,7 @@ const fmt = v => (v >= 0 ? '+' : '') + '₹' + v.toLocaleString('en-IN');
 const fmtK = v => Math.abs(v) >= 1000 ? (v / 1000).toFixed(1) + 'K' : v.toFixed(0);
 
 // ── CHARTS ─────────────────────────────────────────────────────────────────
-const charts = { pl: null, month: null, day: null, pie: null, portfolio: null, progress: null };
+const charts = { pl: null, month: null, day: null, pie: null, portfolio: null, progress: null, discipline: null };
 
 // ── MARKET STATUS ──────────────────────────────────────────────────────────
 function updateMarketStatus() {
@@ -2565,10 +2720,7 @@ function renderDashboard() {
   loadTodayAnalysis();
   loadDailyCapital();
   renderDashGuard();
-  // Load live chart if not already loaded
-  if (!document.getElementById('tvChartWrap').querySelector('iframe')) {
-    loadTVChart(currentChartSymbol);
-  }
+  // Live chart is now on Home page
 }
 
 // ── ANALYTICS (rendered inside Reports) ────────────────────────────────────
@@ -2808,6 +2960,7 @@ function editTrade(index) {
   document.getElementById('entryCharges').value = trade.charges || '';
   document.getElementById('entryComment').value = trade.comment || '';
   document.getElementById('entryAnalysis').value = trade.analysis || '';
+  renderDisciplineChecks(trade.discipline || {});
   document.getElementById('entrySellStrike').value = trade.sellStrike || '';
   document.getElementById('entryBuyStrike').value = trade.buyStrike || '';
   document.getElementById('entrySellPrem').value = trade.sellPrem || '';
@@ -2904,7 +3057,8 @@ function updateEntry() {
     maxProfit, maxLoss,
     entryTime, exitTime,
     exitSellPrem: isNaN(exitSellPrem) ? null : exitSellPrem,
-    exitBuyPrem: isNaN(exitBuyPrem) ? null : exitBuyPrem
+    exitBuyPrem: isNaN(exitBuyPrem) ? null : exitBuyPrem,
+    discipline: getDisciplineValues()
   };
   const cloudId = trades[editingIndex]._id;
   trades[editingIndex] = { _id: cloudId, ...updatedTrade };
@@ -3200,7 +3354,8 @@ function saveEntry(addAnother) {
     maxProfit: maxProfit, maxLoss: maxLoss,
     entryTime: entryTime, exitTime: exitTime,
     exitSellPrem: isNaN(exitSellPrem) ? null : exitSellPrem,
-    exitBuyPrem: isNaN(exitBuyPrem) ? null : exitBuyPrem
+    exitBuyPrem: isNaN(exitBuyPrem) ? null : exitBuyPrem,
+    discipline: getDisciplineValues()
   };
 
   trades.push(tradeObj);
@@ -3383,32 +3538,20 @@ var guardChecklist = [
     text: 'Sold strike is BEYOND the OI wall, not inside it',
     detail: 'Example: Highest Put OI at 24400 → sell at 24400 PE or lower. The OI wall must be between spot price and your sold strike — it acts as your shield. Selling inside the wall = no protection at all.'
   },
-  {
-    id: 'tg8', section: 'STRATEGY',
-    text: 'Spread width decided — 50pt or 100pt based on capital',
-    detail: '50pt spread = less max loss, less premium. 100pt spread = more premium, more risk. For NIFTY: 100pt spread × 25 lots = ₹2500 max loss per lot. Choose width based on your daily max loss limit. Wider is not always better.'
-  },
+
   {
     id: 'tg9', section: 'STRATEGY',
     text: 'OI Change supports my direction — active writing on my side',
     detail: 'OI increasing on Put side = Put writers are active = bullish support forming → confirms Bull Put Spread. OI increasing on Call side = Call writers active = bearish resistance forming → confirms Bear Call Spread. Check OI Change tab on Sensibull.'
   },
   // RISK MANAGEMENT
-  {
-    id: 'tg10', section: 'RISK MANAGEMENT',
-    text: 'Profit target set — will exit when 50% of premium is captured',
-    detail: 'If net credit collected = ₹30, your profit target = close when spread costs ₹15 (50% of ₹30 captured). This locks in majority of profit without holding till expiry. Calculate this number BEFORE entering and write it down.'
-  },
+
   {
     id: 'tg11', section: 'RISK MANAGEMENT',
-    text: 'Stop loss set — will exit if premium doubles (2x rule)',
-    detail: 'If you collected ₹30 net credit, SL = exit when spread costs ₹60. ALSO exit immediately if spot price crosses your sold strike — don\'t wait for 2x in that case. Hard rule. No exceptions. No averaging.'
+    text: 'Total loss of both trades is within my 1% rule',
+    detail: 'Combined loss from both trades today must not exceed 1% of your total capital. E.g., if capital = ₹5,00,000, max total loss = ₹5,000 across ALL trades. If first trade loses ₹3,000, second trade max loss must be ≤ ₹2,000. This is your survival rule.'
   },
-  {
-    id: 'tg12', section: 'RISK MANAGEMENT',
-    text: 'Total lots planned — max lots for today decided before market opens',
-    detail: 'Decide your max lots BEFORE the day starts. Scale in only if trend confirms after 1st entry. Never add lots after 12:30 PM. Never add more lots than your first entry. Total max loss across all lots must fit your daily limit.'
-  },
+
   // EXPIRY AWARENESS
   {
     id: 'tg13', section: 'EXPIRY AWARENESS',
@@ -3890,7 +4033,8 @@ function renderReports() {
     ['streakStats', renderStreakStats],
     ['weekly', renderWeeklyReport],
     ['dayByDay', renderDayByDay],
-    ['rules', renderRulesBroken]
+    ['rules', renderRulesBroken],
+    ['discipline', renderDisciplineReport]
   ];
   steps.forEach(function(s){
     try { s[1](); } catch(e){ console.warn('Report section failed:', s[0], e); }
@@ -4150,8 +4294,273 @@ function renderRulesBroken() {
 }
 
 
+
+// ── HOME PAGE ─────────────────────────────────────────────────────────
+function renderHome() {
+  var todayStr = new Date().toISOString().split('T')[0];
+  var todayTrades = trades.filter(function(t) { return t.date === todayStr; });
+  var todayPL = todayTrades.reduce(function(s,t) { return s + (t.pl || 0); }, 0);
+
+  var plEl = document.getElementById('homeTodayPL');
+  if (plEl) { plEl.textContent = fmt(todayPL); plEl.style.color = todayPL > 0 ? 'var(--green)' : todayPL < 0 ? 'var(--red)' : 'var(--muted)'; }
+  var trEl = document.getElementById('homeTrades');
+  if (trEl) trEl.textContent = todayTrades.length;
+
+  // Streak
+  var sorted = trades.filter(function(t) { return typeof t.pl === 'number'; }).sort(function(a,b) { return b.date.localeCompare(a.date); });
+  var streak = 0; var streakType = '';
+  if (sorted.length) {
+    streakType = sorted[0].pl >= 0 ? 'W' : 'L';
+    for (var i = 0; i < sorted.length; i++) {
+      if ((streakType === 'W' && sorted[i].pl >= 0) || (streakType === 'L' && sorted[i].pl < 0)) streak++;
+      else break;
+    }
+  }
+  var sEl = document.getElementById('homeStreak');
+  if (sEl) { sEl.textContent = streak ? streak + streakType : '-'; sEl.style.color = streakType === 'W' ? 'var(--green)' : streakType === 'L' ? 'var(--red)' : 'var(--muted)'; }
+
+  // Badge on report card
+  var allPL = trades.filter(function(t){ return typeof t.pl === 'number'; }).reduce(function(s,t){ return s+t.pl; }, 0);
+  var badge = document.getElementById('homePLBadge');
+  if (badge) { badge.textContent = fmt(allPL); badge.style.color = allPL >= 0 ? 'var(--green)' : 'var(--red)'; }
+
+  // Load live chart
+  if (!document.getElementById('tvChartWrap').querySelector('iframe')) {
+    loadTVChart(currentChartSymbol);
+  }
+}
+
+function renderCapitalPage() {
+  // Capital page uses the same inputs as before — just ensure values are loaded
+  onDailyCapChange();
+}
+
+// ── TRADE AVERAGING ──────────────────────────────────────────────────
+var avgLegCount = 1;
+function addAvgLeg() {
+  avgLegCount++;
+  var html = '<div class="avg-leg" data-leg="' + avgLegCount + '" style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
+      '<span style="font-family:var(--mono);font-size:10px;color:var(--accent);">LEG ' + avgLegCount + '</span>' +
+      '<button onclick="removeAvgLeg(this)" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;">✕</button>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">' +
+      '<div><label class="form-label" style="font-size:9px;">SELL PREM</label><input type="number" class="form-input avg-sell" placeholder="80" oninput="calcAverage()"></div>' +
+      '<div><label class="form-label" style="font-size:9px;">BUY PREM</label><input type="number" class="form-input avg-buy" placeholder="50" oninput="calcAverage()"></div>' +
+      '<div><label class="form-label" style="font-size:9px;">LOTS</label><input type="number" class="form-input avg-lots" placeholder="1" value="1" oninput="calcAverage()"></div>' +
+    '</div>' +
+  '</div>';
+  document.getElementById('avgLegs').insertAdjacentHTML('beforeend', html);
+  calcAverage();
+}
+
+function removeAvgLeg(btn) {
+  btn.closest('.avg-leg').remove();
+  calcAverage();
+}
+
+function calcAverage() {
+  var legs = document.querySelectorAll('.avg-leg');
+  var totalLots = 0; var totalCredit = 0;
+  legs.forEach(function(leg) {
+    var sell = parseFloat(leg.querySelector('.avg-sell').value) || 0;
+    var buy = parseFloat(leg.querySelector('.avg-buy').value) || 0;
+    var lots = parseFloat(leg.querySelector('.avg-lots').value) || 0;
+    var nc = sell - buy;
+    totalLots += lots;
+    totalCredit += nc * lots;
+  });
+  var avgNC = totalLots > 0 ? (totalCredit / totalLots) : 0;
+  var lotSize = (document.getElementById('calcNifty') && document.getElementById('calcNifty').classList.contains('active')) ? 75 : 20;
+
+  var resEl = document.getElementById('avgResult');
+  if (totalLots > 0) {
+    resEl.style.display = 'block';
+    document.getElementById('avgNetCredit').textContent = '₹' + avgNC.toFixed(2);
+    document.getElementById('avgTotalLots').textContent = totalLots;
+    document.getElementById('avgTotalPrem').textContent = '₹' + (totalCredit * lotSize).toLocaleString('en-IN');
+  } else {
+    resEl.style.display = 'none';
+  }
+}
+
+// ── DISCIPLINE CHECKLIST (Add page) ──────────────────────────────────
+var DISCIPLINE_RULES = [
+  { id: 'disc_vwap', label: 'Confirmed VWAP direction before entry' },
+  { id: 'disc_oi', label: 'Checked OI walls on Sensibull' },
+  { id: 'disc_15min', label: 'Waited for 15-min candle close' },
+  { id: 'disc_entry_time', label: 'Entered between 9:45 AM – 11:30 AM' },
+  { id: 'disc_sl_set', label: 'Stop loss was set before entry' },
+  { id: 'disc_sl_honored', label: 'Honored SL — no hoping or averaging' },
+  { id: 'disc_1pct', label: 'Total loss within 1% capital rule' },
+  { id: 'disc_no_revenge', label: 'No revenge trading' },
+  { id: 'disc_trade_limit', label: 'Within 2-trade daily limit' },
+  { id: 'disc_vix', label: 'Checked India VIX before entry' },
+  { id: 'disc_plan', label: 'Followed pre-market trading plan' },
+  { id: 'disc_expiry_exit', label: 'If expiry day — exited before 2 PM' }
+];
+
+function renderDisciplineChecks(savedDiscipline) {
+  var el = document.getElementById('disciplineChecks');
+  if (!el) return;
+  var disc = savedDiscipline || {};
+  el.innerHTML = DISCIPLINE_RULES.map(function(rule) {
+    var checked = disc[rule.id] ? 'checked' : '';
+    return '<label style="display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;cursor:pointer;">' +
+      '<input type="checkbox" class="disc-check" id="' + rule.id + '" ' + checked + ' style="width:18px;height:18px;accent-color:var(--accent);flex-shrink:0;">' +
+      '<span style="font-size:12px;color:var(--text);">' + rule.label + '</span>' +
+    '</label>';
+  }).join('');
+}
+
+function getDisciplineValues() {
+  var result = {};
+  DISCIPLINE_RULES.forEach(function(rule) {
+    var cb = document.getElementById(rule.id);
+    if (cb) result[rule.id] = cb.checked;
+  });
+  return result;
+}
+
+function getDisciplineScore(disc) {
+  if (!disc || typeof disc !== 'object') return null;
+  var total = 0; var followed = 0;
+  Object.keys(disc).forEach(function(k) {
+    total++;
+    if (disc[k]) followed++;
+  });
+  return total > 0 ? Math.round((followed / total) * 100) : null;
+}
+
+// ── DISCIPLINE REPORT ────────────────────────────────────────────────
+function renderDisciplineReport() {
+  var validTrades = trades.filter(function(t) { return t.discipline && typeof t.discipline === 'object'; });
+  if (!validTrades.length) {
+    document.getElementById('discToday').textContent = '—';
+    document.getElementById('discWeek').textContent = '—';
+    document.getElementById('discMonth').textContent = '—';
+    document.getElementById('discAllTime').textContent = '—';
+    document.getElementById('discCumulative').textContent = '—';
+    document.getElementById('disciplineDayList').innerHTML = '<div class="empty">No discipline data yet. Tick discipline checkboxes when adding trades.</div>';
+    return;
+  }
+
+  var now = new Date();
+  var todayStr = now.toISOString().split('T')[0];
+  var dayOfWeek = now.getDay() === 0 ? 6 : now.getDay() - 1;
+  var weekStart = new Date(now); weekStart.setDate(now.getDate() - dayOfWeek); weekStart.setHours(0,0,0,0);
+  var monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  // Group by date
+  var byDate = {};
+  validTrades.forEach(function(t) {
+    if (!byDate[t.date]) byDate[t.date] = [];
+    byDate[t.date].push(t);
+  });
+
+  // Daily scores
+  var dailyScores = {};
+  Object.keys(byDate).sort().forEach(function(dt) {
+    var dayTrades = byDate[dt];
+    var totalScore = 0; var count = 0;
+    dayTrades.forEach(function(t) {
+      var s = getDisciplineScore(t.discipline);
+      if (s !== null) { totalScore += s; count++; }
+    });
+    dailyScores[dt] = count > 0 ? Math.round(totalScore / count) : 0;
+  });
+
+  var dates = Object.keys(dailyScores).sort();
+
+  // Today
+  var todayScore = dailyScores[todayStr];
+  document.getElementById('discToday').textContent = todayScore != null ? todayScore + '%' : '—';
+  document.getElementById('discToday').style.color = todayScore >= 80 ? 'var(--green)' : todayScore >= 50 ? 'var(--yellow)' : todayScore != null ? 'var(--red)' : 'var(--muted)';
+
+  // Week
+  var weekDates = dates.filter(function(d) { return new Date(d) >= weekStart; });
+  var weekAvg = weekDates.length ? Math.round(weekDates.reduce(function(s,d){ return s+dailyScores[d]; }, 0) / weekDates.length) : null;
+  document.getElementById('discWeek').textContent = weekAvg != null ? weekAvg + '%' : '—';
+  document.getElementById('discWeek').style.color = weekAvg >= 80 ? 'var(--green)' : weekAvg >= 50 ? 'var(--yellow)' : weekAvg != null ? 'var(--red)' : 'var(--muted)';
+
+  // Month
+  var monthDates = dates.filter(function(d) { return new Date(d) >= monthStart; });
+  var monthAvg = monthDates.length ? Math.round(monthDates.reduce(function(s,d){ return s+dailyScores[d]; }, 0) / monthDates.length) : null;
+  document.getElementById('discMonth').textContent = monthAvg != null ? monthAvg + '%' : '—';
+  document.getElementById('discMonth').style.color = monthAvg >= 80 ? 'var(--green)' : monthAvg >= 50 ? 'var(--yellow)' : monthAvg != null ? 'var(--red)' : 'var(--muted)';
+
+  // All time
+  var allAvg = dates.length ? Math.round(dates.reduce(function(s,d){ return s+dailyScores[d]; }, 0) / dates.length) : null;
+  document.getElementById('discAllTime').textContent = allAvg != null ? allAvg + '%' : '—';
+  document.getElementById('discAllTime').style.color = allAvg >= 80 ? 'var(--green)' : allAvg >= 50 ? 'var(--yellow)' : allAvg != null ? 'var(--red)' : 'var(--muted)';
+
+  // Cumulative score
+  var cumScores = [];
+  var cumTotal = 0;
+  dates.forEach(function(d, i) {
+    cumTotal += dailyScores[d];
+    cumScores.push(Math.round(cumTotal / (i + 1)));
+  });
+  var cumNow = cumScores.length ? cumScores[cumScores.length - 1] : null;
+  document.getElementById('discCumulative').textContent = cumNow != null ? cumNow + '%' : '—';
+  document.getElementById('discCumulative').style.color = cumNow >= 80 ? 'var(--green)' : cumNow >= 50 ? 'var(--yellow)' : cumNow != null ? 'var(--red)' : 'var(--muted)';
+
+  // Chart
+  if (charts.discipline) charts.discipline.destroy();
+  charts.discipline = new Chart(document.getElementById('disciplineChart'), {
+    type: 'bar',
+    data: {
+      labels: dates.map(function(d) { var dt = new Date(d); return dt.getDate() + ' ' + dt.toLocaleString('en',{month:'short'}); }),
+      datasets: [
+        {
+          type: 'bar',
+          label: 'Daily Score',
+          data: dates.map(function(d){ return dailyScores[d]; }),
+          backgroundColor: dates.map(function(d){ return dailyScores[d] >= 80 ? 'rgba(0,224,150,.6)' : dailyScores[d] >= 50 ? 'rgba(255,209,102,.6)' : 'rgba(255,77,109,.6)'; }),
+          borderRadius: 6,
+          yAxisID: 'y'
+        },
+        {
+          type: 'line',
+          label: 'Cumulative Avg',
+          data: cumScores,
+          borderColor: '#00e5ff',
+          borderWidth: 2,
+          pointRadius: 2,
+          tension: 0.3,
+          fill: false,
+          yAxisID: 'y'
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#e2e8f0', font: { size: 10 } } }, tooltip: { backgroundColor:'#181c24',titleColor:'#00e5ff',bodyColor:'#e2e8f0',borderColor:'#1f2535',borderWidth:1 }},
+      scales: {
+        x: { ticks: { color: '#64748b', font: { size: 9 }, maxTicksLimit: 10 }, grid: { display: false } },
+        y: { min: 0, max: 100, ticks: { color: '#64748b', font: { size: 9 }, callback: function(v){ return v + '%'; } }, grid: { color: '#1f2535' } }
+      }
+    }
+  });
+
+  // Day list (recent 15)
+  var recentDates = dates.slice(-15).reverse();
+  document.getElementById('disciplineDayList').innerHTML = recentDates.map(function(dt) {
+    var score = dailyScores[dt];
+    var dObj = new Date(dt);
+    var lbl = dObj.getDate() + ' ' + dObj.toLocaleString('en',{month:'short'});
+    var dayShort = dObj.toLocaleString('en',{weekday:'short'});
+    var color = score >= 80 ? 'var(--green)' : score >= 50 ? 'var(--yellow)' : 'var(--red)';
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">' +
+      '<div><span style="font-family:var(--mono);font-size:12px;color:var(--accent);">' + lbl + '</span> <span style="font-size:10px;color:var(--muted);">' + dayShort + '</span></div>' +
+      '<div style="font-family:var(--mono);font-size:14px;font-weight:700;color:' + color + ';">' + score + '%</div>' +
+    '</div>';
+  }).join('');
+}
+
 // ── INITIAL RENDER ─────────────────────────────────────────────────────────
-renderDashboard();
+renderHome();
+renderDisciplineChecks({});
 
 // ── PWA SERVICE WORKER ─────────────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
