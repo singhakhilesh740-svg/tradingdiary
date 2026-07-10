@@ -1468,25 +1468,43 @@
     <!-- TRADE AVERAGING -->
     <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px;">
       <div class="card-title">📊 TRADE AVERAGING (Same Spread in Steps)</div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">When you build the same spread in steps (scaling in), enter each leg to get the average entry price.</div>
-      
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">Scaling into the SAME spread in steps? Enter each leg's premiums &amp; lots. You'll get the lot-weighted average entry price for the sold and bought legs. Entry time follows Leg 1.</div>
+
+      <!-- Strikes (shared across all legs — same spread) -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+        <div><label class="form-label" style="font-size:9px;" id="avgSellStrikeLabel">SELL STRIKE</label><input type="number" class="form-input" id="avgSellStrike" placeholder="24200"></div>
+        <div><label class="form-label" style="font-size:9px;" id="avgBuyStrikeLabel">BUY STRIKE</label><input type="number" class="form-input" id="avgBuyStrike" placeholder="24100"></div>
+      </div>
+
       <div id="avgLegs">
         <div class="avg-leg" data-leg="1" style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;">
-          <div style="font-family:var(--mono);font-size:10px;color:var(--accent);margin-bottom:8px;">LEG 1</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--accent);margin-bottom:8px;">LEG 1 (first entry)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
             <div><label class="form-label" style="font-size:9px;">SELL PREM</label><input type="number" class="form-input avg-sell" placeholder="80" oninput="calcAverage()"></div>
             <div><label class="form-label" style="font-size:9px;">BUY PREM</label><input type="number" class="form-input avg-buy" placeholder="50" oninput="calcAverage()"></div>
             <div><label class="form-label" style="font-size:9px;">LOTS</label><input type="number" class="form-input avg-lots" placeholder="1" value="1" oninput="calcAverage()"></div>
           </div>
+          <div><label class="form-label" style="font-size:9px;">ENTRY TIME (Leg 1)</label><input type="time" class="form-input avg-time" id="avgTime1" style="font-family:var(--mono);"></div>
         </div>
       </div>
       <button onclick="addAvgLeg()" style="background:var(--card2);border:1px solid var(--accent);border-radius:8px;color:var(--accent);font-size:12px;padding:8px 16px;cursor:pointer;font-family:var(--mono);width:100%;margin-bottom:12px;">+ ADD ANOTHER LEG</button>
-      
-      <div id="avgResult" style="display:none;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-          <div><div style="font-size:9px;color:var(--muted);">AVG NET CREDIT</div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--green);" id="avgNetCredit">₹0</div></div>
-          <div><div style="font-size:9px;color:var(--muted);">TOTAL LOTS</div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--accent);" id="avgTotalLots">0</div></div>
-          <div><div style="font-size:9px;color:var(--muted);">TOTAL PREMIUM</div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--green);" id="avgTotalPrem">₹0</div></div>
+
+      <div id="avgResult" style="display:none;">
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;margin-bottom:8px;">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:1.5px;margin-bottom:10px;">— AVERAGE ENTRY PRICE (lot-weighted) —</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+            <div style="background:rgba(0,224,150,.08);border:1px solid var(--green);border-radius:8px;padding:10px;"><div style="font-size:9px;color:var(--muted);">AVG SOLD PREM</div><div style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--green);" id="avgSellPrem">₹0</div></div>
+            <div style="background:rgba(255,95,87,.08);border:1px solid var(--red);border-radius:8px;padding:10px;"><div style="font-size:9px;color:var(--muted);">AVG BOUGHT PREM</div><div style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--red);" id="avgBuyPrem">₹0</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <div><div style="font-size:9px;color:var(--muted);">AVG NET CREDIT</div><div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--green);" id="avgNetCredit">₹0</div></div>
+            <div><div style="font-size:9px;color:var(--muted);">TOTAL LOTS</div><div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--accent);" id="avgTotalLots">0</div></div>
+            <div><div style="font-size:9px;color:var(--muted);">TOTAL PREMIUM</div><div style="font-family:var(--mono);font-size:16px;font-weight:700;color:var(--green);" id="avgTotalPrem">₹0</div></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <button onclick="applyAvgToCalc()" style="background:var(--card2);border:1px solid var(--accent);border-radius:8px;color:var(--accent);font-size:12px;padding:11px;cursor:pointer;font-family:var(--mono);font-weight:700;">⤴ MODIFY CALC ENTRY</button>
+          <button onclick="importAvgToAdd()" style="background:linear-gradient(135deg,#00e5ff,#0088aa);border:none;border-radius:8px;color:#000;font-size:12px;padding:11px;cursor:pointer;font-family:var(--mono);font-weight:700;">📥 IMPORT TO ADD</button>
         </div>
       </div>
     </div>
@@ -2052,6 +2070,7 @@ function selectCalcStrat(strat) {
   document.getElementById('calcBearCall').style.color = !isBull ? 'var(--red)' : '';
   document.getElementById('calcSellLabel').textContent = isBull ? 'SELL STRIKE (PE)' : 'SELL STRIKE (CE)';
   document.getElementById('calcBuyLabel').textContent = isBull ? 'BUY STRIKE (PE)' : 'BUY STRIKE (CE)';
+  if (typeof updateAvgStrikeLabels === 'function') updateAvgStrikeLabels();
   runCalc();
 }
 
@@ -4287,6 +4306,8 @@ function renderCapitalPage() {
 
 // ── TRADE AVERAGING ──────────────────────────────────────────────────
 var avgLegCount = 1;
+var lastAvgResult = null; // stash for import-to-Add
+
 function addAvgLeg() {
   avgLegCount++;
   var html = '<div class="avg-leg" data-leg="' + avgLegCount + '" style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;">' +
@@ -4311,27 +4332,110 @@ function removeAvgLeg(btn) {
 
 function calcAverage() {
   var legs = document.querySelectorAll('.avg-leg');
-  var totalLots = 0; var totalCredit = 0;
+  var totalLots = 0, totalCredit = 0, totalSell = 0, totalBuy = 0;
   legs.forEach(function(leg) {
     var sell = parseFloat(leg.querySelector('.avg-sell').value) || 0;
     var buy = parseFloat(leg.querySelector('.avg-buy').value) || 0;
     var lots = parseFloat(leg.querySelector('.avg-lots').value) || 0;
-    var nc = sell - buy;
     totalLots += lots;
-    totalCredit += nc * lots;
+    totalSell += sell * lots;   // lot-weighted sold premium
+    totalBuy += buy * lots;     // lot-weighted bought premium
+    totalCredit += (sell - buy) * lots;
   });
+  var avgSell = totalLots > 0 ? (totalSell / totalLots) : 0;
+  var avgBuy = totalLots > 0 ? (totalBuy / totalLots) : 0;
   var avgNC = totalLots > 0 ? (totalCredit / totalLots) : 0;
-  var lotSize = (document.getElementById('calcNifty') && document.getElementById('calcNifty').classList.contains('active')) ? 75 : 20;
+  var lotSize = (typeof calcInst !== 'undefined' && calcInst === 'NIFTY') ? NIFTY_LOT : SENSEX_LOT;
 
   var resEl = document.getElementById('avgResult');
-  if (totalLots > 0) {
+  if (totalLots > 0 && (totalSell > 0 || totalBuy > 0)) {
     resEl.style.display = 'block';
+    document.getElementById('avgSellPrem').textContent = '₹' + avgSell.toFixed(2);
+    document.getElementById('avgBuyPrem').textContent = '₹' + avgBuy.toFixed(2);
     document.getElementById('avgNetCredit').textContent = '₹' + avgNC.toFixed(2);
     document.getElementById('avgTotalLots').textContent = totalLots;
-    document.getElementById('avgTotalPrem').textContent = '₹' + (totalCredit * lotSize).toLocaleString('en-IN');
+    document.getElementById('avgTotalPrem').textContent = '₹' + Math.round(totalCredit * lotSize).toLocaleString('en-IN');
+
+    // stash the averaged result
+    lastAvgResult = {
+      avgSell: parseFloat(avgSell.toFixed(2)),
+      avgBuy: parseFloat(avgBuy.toFixed(2)),
+      avgNC: parseFloat(avgNC.toFixed(2)),
+      totalLots: totalLots,
+      sellStrike: document.getElementById('avgSellStrike') ? document.getElementById('avgSellStrike').value : '',
+      buyStrike: document.getElementById('avgBuyStrike') ? document.getElementById('avgBuyStrike').value : '',
+      entryTime: document.getElementById('avgTime1') ? document.getElementById('avgTime1').value : ''
+    };
   } else {
     resEl.style.display = 'none';
+    lastAvgResult = null;
   }
+}
+
+// Update avg strike labels when strategy toggles
+function updateAvgStrikeLabels() {
+  var isBull = (typeof calcStrat !== 'undefined') ? calcStrat === 'BullPut' : true;
+  var sl = document.getElementById('avgSellStrikeLabel');
+  var bl = document.getElementById('avgBuyStrikeLabel');
+  if (sl) sl.textContent = isBull ? 'SELL STRIKE (PE)' : 'SELL STRIKE (CE)';
+  if (bl) bl.textContent = isBull ? 'BUY STRIKE (PE)' : 'BUY STRIKE (CE)';
+}
+
+// Apply averaged values back into the main Calc inputs (modify calc entry)
+function applyAvgToCalc() {
+  if (!lastAvgResult) { alert('Enter leg premiums first.'); return; }
+  var r = lastAvgResult;
+  if (r.sellStrike) document.getElementById('calcSellStrike').value = r.sellStrike;
+  if (r.buyStrike) document.getElementById('calcBuyStrike').value = r.buyStrike;
+  document.getElementById('calcSellPrem').value = r.avgSell;
+  document.getElementById('calcBuyPrem').value = r.avgBuy;
+  document.getElementById('calcLots').value = r.totalLots;
+  if (r.entryTime) document.getElementById('calcEntryTime').value = r.entryTime;
+  runCalc();
+  // scroll up to the calc results
+  var top = document.getElementById('pageCalc');
+  if (top) top.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  showToast('✓ Calc updated with average price');
+}
+
+// Import averaged spread straight into the Add form
+function importAvgToAdd() {
+  if (!lastAvgResult) { alert('Enter leg premiums first.'); return; }
+  var r = lastAvgResult;
+  var today = new Date().toISOString().split('T')[0];
+
+  // Navigate to Add page and reveal the form (skip date gate)
+  editingIndex = null;
+  goPage('Add');
+  document.getElementById('gateDate').value = today;
+  document.getElementById('entryDate').value = today;
+  showAddForm(today);
+
+  // Map instrument + strategy from Calc state
+  selectInstrument(typeof calcInst !== 'undefined' ? calcInst : 'NIFTY');
+  selectStrategy((typeof calcStrat !== 'undefined' && calcStrat === 'BearCall') ? 'Bear Call Spread' : 'Bull Put Spread');
+
+  // Fill strikes, averaged premiums, total lots, entry time (from leg 1)
+  document.getElementById('entrySellStrike').value = r.sellStrike || '';
+  document.getElementById('entryBuyStrike').value = r.buyStrike || '';
+  document.getElementById('entrySellPrem').value = r.avgSell;
+  document.getElementById('entryBuyPrem').value = r.avgBuy;
+  document.getElementById('entryLots').value = r.totalLots;
+  if (r.entryTime) document.getElementById('entryTime').value = r.entryTime;
+
+  // Auto-fill capital from daily setup if present
+  var cap = getTodayCapital();
+  if (cap.total > 0) {
+    document.getElementById('entryCapital').value = cap.total;
+    document.getElementById('entryCollateral').value = cap.collateral || '';
+    calcCashCapital();
+  }
+
+  // Recalculate spread displays
+  calcSpreadPnL();
+
+  window.scrollTo(0, 0);
+  showToast('✓ Imported averaged trade to Add');
 }
 
 // ── DISCIPLINE CHECKLIST (Add page) ──────────────────────────────────
