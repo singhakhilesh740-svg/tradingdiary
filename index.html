@@ -4932,18 +4932,11 @@ function reopenGate() {
 
 // ── DISCIPLINE CHECKLIST (Add page) ──────────────────────────────────
 var DISCIPLINE_RULES = [
-  { id: 'disc_vwap', label: 'Confirmed VWAP direction before entry' },
-  { id: 'disc_oi', label: 'Checked OI walls on Sensibull' },
-  { id: 'disc_15min', label: 'Waited for 15-min candle close' },
-  { id: 'disc_entry_time', label: 'Entered between 9:45 AM – 11:30 AM' },
-  { id: 'disc_sl_set', label: 'Stop loss was set before entry' },
-  { id: 'disc_sl_honored', label: 'Honored SL — no hoping or averaging' },
-  { id: 'disc_1pct', label: 'Total loss within 1% capital rule' },
-  { id: 'disc_no_revenge', label: 'No revenge trading' },
-  { id: 'disc_trade_limit', label: 'Within 2-trade daily limit' },
-  { id: 'disc_vix', label: 'Checked India VIX before entry' },
-  { id: 'disc_plan', label: 'Followed pre-market trading plan' },
-  { id: 'disc_expiry_exit', label: 'If expiry day — exited before 2 PM' }
+  { id: 'disc_follow_system', label: 'Followed the system, always — took every valid signal' },
+  { id: 'disc_cut_losses', label: 'Cut losses fast — exited at stop, no averaging or hoping' },
+  { id: 'disc_fixed_risk', label: 'Risked a fixed, small % per trade (1–2%)' },
+  { id: 'disc_predefined_exit', label: 'Predefined my exit before entry — no mid-trade decisions' },
+  { id: 'disc_detach', label: 'Stayed detached from the outcome of any single trade' }
 ];
 
 function renderDisciplineChecks(savedDiscipline) {
