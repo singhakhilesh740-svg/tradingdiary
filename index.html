@@ -220,6 +220,43 @@
   .edit-mode-banner.active { display: block; }
 
 
+
+  /* DISCIPLINE GATE */
+  .disc-gate {
+    position: fixed; inset: 0; z-index: 5000;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    padding: calc(24px + env(safe-area-inset-top, 0px)) 18px calc(20px + env(safe-area-inset-bottom, 0px));
+    overflow-y: auto;
+  }
+  .disc-gate-head { text-align: center; margin-bottom: 18px; }
+  .disc-gate-head .dg-title { font-size: 22px; font-weight: 800; color: var(--text); letter-spacing: .5px; }
+  .disc-gate-head .dg-sub { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: 1.5px; margin-top: 4px; }
+  .disc-gate-head .dg-quote { font-size: 12px; color: var(--muted); margin-top: 10px; font-style: italic; }
+  .dg-checkall {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--card); border: 1px solid var(--accent); border-radius: 12px;
+    padding: 14px; margin-bottom: 12px; cursor: pointer;
+  }
+  .dg-checkall .dg-ca-label { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--accent); letter-spacing: 1px; }
+  .dg-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .dg-item {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 13px 14px; cursor: pointer; transition: all .15s;
+  }
+  .dg-item.checked { border-color: var(--green); background: rgba(0,224,150,.06); }
+  .dg-item input { width: 20px; height: 20px; accent-color: var(--green); flex-shrink: 0; }
+  .dg-item span { font-size: 13px; color: var(--text); line-height: 1.35; }
+  .dg-enter {
+    width: 100%; padding: 16px; border: none; border-radius: 12px;
+    font-family: var(--mono); font-size: 15px; font-weight: 800; letter-spacing: 1px;
+    cursor: pointer; transition: all .2s; margin-top: auto;
+  }
+  .dg-enter.locked { background: var(--card2); color: var(--muted); cursor: not-allowed; }
+  .dg-enter.ready { background: linear-gradient(135deg,#00e096,#00a86b); color: #000; }
+  .dg-progress { text-align: center; font-family: var(--mono); font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+
   /* HOME GRID */
   .home-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 8px 0; }
   .home-card {
@@ -347,6 +384,26 @@
 </div>
 
 <!-- APP (hidden until auth) -->
+<!-- DISCIPLINE GATE (shows before Home each day) -->
+<div class="disc-gate" id="discGate" style="display:none;">
+  <div class="disc-gate-head">
+    <div class="dg-title">📏 Trading Discipline</div>
+    <div class="dg-sub">COMMIT BEFORE YOU TRADE</div>
+    <div class="dg-quote">"Discipline is the bridge between goals and results."</div>
+  </div>
+
+  <div class="dg-progress" id="dgProgress">0 / 0 acknowledged</div>
+
+  <div class="dg-checkall" onclick="dgToggleAll()">
+    <input type="checkbox" id="dgCheckAll" style="width:20px;height:20px;accent-color:var(--accent);" onclick="event.stopPropagation();dgToggleAll(this.checked)">
+    <span class="dg-ca-label">TICK ALL RULES</span>
+  </div>
+
+  <div class="dg-list" id="dgList"></div>
+
+  <button class="dg-enter locked" id="dgEnter" onclick="dgEnter()" disabled>✓ ENTER APP</button>
+</div>
+
 <div id="appMain" style="display:none;">
 
 <!-- TOP BAR -->
@@ -429,6 +486,8 @@
       </div>
     </div>
   </div>
+
+  <button onclick="reopenGate()" style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;color:var(--muted);font-size:12px;padding:12px;cursor:pointer;font-family:var(--mono);letter-spacing:1px;margin-top:4px;">📏 REVIEW DISCIPLINE RULES</button>
 </div>
 
 <div id="pageDashboard" class="page">
@@ -1653,6 +1712,7 @@ auth.onAuthStateChanged(user => {
   if (user) {
     document.getElementById('authGate').style.display = 'none';
     document.getElementById('appMain').style.display = 'block';
+    if (typeof maybeShowGate === 'function') maybeShowGate();
     document.getElementById('userAvatar').src = user.photoURL || '';
     document.getElementById('userName').textContent = user.displayName || user.email;
     bootstrapFromCloud();
@@ -4782,6 +4842,92 @@ function importAvgToAdd() {
 
   window.scrollTo(0, 0);
   showToast('✓ Imported averaged trade to Add');
+}
+
+// ── DISCIPLINE GATE ──────────────────────────────────────────────────
+function dgTodayKey() {
+  return 'disc_gate_ack_' + (currentUser ? currentUser.uid : 'local');
+}
+
+function shouldShowGate() {
+  try {
+    var v = localStorage.getItem(dgTodayKey());
+    var today = new Date().toISOString().split('T')[0];
+    return v !== today;
+  } catch(e) { return true; }
+}
+
+function renderDisciplineGate() {
+  var list = document.getElementById('dgList');
+  if (!list) return;
+  list.innerHTML = DISCIPLINE_RULES.map(function(rule, i) {
+    return '<label class="dg-item" id="dgItem' + i + '">' +
+      '<input type="checkbox" class="dg-check" data-idx="' + i + '" onchange="dgOnCheck()">' +
+      '<span>' + rule.label + '</span>' +
+    '</label>';
+  }).join('');
+  dgOnCheck();
+}
+
+function dgOnCheck() {
+  var checks = document.querySelectorAll('.dg-check');
+  var done = 0;
+  checks.forEach(function(c, i) {
+    var item = document.getElementById('dgItem' + c.getAttribute('data-idx'));
+    if (c.checked) { done++; if (item) item.classList.add('checked'); }
+    else { if (item) item.classList.remove('checked'); }
+  });
+  var total = checks.length;
+  var prog = document.getElementById('dgProgress');
+  if (prog) prog.textContent = done + ' / ' + total + ' acknowledged';
+
+  var allEl = document.getElementById('dgCheckAll');
+  if (allEl) allEl.checked = (done === total && total > 0);
+
+  var btn = document.getElementById('dgEnter');
+  if (btn) {
+    if (done === total && total > 0) {
+      btn.classList.remove('locked'); btn.classList.add('ready'); btn.disabled = false;
+    } else {
+      btn.classList.add('locked'); btn.classList.remove('ready'); btn.disabled = true;
+    }
+  }
+}
+
+function dgToggleAll(forceState) {
+  var allEl = document.getElementById('dgCheckAll');
+  var state = (typeof forceState === 'boolean') ? forceState : (allEl ? !allEl.checked : true);
+  if (allEl && typeof forceState !== 'boolean') allEl.checked = state;
+  document.querySelectorAll('.dg-check').forEach(function(c) { c.checked = state; });
+  dgOnCheck();
+}
+
+function dgEnter() {
+  try { localStorage.setItem(dgTodayKey(), new Date().toISOString().split('T')[0]); } catch(e) {}
+  var gate = document.getElementById('discGate');
+  if (gate) gate.style.display = 'none';
+  // Ensure we land on Home
+  goPage('Home');
+}
+
+function maybeShowGate() {
+  var gate = document.getElementById('discGate');
+  if (!gate) return;
+  if (shouldShowGate()) {
+    renderDisciplineGate();
+    gate.style.display = 'flex';
+  } else {
+    gate.style.display = 'none';
+  }
+}
+
+// Manually re-open the gate from Home (does not reset the daily ack)
+function reopenGate() {
+  var gate = document.getElementById('discGate');
+  if (!gate) return;
+  renderDisciplineGate();
+  gate.style.display = 'flex';
+  window.scrollTo(0, 0);
 }
 
 // ── DISCIPLINE CHECKLIST (Add page) ──────────────────────────────────
