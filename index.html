@@ -57,13 +57,14 @@
   }
   .links-bar-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
   .links-bar-title { font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: 2px; }
-  .links-bar-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; -webkit-overflow-scrolling: touch; }
+  .links-bar-scroll { display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 2px; }
   .links-bar-scroll::-webkit-scrollbar { height: 0; }
   .link-chip {
     display: flex; align-items: center; gap: 6px;
     background: var(--card2); border: 1px solid var(--border); border-radius: 20px;
-    padding: 8px 14px; text-decoration: none; white-space: nowrap; flex: 0 0 auto;
+    padding: 8px 12px; text-decoration: none; flex: 0 1 auto; max-width: 100%;
   }
+  .link-chip span.lc-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .link-chip span.lc-icon { font-size: 15px; }
   .link-chip span.lc-name { font-size: 12px; color: var(--text); font-weight: 600; }
 
@@ -240,6 +241,10 @@
   }
   .dg-checkall .dg-ca-label { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--accent); letter-spacing: 1px; }
   .dg-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .dg-sec {
+    font-family: var(--mono); font-size: 10px; color: var(--accent);
+    letter-spacing: 2px; padding: 8px 2px 2px; text-align: center;
+  }
   .dg-item {
     display: flex; align-items: center; gap: 12px;
     background: var(--card); border: 1px solid var(--border); border-radius: 10px;
@@ -4860,12 +4865,24 @@ function shouldShowGate() {
 function renderDisciplineGate() {
   var list = document.getElementById('dgList');
   if (!list) return;
-  list.innerHTML = DISCIPLINE_RULES.map(function(rule, i) {
-    return '<label class="dg-item" id="dgItem' + i + '">' +
-      '<input type="checkbox" class="dg-check" data-idx="' + i + '" onchange="dgOnCheck()">' +
-      '<span>' + rule.label + '</span>' +
-    '</label>';
-  }).join('');
+  var sections = [
+    { title: '— MY SYSTEM RULES —', rules: DISCIPLINE_RULES },
+    { title: '— MARKET MINDSET —', rules: MINDSET_RULES }
+  ];
+  var html = '';
+  var idx = 0;
+  sections.forEach(function(sec) {
+    if (!sec.rules || !sec.rules.length) return;
+    html += '<div class="dg-sec">' + sec.title + '</div>';
+    sec.rules.forEach(function(rule) {
+      html += '<label class="dg-item" id="dgItem' + idx + '">' +
+        '<input type="checkbox" class="dg-check" data-idx="' + idx + '" onchange="dgOnCheck()">' +
+        '<span>' + rule.label + '</span>' +
+      '</label>';
+      idx++;
+    });
+  });
+  list.innerHTML = html;
   dgOnCheck();
 }
 
@@ -4937,6 +4954,22 @@ var DISCIPLINE_RULES = [
   { id: 'disc_fixed_risk', label: 'Risked a fixed, small % per trade (1–2%)' },
   { id: 'disc_predefined_exit', label: 'Predefined my exit before entry — no mid-trade decisions' },
   { id: 'disc_detach', label: 'Stayed detached from the outcome of any single trade' }
+];
+
+// Mindset rules — shown ONLY on the daily Discipline Gate (not in per-trade score)
+var MINDSET_RULES = [
+  { id: 'md_max2', label: 'No matter what happens, no matter how big the opportunity — I will NOT take more than 2 trades.' },
+  { id: 'md_anywhere', label: 'The market can go anywhere, at any time.' },
+  { id: 'md_nopredict', label: 'I will never predict the market — no matter how big the news is.' },
+  { id: 'md_cantdefeat', label: 'I cannot defeat the market.' },
+  { id: 'md_chase', label: 'I will not chase profit. I will chase discipline.' },
+  { id: 'md_noteveryday', label: 'I will not win every day.' },
+  { id: 'md_norecovery', label: 'I will never think "I\'ll recover all my losses today". I will do only one thing — follow my system.' },
+  { id: 'md_adapt', label: 'Trading is not a game of prediction. It is a game of adaptation.' },
+  { id: 'md_smallloss', label: 'A small loss is a fee. A big loss is a punishment.' },
+  { id: 'md_savefirst', label: 'First job in trading is saving capital. Earning profit comes after that.' },
+  { id: 'md_nextchance', label: 'The market will always give me the next chance — only if I still have capital.' },
+  { id: 'md_marathon', label: 'Trading is a marathon, not a sprint.' }
 ];
 
 function renderDisciplineChecks(savedDiscipline) {
